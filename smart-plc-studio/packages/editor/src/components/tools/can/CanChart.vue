@@ -23,7 +23,7 @@ let intervalTimer: ReturnType<typeof setInterval> | null = null
 
 const timeWindow = 5000
 interface DataPoint { time: number; value: number }
-const chartData = reactive<Record<string, DataPoint[]>[])
+const chartData = reactive<Record<string, DataPoint[]>>([])
 const maxPoints = 100
 
 const stats = computed(() => {

@@ -1,0 +1,24 @@
+{
+  "name": "fbd_template",
+  "version": "1.0.0",
+  "type": "standard",
+  "language": "FBD",
+  "description": "功能块图 (Function Block Diagram) IEC 61131-3 项目模板",
+  "author": "",
+  "created": "",
+  "pous": [
+    {
+      "name": "main",
+      "type": "program",
+      "language": "FBD"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "default",
+      "task": "MainTask",
+      "interval": "T#10ms",
+      "priority": 1
+    }
+  ]
+}

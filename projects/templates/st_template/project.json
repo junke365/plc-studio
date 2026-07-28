@@ -1,0 +1,25 @@
+{
+  "name": "st_template",
+  "version": "1.0.0",
+  "type": "standard",
+  "language": "ST",
+  "description": "结构化文本 (Structured Text) IEC 61131-3 项目模板",
+  "author": "",
+  "created": "",
+  "pous": [
+    {
+      "name": "main",
+      "type": "program",
+      "language": "ST",
+      "returnType": "void"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "default",
+      "task": "MainTask",
+      "interval": "T#10ms",
+      "priority": 1
+    }
+  ]
+}

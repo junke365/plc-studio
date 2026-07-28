@@ -1,0 +1,24 @@
+{
+  "name": "ld_template",
+  "version": "1.0.0",
+  "type": "standard",
+  "language": "LD",
+  "description": "梯形图 (Ladder Diagram) IEC 61131-3 项目模板",
+  "author": "",
+  "created": "",
+  "pous": [
+    {
+      "name": "main",
+      "type": "program",
+      "language": "LD"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "default",
+      "task": "MainTask",
+      "interval": "T#10ms",
+      "priority": 1
+    }
+  ]
+}

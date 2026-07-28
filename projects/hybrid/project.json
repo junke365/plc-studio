@@ -1,0 +1,62 @@
+{
+  "name": "hybrid_vcnc",
+  "version": "1.0.0",
+  "type": "hybrid",
+  "description": "混合项目示例: PLC 运动控制 + 视觉检测 + 无人机飞控",
+  "author": "",
+  "created": "",
+  "components": [
+    {
+      "name": "plc_motion",
+      "type": "standard",
+      "language": "ST",
+      "file": "motion_control.st"
+    },
+    {
+      "name": "vision_detect",
+      "type": "nonstandard",
+      "framework": "OpenCV5",
+      "file": "vision_pipeline.c"
+    },
+    {
+      "name": "drone_control",
+      "type": "nonstandard",
+      "framework": "PX4",
+      "file": "drone_mixer.c"
+    },
+    {
+      "name": "physics_sim",
+      "type": "nonstandard",
+      "framework": "SOFA",
+      "file": "sim_bridge.c"
+    }
+  ],
+  "dependencies": [
+    "smart-plc-runtime (motion + simulation)",
+    "opencv5-vision",
+    "px4-autopilot",
+    "sofa-framework (桥接)"
+  ],
+  "configurations": [
+    {
+      "name": "vcnc",
+      "task": "MainTask",
+      "interval": "T#5ms",
+      "priority": 1,
+      "motion": {
+        "axes": 4,
+        "maxVel": 500.0,
+        "maxAccel": 1000.0
+      },
+      "vision": {
+        "cameraId": 0,
+        "pipeline": "AR_MARKER",
+        "fps": 30
+      },
+      "drone": {
+        "actuators": 4,
+        "dt": 0.004
+      }
+    }
+  ]
+}

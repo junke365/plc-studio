@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<functionBlockDiagram xmlns="http://www.plcopen.org/xml/tc6_0201">
+  <pou name="main" pouType="program">
+    <interface>
+      <inputVars>
+        <variable name="temperature"><type><REAL/></type></variable>
+        <variable name="setpoint"><type><REAL/></type></variable>
+      </inputVars>
+      <outputVars>
+        <variable name="heaterOut"><type><REAL/></type></variable>
+        <variable name="alarm"><type><BOOL/></type></variable>
+      </outputVars>
+      <localVars>
+        <variable name="error"><type><REAL/></type></variable>
+        <variable name="pidOut"><type><REAL/></type></variable>
+      </localVars>
+    </interface>
+    <body>
+      <!-- PID 控制环路 -->
+      <block localId="1" name="SUB" typeName="SUB">
+        <inputs>
+          <variable name="IN1"><expression>temperature</expression></variable>
+          <variable name="IN2"><expression>setpoint</expression></variable>
+        </inputs>
+        <outputs>
+          <variable name="OUT"><connectionPoint refLocalId="error"/></variable>
+        </outputs>
+      </block>
+      <block localId="2" name="PID" typeName="PID">
+        <inputs>
+          <variable name="ACTUAL"><expression>temperature</expression></variable>
+          <variable name="SET_POINT"><expression>setpoint</expression></variable>
+          <variable name="K"><expression>1.5</expression></variable>
+          <variable name="TI"><expression>1.0</expression></variable>
+          <variable name="TD"><expression>0.1</expression></variable>
+        </inputs>
+        <outputs>
+          <variable name="OUT"><connectionPoint refLocalId="heaterOut"/></variable>
+        </outputs>
+      </block>
+      <!-- 超限报警 -->
+      <block localId="3" name="GT" typeName="GT">
+        <inputs>
+          <variable name="IN1"><expression>temperature</expression></variable>
+          <variable name="IN2"><expression>100.0</expression></variable>
+        </inputs>
+        <outputs>
+          <variable name="OUT"><connectionPoint refLocalId="alarm"/></variable>
+        </outputs>
+      </block>
+    </body>
+  </pou>
+</functionBlockDiagram>
