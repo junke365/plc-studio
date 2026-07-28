@@ -6,6 +6,7 @@ import { createRuntimeRoutes } from './modules/runtime/runtime.routes.js'
 import { createDebugGateway } from './modules/debug/debug.gateway.js'
 import { createToolsRoutes } from './modules/tools/tools.routes.js'
 import { createToolsGateway } from './modules/tools/tools.gateway.js'
+import { createHmiRoutes } from './modules/hmi/hmi.routes.js'
 
 const server = Fastify({
   logger: true
@@ -22,6 +23,7 @@ await server.register(websocket)
 await server.register(createProjectRoutes, { prefix: '/api/project' })
 await server.register(createRuntimeRoutes, { prefix: '/api/runtime' })
 await server.register(createToolsRoutes)
+await server.register(createHmiRoutes, { prefix: '/api/hmi' })
 
 // 注册 WebSocket
 createDebugGateway(server)

@@ -25,22 +25,33 @@
 import { useUiStore } from "../stores/ui";
 import { useEditorStore } from "../stores/editor";
 import { EditorLanguage } from "@smart-plc/shared";
+import { useRouter } from "vue-router";
 
 const uiStore = useUiStore();
 const editorStore = useEditorStore();
+const router = useRouter();
 
 const activityItems = [
   { id: "project", icon: "folder", label: "项目资源管理器" },
   { id: "search", icon: "search", label: "搜索" },
   { id: "debug", icon: "pest_control", label: "调试" },
   { id: "library", icon: "menu_book", label: "库" },
-  { id: "simulation", icon: "play_circle", label: "仿真" },
+  { id: "simulation", icon: "play_circle", label: "设备/场景仿真" },
+  { id: "surgical", icon: "biotech", label: "手术机器人仿真" },
   { id: "hmi", icon: "dashboard", label: "HMI 设计器" },
   { id: "kinematics", icon: "precision_manufacturing", label: "运动学配置" },
+  { id: "topology", icon: "account_tree", label: "设备拓扑" },
 ];
 
 function handleActivityClick(id: string) {
-  // HMI 和 Kinematics 直接打开编辑器标签
+  if (id === "simulation") {
+    router.push("/simulator");
+    return;
+  }
+  if (id === "surgical") {
+    router.push("/surgical-sim");
+    return;
+  }
   if (id === "hmi") {
     editorStore.openTab({
       id: "hmi-designer",
@@ -61,6 +72,10 @@ function handleActivityClick(id: string) {
       modified: false,
       content: "",
     });
+    return;
+  }
+  if (id === "topology") {
+    router.push("/topology");
     return;
   }
   if (uiStore.sidebarTab === id && uiStore.sidebarVisible) {

@@ -2,6 +2,13 @@
 
 import type { IecType } from './plc'
 
+// 项目分类
+export enum ProjectCategory {
+  Standard = 'standard',
+  NonStandard = 'nonstandard',
+  Hybrid = 'hybrid'
+}
+
 // POU 类型
 export enum PouType {
   Program = 'program',
@@ -123,6 +130,7 @@ export interface DataTypeElement {
 export interface PlcProject {
   name: string
   path: string
+  category: ProjectCategory
   pous: POU[]
   dataTypes: DataType[]
   configurations: Configuration[]

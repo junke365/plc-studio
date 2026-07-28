@@ -21,9 +21,14 @@ set(CMAKE_C_EXTENSIONS OFF)
 # 平台选择
 # ===========================================================================
 
-set(PLATFORM "linux-x86" CACHE STRING "目标平台")
+# 自动检测 Windows 平台
+if(WIN32 OR MINGW OR MSVC)
+  set(PLATFORM "win32" CACHE STRING "目标平台")
+else()
+  set(PLATFORM "linux-x86" CACHE STRING "目标平台")
+endif()
 set_property(CACHE PLATFORM PROPERTY STRINGS
-  linux-arm linux-x86 xenomai4 stm32 esp32)
+  linux-arm linux-x86 xenomai4 stm32 esp32 litex win32)
 
 message(STATUS "目标平台: ${PLATFORM}")
 
@@ -44,6 +49,9 @@ if(PLATFORM STREQUAL "linux-x86" OR PLATFORM STREQUAL "linux-arm")
   set(BUILD_HMI_LINUX_FB ON CACHE BOOL "" FORCE)
   set(BUILD_HMI_SDL2 ON CACHE BOOL "" FORCE)
 endif()
+if(PLATFORM STREQUAL "litex")
+  set(BUILD_HMI_LITEX ON CACHE BOOL "" FORCE)
+endif()
 
 # ===========================================================================
 # 通用头文件路径
@@ -53,6 +61,9 @@ include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/core/include)
 include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/hal/include)
 include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/protocol/include)
 include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/hmi/include)
+include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/motion/include)
+include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/simulation/include)
+include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/device/include)
 
 # ===========================================================================
 # 核心库
@@ -89,8 +100,43 @@ if(BUILD_HMI)
 endif()
 
 # ===========================================================================
+# 运动控制 (CNC)
+# ===========================================================================
+
+option(BUILD_MOTION "构建 CNC 运动控制模块" ON)
+option(BUILD_MOTION_EXAMPLE "构建 CNC 示例" OFF)
+
+if(BUILD_MOTION)
+  add_subdirectory(motion)
+endif()
+
+# ===========================================================================
+# 多物理仿真 (手术机器人)
+# ===========================================================================
+
+option(BUILD_SIMULATION "构建多物理仿真模块" ON)
+option(BUILD_SIMULATION_EXAMPLE "构建仿真示例" OFF)
+
+if(BUILD_SIMULATION)
+  add_subdirectory(simulation)
+endif()
+
+# ===========================================================================
+# 设备拓扑 (分布式 PLC)
+# ===========================================================================
+
+option(BUILD_DEVICE "构建分布式设备拓扑模块" ON)
+
+if(BUILD_DEVICE)
+  add_subdirectory(device)
+endif()
+
+# ===========================================================================
 # 平台相关配置
 # ===========================================================================
+# 每个平台创建 plc-runtime 可执行文件:
+# - 链接 plc-core 和 plc-platform
+# - 可选: plc-hal, plc-protocol, plc-hmi, plc-motion
 
 if(PLATFORM STREQUAL "linux-arm" OR PLATFORM STREQUAL "linux-x86")
 
@@ -110,7 +156,6 @@ if(PLATFORM STREQUAL "linux-arm" OR PLATFORM STREQUAL "linux-x86")
     PRIVATE rt
   )
 
-  # 链接可选模块
   if(BUILD_HAL)
     target_link_libraries(plc-runtime PRIVATE plc-hal)
   endif()
@@ -120,13 +165,9 @@ if(PLATFORM STREQUAL "linux-arm" OR PLATFORM STREQUAL "linux-x86")
   if(BUILD_HMI)
     target_link_libraries(plc-runtime PRIVATE plc-hmi)
   endif()
-
-  # ARM 交叉编译提示
-  if(PLATFORM STREQUAL "linux-arm")
-    message(STATUS "ARM Linux 编译:")
-    message(STATUS "  如果是交叉编译，请设置:")
-    message(STATUS "  -DCMAKE_TOOLCHAIN_FILE=arm-linux-gnueabihf.cmake")
-    message(STATUS "  或使用 -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc")
+  if(BUILD_MOTION)
+    target_link_libraries(plc-runtime PRIVATE plc-motion)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
   endif()
 
 elseif(PLATFORM STREQUAL "xenomai4")
@@ -155,43 +196,17 @@ elseif(PLATFORM STREQUAL "xenomai4")
   if(BUILD_HMI)
     target_link_libraries(plc-runtime PRIVATE plc-hmi)
   endif()
-
-  # Xenomai pkg-config
-  find_package(PkgConfig QUIET)
-  if(PKG_CONFIG_FOUND)
-    pkg_check_modules(XENOMAI QUIET libcobalt)
-    if(XENOMAI_FOUND)
-      target_include_directories(plc-runtime PRIVATE ${XENOMAI_INCLUDE_DIRS})
-      target_link_libraries(plc-runtime PRIVATE ${XENOMAI_LIBRARIES})
-    endif()
+  if(BUILD_MOTION)
+    target_link_libraries(plc-runtime PRIVATE plc-motion)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
   endif()
-
-  message(STATUS "Xenomai 4 编译:")
-  message(STATUS "  需要 Xenomai 4 SDK 和 Cobalt 内核模块")
-  message(STATUS "  链接库: -lrtdm -lcobalt -pthread")
 
 elseif(PLATFORM STREQUAL "stm32")
 
   # STM32 + FreeRTOS（交叉编译）
-  message(STATUS "STM32 交叉编译:")
-  message(STATUS "  此平台需要 ARM 工具链和 STM32 HAL")
-  message(STATUS "  推荐使用 STM32CubeMX 生成项目，然后集成此运行时")
-  message(STATUS "")
-  message(STATUS "  CMake 交叉编译示例:")
-  message(STATUS "    cmake -DCMAKE_TOOLCHAIN_FILE=toolchain-arm.cmake \\")
-  message(STATUS "          -DSTM32F4xx=ON ..")
-  message(STATUS "")
-  message(STATUS "  ARM 工具链标志:")
-  message(STATUS "    -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard")
-  message(STATUS("    -specs=nosys.specs -specs=nano.specs")
-  message(STATUS "")
-
-  # STM32 需要外部提供 platform 库和 HAL
-  # 此处仅提供编译框架
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/platform/stm32/CMakeLists.txt)
     add_subdirectory(platform/stm32)
   else()
-    # 占位库，等待实际平台实现
     add_library(plc-platform STATIC IMPORTED)
     message(WARNING "platform/stm32/ 尚无 CMakeLists.txt，跳过平台库")
   endif()
@@ -214,44 +229,40 @@ elseif(PLATFORM STREQUAL "stm32")
   if(BUILD_HMI)
     target_link_libraries(plc-runtime PRIVATE plc-hmi)
   endif()
+  if(BUILD_MOTION)
+    target_link_libraries(plc-runtime PRIVATE plc-motion)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
+  endif()
 
-  # STM32 特定编译选项
-  target_compile_options(plc-runtime PRIVATE
-    -mcpu=cortex-m4
-    -mthumb
-    -mfpu=fpv4-sp-d16
-    -mfloat-abi=hard
-    -ffunction-sections
-    -fdata-sections
+elseif(PLATFORM STREQUAL "litex")
+
+  # LiteX FPGA (RISC-V SoC)
+  add_subdirectory(platform/litex)
+
+  add_executable(plc-runtime
+    examples/litex/main.c
   )
 
-  target_link_options(plc-runtime PRIVATE
-    -mcpu=cortex-m4
-    -mthumb
-    -specs=nosys.specs
-    -specs=nano.specs
-    -Wl,--gc-sections
+  target_include_directories(plc-runtime PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/platform/litex
   )
+
+  target_link_libraries(plc-runtime
+    PRIVATE plc-core
+    PRIVATE plc-platform
+  )
+
+  if(BUILD_HMI)
+    target_link_libraries(plc-runtime PRIVATE plc-hmi)
+  endif()
+  if(BUILD_MOTION)
+    target_link_libraries(plc-runtime PRIVATE plc-motion)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
+  endif()
 
 elseif(PLATFORM STREQUAL "esp32")
 
   # ESP32 + ESP-IDF
-  message(STATUS "ESP32 编译:")
-  message(STATUS "  此平台需要 ESP-IDF 构建系统")
-  message(STATUS "  请在 ESP-IDF 环境中使用 idf.py build")
-  message(STATUS "")
-  message(STATUS "  集成步骤:")
-  message(STATUS "  1. 在 ESP-IDF 项目中添加本目录为组件")
-  message(STATUS "  2. 在 CMakeLists.txt 中 set(EXTRA_COMPONENT_DIRS ...)")
-  message(STATUS "  3. 使用 idf.py build 编译")
-
-  # ESP-IDF 环境检测
-  if(DEFINED ENV{IDF_PATH})
-    message(STATUS "  IDF_PATH: $ENV{IDF_PATH}")
-  else()
-    message(WARNING "未检测到 IDF_PATH，ESP-IDF 环境可能未配置")
-  endif()
-
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/platform/esp32/CMakeLists.txt)
     add_subdirectory(platform/esp32)
   else()
@@ -277,11 +288,70 @@ elseif(PLATFORM STREQUAL "esp32")
   if(BUILD_HMI)
     target_link_libraries(plc-runtime PRIVATE plc-hmi)
   endif()
+  if(BUILD_MOTION)
+    target_link_libraries(plc-runtime PRIVATE plc-motion)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
+  endif()
+
+elseif(PLATFORM STREQUAL "win32")
+
+  # Windows 实时平台
+  message(STATUS "Win32 编译:")
+
+  add_subdirectory(platform/win32)
+
+  add_executable(plc-runtime
+    examples/win32/main.c
+  )
+
+  target_link_libraries(plc-runtime
+    PRIVATE plc-core
+    PRIVATE plc-platform
+  )
+
+  # Win32 平台头文件 (plc_win_rt.h)
+  target_include_directories(plc-runtime PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/platform/win32
+  )
+
+  # Win32 特定链接
+  target_link_libraries(plc-runtime PRIVATE winmm ws2_32)
+
+  if(BUILD_HAL)
+    target_link_libraries(plc-runtime PRIVATE plc-hal)
+  endif()
+  if(BUILD_PROTOCOL)
+    target_link_libraries(plc-runtime PRIVATE plc-protocol)
+  endif()
+  if(BUILD_HMI)
+    target_link_libraries(plc-runtime PRIVATE plc-hmi)
+  endif()
+  if(BUILD_MOTION)
+    target_link_libraries(plc-runtime PRIVATE plc-motion)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
+  endif()
+
+  if(BUILD_SIMULATION)
+    target_link_libraries(plc-runtime PRIVATE plc-simulation)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_SIMULATION=1)
+  endif()
+
+  if(BUILD_DEVICE)
+    target_link_libraries(plc-runtime PRIVATE plc-device)
+    target_compile_definitions(plc-runtime PRIVATE BUILD_DEVICE=1)
+  endif()
+
+  # 控制台子系统 (仅 MSVC)
+  if(MSVC)
+    set_target_properties(plc-runtime PROPERTIES
+      LINK_FLAGS "/SUBSYSTEM:CONSOLE"
+    )
+  endif()
 
 else()
 
   message(FATAL_ERROR "未知平台: ${PLATFORM}")
-  message(STATUS "支持的平台: linux-arm, linux-x86, xenomai4, stm32, esp32")
+  message(STATUS "支持的平台: linux-arm, linux-x86, xenomai4, stm32, esp32, litex, win32")
 
 endif()
 
@@ -313,6 +383,16 @@ install(DIRECTORY hmi/include/
   FILES_MATCHING PATTERN "*.h"
 )
 
+install(DIRECTORY motion/include/
+  DESTINATION include/plc_motion
+  FILES_MATCHING PATTERN "*.h"
+)
+
+install(DIRECTORY simulation/include/
+  DESTINATION include/plc_simulation
+  FILES_MATCHING PATTERN "*.h"
+)
+
 # ===========================================================================
 # 构建信息
 # ===========================================================================
@@ -321,7 +401,8 @@ message(STATUS "")
 message(STATUS "========================================")
 message(STATUS "Smart PLC Runtime ${PROJECT_VERSION}")
 message(STATUS "平台: ${PLATFORM}")
-message(STATUS "模块: HAL=${BUILD_HAL}  协议=${BUILD_PROTOCOL}  HMI=${BUILD_HMI}")
-message(STATUS "HMI平台: Win32=${BUILD_HMI_WIN32}  Linux-FB=${BUILD_HMI_LINUX_FB}  LVGL=${BUILD_HMI_LVGL}  SDL2=${BUILD_HMI_SDL2}")
+message(STATUS "模块: HAL=${BUILD_HAL}  协议=${BUILD_PROTOCOL}  HMI=${BUILD_HMI}  运动控制=${BUILD_MOTION}  仿真=${BUILD_SIMULATION}  设备=${BUILD_DEVICE}")
+message(STATUS "HMI平台: Win32=${BUILD_HMI_WIN32}  Linux-FB=${BUILD_HMI_LINUX_FB}  LVGL=${BUILD_HMI_LVGL}  SDL2=${BUILD_HMI_SDL2}  LiteX=${BUILD_HMI_LITEX}")
+message(STATUS "运动控制: 示例=${BUILD_MOTION_EXAMPLE}")
 message(STATUS "C 标准: C${CMAKE_C_STANDARD}")
 message(STATUS "========================================")

@@ -18,6 +18,7 @@ typedef enum {
   PLC_HMI_DRV_SDL2,       /* SDL2 渲染 */
   PLC_HMI_DRV_LVGL,       /* LVGL 集成 */
   PLC_HMI_DRV_RAW,        /* 原始帧缓冲（仅内存） */
+  PLC_HMI_DRV_LITEX,      /* LiteX FPGA 帧缓冲 */
   PLC_HMI_DRV_COUNT
 } PlcHmiDriverType;
 

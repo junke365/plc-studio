@@ -22,6 +22,7 @@ option(BUILD_HMI_WIN32    "构建Win32 GDI后端"    OFF)
 option(BUILD_HMI_LINUX_FB "构建Linux帧缓冲后端"  OFF)
 option(BUILD_HMI_LVGL     "构建LVGL集成后端"      OFF)
 option(BUILD_HMI_SDL2     "构建SDL2后端"          OFF)
+option(BUILD_HMI_LITEX    "构建LiteX FPGA后端"    OFF)
 
 # ========== 静态库 plc-hmi ==========
 
@@ -55,6 +56,10 @@ endif()
 
 if(BUILD_HMI_SDL2)
   add_subdirectory(platforms/sdl2)
+endif()
+
+if(BUILD_HMI_LITEX)
+  add_subdirectory(platforms/litex)
 endif()
 
 # ========== 安装 ==========

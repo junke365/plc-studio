@@ -24,6 +24,8 @@
   #define PLATFORM_STM32
 #elif defined(ESP_PLATFORM) || defined(CONFIG_IDF_TARGET_ESP32)
   #define PLATFORM_ESP32
+#elif defined(__riscv) && defined(PLATFORM_LITEX)
+  #define PLATFORM_LITEX
 #else
   #define PLATFORM_GENERIC
 #endif
@@ -78,6 +80,8 @@ typedef struct {
 #ifndef PLC_STACK_SIZE
   #ifdef PLATFORM_STM32
     #define PLC_STACK_SIZE         4096
+  #elif defined(PLATFORM_LITEX)
+    #define PLC_STACK_SIZE         16384  /* LiteX/RISC-V 有更多 RAM */
   #elif defined(PLATFORM_ESP32)
     #define PLC_STACK_SIZE         8192
   #else

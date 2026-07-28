@@ -58,13 +58,19 @@
               class="recent-item"
               @click="openRecentProject(project)"
             >
-              <span class="material-symbols-outlined recent-icon"
-                >description</span
-              >
+              <span
+                class="material-symbols-outlined recent-icon"
+                :style="{ color: project.category ? categoryConfig[project.category]?.color : undefined }"
+              >{{ project.category ? categoryConfig[project.category]?.icon : "description" }}</span>
               <div class="recent-text">
                 <span class="recent-name">{{ project.name }}</span>
                 <span class="recent-path">{{ project.path }}</span>
               </div>
+              <span
+                v-if="project.category"
+                class="recent-badge"
+                :style="{ background: categoryConfig[project.category]?.color + '22', color: categoryConfig[project.category]?.color }"
+              >{{ categoryConfig[project.category]?.label }}</span>
             </div>
             <div v-if="recentProjects.length === 0" class="no-recent">
               暂无最近项目
@@ -116,6 +122,24 @@
               v-model="newProjectDesc"
               placeholder="可选的项目描述"
             />
+          </div>
+          <div class="form-row">
+            <label class="form-label">项目类型</label>
+            <div class="category-group">
+              <div
+                v-for="(cfg, key) in categoryConfig"
+                :key="key"
+                class="category-card"
+                :class="{ selected: newProjectCategory === key }"
+                @click="newProjectCategory = key"
+              >
+                <span class="category-icon" :style="{ color: cfg.color }">{{ cfg.icon }}</span>
+                <div class="category-text">
+                  <span class="category-name">{{ cfg.label }}</span>
+                  <span class="category-desc">{{ cfg.desc }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div v-if="createError" class="form-error">{{ createError }}</div>
         </div>
@@ -183,14 +207,36 @@
 import { ref, nextTick } from "vue";
 import { useProjectStore } from "../stores/project";
 import { useEditorStore } from "../stores/editor";
-import { PouType, EditorLanguage } from "@smart-plc/shared";
+import { PouType, EditorLanguage, ProjectCategory } from "@smart-plc/shared";
 import type { PlcProject, PouVarTable } from "@smart-plc/shared";
 
 const projectStore = useProjectStore();
 const editorStore = useEditorStore();
 
+// 项目分类配置
+const categoryConfig: Record<string, { label: string; icon: string; desc: string; color: string }> = {
+  [ProjectCategory.Standard]: {
+    label: "标准项目",
+    icon: "plumbing",
+    desc: "IEC 61131-3 标准 PLC 编程（ST/LD/FBD）",
+    color: "var(--primary)",
+  },
+  [ProjectCategory.NonStandard]: {
+    label: "非标准项目",
+    icon: "extension",
+    desc: "扩展集成（PX4 飞控 / OpenCV 视觉 / SOFA 仿真）",
+    color: "var(--secondary)",
+  },
+  [ProjectCategory.Hybrid]: {
+    label: "混合项目",
+    icon: "layers",
+    desc: "标准 PLC + 非标准扩展混合开发",
+    color: "var(--tertiary)",
+  },
+};
+
 // 最近项目列表（从 localStorage 恢复）
-const recentProjects = ref<Array<{ name: string; path: string }>>(
+const recentProjects = ref<Array<{ name: string; path: string; category?: string }>>(
   JSON.parse(localStorage.getItem("plc-recent-projects") || "[]"),
 );
 
@@ -200,6 +246,7 @@ const projectNameInput = ref<HTMLInputElement | null>(null);
 const newProjectName = ref("NewProject");
 const newProjectPath = ref("");
 const newProjectDesc = ref("");
+const newProjectCategory = ref<string>(ProjectCategory.Standard);
 const createError = ref("");
 
 // 打开项目对话框
@@ -236,45 +283,14 @@ function handleCreate() {
   }
 
   const path = newProjectPath.value.trim() || `C:/Projects/${name}`;
+  const category = newProjectCategory.value;
 
-  // 创建默认 PLC 项目
+  // 根据分类创建不同项目模板
   const project: PlcProject = {
     name,
     path,
-    pous: [
-      {
-        name: `${name}_PRG`,
-        pouType: PouType.Program,
-        variables: {
-          ...emptyVarTable,
-          localVars: [
-            {
-              name: "nCount",
-              type: "INT",
-              className: "Local" as never,
-              initialValue: 0,
-              comment: "计数器",
-            },
-            {
-              name: "bStart",
-              type: "BOOL",
-              className: "Local" as never,
-              initialValue: false,
-              comment: "启动信号",
-            },
-            {
-              name: "bStop",
-              type: "BOOL",
-              className: "Local" as never,
-              initialValue: false,
-              comment: "停止信号",
-            },
-          ],
-        },
-        body: JSON.stringify([]),
-        comment: `主程序 - ${newProjectDesc.value || name}`,
-      },
-    ],
+    category: category as ProjectCategory,
+    pous: createDefaultPous(name, category),
     dataTypes: [],
     configurations: [
       {
@@ -311,12 +327,74 @@ function handleCreate() {
   });
 
   // 保存到最近项目
-  addRecentProject(name, path);
+  addRecentProject(name, path, category);
 
   // 关闭对话框
   showCreateDialog.value = false;
 
-  console.log(`项目 "${name}" 已创建`);
+  console.log(`项目 "${name}" 已创建 (类型: ${category})`);
+}
+
+function createDefaultPous(name: string, category: string): PlcProject["pous"] {
+  const pous: PlcProject["pous"] = [];
+
+  if (category === "nonstandard") {
+    // 非标准项目：C 代码风格的 POU
+    pous.push({
+      name: `${name}_PRG`,
+      pouType: PouType.Program,
+      variables: { ...emptyVarTable },
+      body: `PROGRAM ${name}\nVAR\n  hCam: DINT;  (* 相机句柄 *)\n  bDetected: BOOL;\nEND_VAR\n\n// 非标准项目入口\n// 请在对应扩展模块中实现逻辑\nEND_PROGRAM`,
+      bodyLanguage: "ST",
+      comment: `非标准项目 - ${newProjectDesc.value || name}`,
+    });
+  } else if (category === "hybrid") {
+    // 混合项目：ST + 运动控制 + 视觉
+    pous.push({
+      name: `${name}_PRG`,
+      pouType: PouType.Program,
+      variables: { ...emptyVarTable },
+      body: `PROGRAM ${name}\nVAR\n  nCount: INT := 0;\n  bStart: BOOL := FALSE;\n  bStop: BOOL := FALSE;\n  fSpeed: REAL := 100.0;\nEND_VAR\n\n// 混合项目入口\nIF bStart AND NOT bStop THEN\n  nCount := nCount + 1;\nEND_IF\nEND_PROGRAM`,
+      bodyLanguage: "ST",
+      comment: `混合项目主程序 - ${newProjectDesc.value || name}`,
+    });
+  } else {
+    // 标准项目（默认）
+    pous.push({
+      name: `${name}_PRG`,
+      pouType: PouType.Program,
+      variables: {
+        ...emptyVarTable,
+        localVars: [
+          {
+            name: "nCount",
+            type: "INT",
+            className: "Local" as never,
+            initialValue: 0,
+            comment: "计数器",
+          },
+          {
+            name: "bStart",
+            type: "BOOL",
+            className: "Local" as never,
+            initialValue: false,
+            comment: "启动信号",
+          },
+          {
+            name: "bStop",
+            type: "BOOL",
+            className: "Local" as never,
+            initialValue: false,
+            comment: "停止信号",
+          },
+        ],
+      },
+      body: JSON.stringify([]),
+      comment: `主程序 - ${newProjectDesc.value || name}`,
+    });
+  }
+
+  return pous;
 }
 
 function handleOpen() {
@@ -342,12 +420,16 @@ function handleOpen() {
   openError.value = `未找到项目: ${path}`;
 }
 
-function openRecentProject(project: { name: string; path: string }) {
+function openRecentProject(project: { name: string; path: string; category?: string }) {
   const savedProjects = JSON.parse(
     localStorage.getItem("plc-projects") || "{}",
   );
   if (savedProjects[project.path]) {
     const plcProject = savedProjects[project.path] as PlcProject;
+    // 兼容旧版本：从最近项目记录补充 category
+    if (!plcProject.category && project.category) {
+      plcProject.category = project.category as ProjectCategory;
+    }
     projectStore.openProject(project.path, plcProject);
 
     // 自动打开主程序
@@ -366,9 +448,9 @@ function openRecentProject(project: { name: string; path: string }) {
   }
 }
 
-function addRecentProject(name: string, path: string) {
+function addRecentProject(name: string, path: string, category?: string) {
   const projects = recentProjects.value.filter((p) => p.path !== path);
-  projects.unshift({ name, path });
+  projects.unshift({ name, path, category });
   recentProjects.value = projects.slice(0, 10);
   localStorage.setItem(
     "plc-recent-projects",
@@ -549,6 +631,15 @@ function openKinematics() {
   padding: var(--padding-md);
 }
 
+.recent-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* 模态对话框 */
 .modal-overlay {
   position: fixed;
@@ -635,6 +726,58 @@ function openKinematics() {
   font-size: 11px;
   color: var(--error);
   padding: 4px 0;
+}
+
+.category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-dim);
+  border: 2px solid var(--outline-variant);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.category-card:hover {
+  border-color: var(--outline);
+  background: var(--surface-container);
+}
+
+.category-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-container);
+}
+
+.category-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.category-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.category-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+
+.category-desc {
+  font-size: 10px;
+  color: var(--on-surface-variant);
+  line-height: 1.3;
 }
 
 .modal-footer {

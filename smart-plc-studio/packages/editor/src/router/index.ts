@@ -20,6 +20,16 @@ const routes: RouteRecordRaw[] = [
     name: "Simulator",
     component: () => import("../views/Simulator.vue"),
   },
+  {
+    path: "/surgical-sim",
+    name: "SurgicalSim",
+    component: () => import("../views/SurgicalSim.vue"),
+  },
+  {
+    path: "/topology",
+    name: "Topology",
+    component: () => import("../views/TopologyEditor.vue"),
+  },
 ];
 
 const router = createRouter({

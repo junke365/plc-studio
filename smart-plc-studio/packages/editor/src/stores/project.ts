@@ -20,6 +20,7 @@ export const useProjectStore = defineStore("project", () => {
   const projectModified = ref<boolean>(false);
 
   // PLC 项目数据
+  const projectCategory = ref<string>("standard");
   const pous = ref<POU[]>([]);
   const dataTypes = ref<DataType[]>([]);
   const configurations = ref<Configuration[]>([]);
@@ -88,8 +89,9 @@ export const useProjectStore = defineStore("project", () => {
   }
 
   // 新建项目
-  function newProject(name: string, path?: string) {
+  function newProject(name: string, category: string = "standard", path?: string) {
     projectName.value = name;
+    projectCategory.value = category;
     projectPath.value = path || "";
     pous.value = [];
     dataTypes.value = [];
@@ -105,6 +107,7 @@ export const useProjectStore = defineStore("project", () => {
   function openProject(path: string, project: PlcProject) {
     projectPath.value = path;
     projectName.value = project.name;
+    projectCategory.value = project.category || "standard";
     pous.value = project.pous;
     dataTypes.value = project.dataTypes;
     configurations.value = project.configurations;
@@ -192,6 +195,7 @@ export const useProjectStore = defineStore("project", () => {
       const project: PlcProject = {
         name: projectName.value,
         path: projectPath.value,
+        category: projectCategory.value as any,
         pous: pous.value,
         dataTypes: dataTypes.value,
         configurations: configurations.value,
@@ -207,6 +211,7 @@ export const useProjectStore = defineStore("project", () => {
   return {
     projectPath,
     projectName,
+    projectCategory,
     projectModified,
     pous,
     dataTypes,

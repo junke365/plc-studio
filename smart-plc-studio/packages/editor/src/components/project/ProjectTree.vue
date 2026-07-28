@@ -22,7 +22,15 @@
             style="color: var(--primary)"
             >dns</span
           >
-          <span class="node-label">控制器 (CODESYS V3)</span>
+          <span class="node-label">{{ projectStore.projectName || "控制器" }}</span>
+          <span
+            v-if="projectCategoryInfo"
+            class="node-cat-badge"
+            :style="{ background: projectCategoryInfo.color + '22', color: projectCategoryInfo.color }"
+          >
+            <span class="material-symbols-outlined cat-icon">{{ projectCategoryInfo.icon }}</span>
+            {{ projectCategoryInfo.label }}
+          </span>
         </div>
         <div v-if="rootExpanded" class="tree-children">
           <div class="tree-node" @click="plcExpanded = !plcExpanded">
@@ -598,7 +606,7 @@
 import { ref, computed, reactive } from "vue";
 import { useProjectStore } from "../../stores/project";
 import { useEditorStore } from "../../stores/editor";
-import { EditorLanguage, PouType } from "@smart-plc/shared";
+import { EditorLanguage, PouType, ProjectCategory } from "@smart-plc/shared";
 import type { POU, DataType } from "@smart-plc/shared";
 
 const projectStore = useProjectStore();
@@ -610,6 +618,18 @@ const appExpanded = ref(true);
 const dataTypesExpanded = ref(false);
 const pouExpanded = ref(true);
 const kinExpanded = ref(false);
+
+// 项目分类配置
+const categoryConfig: Record<string, { label: string; icon: string; color: string }> = {
+  [ProjectCategory.Standard]: { label: "标准", icon: "plumbing", color: "var(--primary)" },
+  [ProjectCategory.NonStandard]: { label: "非标准", icon: "extension", color: "var(--secondary)" },
+  [ProjectCategory.Hybrid]: { label: "混合", icon: "layers", color: "var(--tertiary)" },
+};
+
+const projectCategoryInfo = computed(() => {
+  const cat = projectStore.projectCategory;
+  return categoryConfig[cat] || null;
+});
 
 // 新建 POU 对话框
 const showNewPouDialog = ref(false);
@@ -1047,6 +1067,24 @@ function openKinematics(item: KinItem) {
   background: var(--tertiary-container);
   border-radius: 3px;
   line-height: 14px;
+}
+
+.node-cat-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 3px;
+  line-height: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.node-cat-badge .cat-icon {
+  font-size: 12px;
 }
 
 .chevron {

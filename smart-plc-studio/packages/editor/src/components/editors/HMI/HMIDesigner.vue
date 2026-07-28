@@ -253,11 +253,17 @@
           >
         </div>
         <div class="toolbar-right">
-          <button class="save-btn">
+          <button class="save-btn" @click="saveProject">
             <span class="material-symbols-outlined" style="font-size: 16px"
               >save</span
             >
             保存
+          </button>
+          <button class="export-btn" @click="showExportDialog = true">
+            <span class="material-symbols-outlined" style="font-size: 16px"
+              >file_download</span
+            >
+            导出
           </button>
           <button
             class="icon-btn"
@@ -842,6 +848,71 @@
         </div>
       </template>
     </aside>
+
+    <!-- 导出对话框 -->
+    <Teleport to="body">
+      <div v-if="showExportDialog" class="export-overlay" @click.self="showExportDialog = false">
+        <div class="export-dialog">
+          <div class="export-header">
+            <h2 class="export-title">导出 HMI 画面</h2>
+            <button class="export-close" @click="showExportDialog = false">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="export-body">
+            <div class="export-options">
+              <label class="export-radio" :class="{ active: exportType === 'code' }">
+                <input type="radio" v-model="exportType" value="code" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">code</span>
+                </span>
+                <span class="radio-label">生成 C 源码</span>
+                <span class="radio-desc">仅生成 C 代码，不编译</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'exe' }">
+                <input type="radio" v-model="exportType" value="exe" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">manufacturing</span>
+                </span>
+                <span class="radio-label">Windows EXE</span>
+                <span class="radio-desc">编译为 Win32 可执行文件</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'hex' }">
+                <input type="radio" v-model="exportType" value="hex" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">memory</span>
+                </span>
+                <span class="radio-label">ESP32 HEX</span>
+                <span class="radio-desc">编译为 ESP32 固件（需 ESP-IDF）</span>
+              </label>
+            </div>
+            <div class="export-preview" v-if="exportType === 'code' || generatedCode">
+              <div class="preview-header">
+                <span class="preview-title">生成代码预览</span>
+                <button class="copy-btn" @click="copyCode" v-if="generatedCode">
+                  <span class="material-symbols-outlined" style="font-size: 14px">content_copy</span>
+                  {{ copied ? '已复制' : '复制' }}
+                </button>
+              </div>
+              <pre class="preview-code"><code>{{ generatedCode || '点击导出生成代码...' }}</code></pre>
+            </div>
+          </div>
+          <div class="export-footer">
+            <div class="export-status" v-if="exportStatus">
+              <span class="material-symbols-outlined" :class="exportStatus.type">{{ exportStatus.type === 'success' ? 'check_circle' : 'error' }}</span>
+              <span :class="exportStatus.type">{{ exportStatus.message }}</span>
+            </div>
+            <div class="export-actions">
+              <button class="cancel-btn" @click="showExportDialog = false">取消</button>
+              <button class="do-export-btn" @click="doExport" :disabled="exporting">
+                <span v-if="exporting" class="spinner" />
+                {{ exporting ? '处理中...' : '导出' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -4689,7 +4760,116 @@ function getRenderer(type: string): Component {
           );
       },
     }
-  );
+      );
+  }
+
+// ==================== 导出逻辑 ====================
+const API_BASE = 'http://127.0.0.1:3000/api'
+
+const showExportDialog = ref(false)
+const exportType = ref<'code' | 'exe' | 'hex'>('code')
+const generatedCode = ref('')
+const exporting = ref(false)
+const exportStatus = ref<{ type: string; message: string } | null>(null)
+const copied = ref(false)
+
+function saveProject() {
+  // TODO: 实际的保存逻辑 - 通过 API 保存到后端
+  alert('项目已保存（开发中）')
+}
+
+async function doExport() {
+  exporting.value = true
+  exportStatus.value = null
+  generatedCode.value = ''
+
+  const project = {
+    forms: forms.value.map(f => ({
+      id: f.id,
+      name: f.name,
+      width: f.width,
+      height: f.height,
+      bgColor: f.bgColor,
+      elements: f.elements,
+    })),
+  }
+
+  try {
+    if (exportType.value === 'code') {
+      const res = await fetch(`${API_BASE}/hmi/export/code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = { type: 'success', message: '代码生成成功' }
+      } else {
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
+      }
+    } else if (exportType.value === 'exe') {
+      const res = await fetch(`${API_BASE}/hmi/export/exe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `EXE 编译成功: ${data.exePath}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = {
+          type: 'error',
+          message: data.details || data.error || '编译失败',
+        }
+      }
+    } else {
+      const res = await fetch(`${API_BASE}/hmi/export/hex`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = { type: 'success', message: 'HEX 编译成功' }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '编译失败' }
+      }
+    }
+  } catch (err: any) {
+    exportStatus.value = {
+      type: 'error',
+      message: `请求失败: ${err.message}`,
+    }
+  } finally {
+    exporting.value = false
+  }
+}
+
+async function copyCode() {
+  if (!generatedCode.value) return
+  try {
+    await navigator.clipboard.writeText(generatedCode.value)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // fallback
+    const ta = document.createElement('textarea')
+    ta.value = generatedCode.value
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  }
 }
 </script>
 
@@ -5526,6 +5706,228 @@ select.prop-input {
 .hint-sub {
   font-size: 10px !important;
   opacity: 0.6;
+}
+
+/* ==================== 导出对话框 ==================== */
+.export-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.export-dialog {
+  width: 720px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: var(--surface-container-high, #1e293b);
+  border: 1px solid var(--outline-variant, #334155);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.export-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--outline-variant, #334155);
+}
+.export-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-surface, #e2e8f0);
+}
+.export-close {
+  background: none;
+  border: none;
+  color: var(--on-surface-variant, #94a3b8);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+}
+.export-close:hover {
+  background: var(--surface-variant, #334155);
+}
+.export-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.export-options {
+  display: flex;
+  gap: 8px;
+}
+.export-radio {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--outline-variant, #334155);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: center;
+}
+.export-radio:hover {
+  border-color: var(--primary, #4ade80);
+}
+.export-radio.active {
+  border-color: var(--primary, #4ade80);
+  background: rgba(74, 222, 128, 0.08);
+}
+.export-radio input {
+  display: none;
+}
+.radio-icon .material-symbols-outlined {
+  font-size: 28px;
+  color: var(--primary, #4ade80);
+}
+.radio-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface, #e2e8f0);
+}
+.radio-desc {
+  font-size: 10px;
+  color: var(--outline, #64748b);
+}
+.export-preview {
+  border: 1px solid var(--outline-variant, #334155);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--surface-variant, #334155);
+}
+.preview-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on-surface-variant, #94a3b8);
+}
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: none;
+  border: 1px solid var(--outline-variant, #334155);
+  border-radius: 4px;
+  color: var(--on-surface-variant, #94a3b8);
+  font-size: 10px;
+  cursor: pointer;
+}
+.copy-btn:hover {
+  background: var(--surface-container, #1e293b);
+}
+.preview-code {
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px;
+  margin: 0;
+  background: #0f172a;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+.export-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid var(--outline-variant, #334155);
+}
+.export-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.export-status .success {
+  color: var(--primary, #4ade80);
+}
+.export-status .error {
+  color: #f87171;
+}
+.export-status .material-symbols-outlined {
+  font-size: 16px;
+}
+.export-actions {
+  display: flex;
+  gap: 8px;
+}
+.cancel-btn {
+  padding: 6px 14px;
+  background: none;
+  border: 1px solid var(--outline-variant, #334155);
+  border-radius: 4px;
+  color: var(--on-surface-variant, #94a3b8);
+  font-size: 11px;
+  cursor: pointer;
+}
+.cancel-btn:hover {
+  background: var(--surface-variant, #334155);
+}
+.do-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--primary, #4ade80);
+  border: none;
+  border-radius: 4px;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.do-export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid transparent;
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: none;
+  border: 1px solid var(--primary, #4ade80);
+  border-radius: var(--radius);
+  color: var(--primary, #4ade80);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.export-btn:hover {
+  background: rgba(74, 222, 128, 0.1);
 }
 
 /* 滚动条 */
