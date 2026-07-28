@@ -13,15 +13,22 @@ export enum EditorLanguage {
   Text = "Text", // 纯文本
 }
 
+// 编辑器标签类型
+export enum EditorTabType {
+  File = "file", // 文件标签
+  Tool = "tool", // 工具标签
+}
+
 // 编辑器标签
 export interface EditorTab {
   id: string;
   title: string;
-  language: EditorLanguage;
+  language?: EditorLanguage;
   path: string;
   modified: boolean;
   content: string;
   pouName?: string;
+  type?: EditorTabType;
 }
 
 // 图形元素类型

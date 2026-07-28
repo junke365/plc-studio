@@ -45,23 +45,51 @@ PLC Studio 是一个现代化的工业自动化开发平台，旨在为工程师
 - 虚拟仿真环境
 - 3D 运动可视化
 
+### 串口调试工具
+
+- 串口参数配置（波特率、数据位、停止位、校验位）
+- ASCII/HEX 双模式收发
+- 串口日志记录与导出
+- 波形可视化分析
+- 支持 DTR/RTS 信号控制
+
+### 网络调试工具
+
+- **TCP 客户端/服务端** - 连接管理、数据收发、多客户端支持
+- **UDP 客户端/服务端** - 数据报收发、绑定管理
+- **WebSocket 调试** - 连接测试、消息收发
+- **HTTP 测试器** - REST API 调试工具
+- **Modbus TCP/RTU** - 工业协议调试
+
 ![调试面板](gui-reference/gui/plc_studio_9/screen.png)
 
 ## 项目架构
 
 ```
 smart-plc-studio/
+├── electron/           # Electron 桌面应用
+│   ├── serial/         # 串口管理 (IPC)
+│   ├── network/        # TCP/UDP/WebSocket 管理
+│   └── main.ts         # Electron 主进程
 ├── packages/
-│   ├── editor/          # Vue 3 前端编辑器
-│   ├── server/          # Fastify 后端服务
-│   ├── shared/          # 共享类型定义
-│   ├── plc-core/        # PLC 核心逻辑
-│   └── runtime/         # C 运行时 (支持多平台)
-│       ├── core/        # 核心运行时
-│       ├── hal/         # 硬件抽象层
-│       ├── hmi/         # HMI 渲染引擎
-│       ├── protocol/    # 通信协议 (Modbus, EtherCAT, CANopen)
-│       └── platform/    # 平台适配 (ESP32, STM32, Linux, Xenomai)
+│   ├── editor/         # Vue 3 前端编辑器
+│   │   └── src/
+│   │       ├── components/tools/  # 调试工具组件
+│   │       │   ├── uart/          # 串口调试
+│   │       │   ├── network/       # TCP/UDP/WS 调试
+│   │       │   ├── modbus/        # Modbus 调试
+│   │       │   └── motor/         # 电机调试
+│   │       └── serial/            # WebSocket 通信客户端
+│   ├── server/         # Fastify 后端服务
+│   │   └── src/modules/tools/     # 调试工具后端模块
+│   ├── shared/         # 共享类型定义
+│   ├── plc-core/       # PLC 核心逻辑
+│   └── runtime/        # C 运行时 (支持多平台)
+│       ├── core/       # 核心运行时
+│       ├── hal/        # 硬件抽象层
+│       ├── hmi/        # HMI 渲染引擎
+│       ├── protocol/   # 通信协议 (Modbus, EtherCAT, CANopen)
+│       └── platform/   # 平台适配 (ESP32, STM32, Linux, Xenomai)
 ```
 
 ## 技术栈
@@ -71,9 +99,11 @@ smart-plc-studio/
 | 前端 | Vue 3, TypeScript, Vite, Pinia, Naive UI |
 | 图形 | Fabric.js (2D), Three.js (3D) |
 | 代码编辑 | Monaco Editor |
-| 后端 | Fastify, Socket.IO, SQLite |
+| 后端 | Fastify, @fastify/websocket, Socket.IO, SQLite |
+| 桌面 | Electron, IPC |
+| 串口 | serialport |
 | 运行时 | C11, CMake |
-| 通信 | Modbus, EtherCAT, CANopen, TCP/UDP |
+| 通信 | Modbus, EtherCAT, CANopen, TCP/UDP, WebSocket |
 
 ## 快速开始
 
@@ -149,6 +179,10 @@ cmake .. -DCMAKE_TOOLCHAIN_FILE=../platform/esp32/toolchain.cmake
 - [x] 项目架构搭建
 - [x] 编辑器基础框架
 - [x] ST 语言语法高亮
+- [x] 串口调试工具
+- [x] TCP/UDP/WebSocket 网络调试工具
+- [x] Modbus TCP/RTU 调试工具
+- [x] 电机调试工具（伺服、步进、变频器）
 - [ ] 梯形图编辑器
 - [ ] FBD 编辑器
 - [ ] HMI 设计器

@@ -1,5 +1,11 @@
 node_modules/
 dist/
+release/
 .env
 *.local
 .DS_Store
+nul
+/nul
+smart-plc-studio/nul
+smart-plc-studio/packages/server/nul
+/package-lock.json

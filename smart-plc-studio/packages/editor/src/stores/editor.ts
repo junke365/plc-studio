@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import type { EditorTab } from "@smart-plc/shared";
+import { EditorTabType, type EditorTab } from "@smart-plc/shared";
 
 interface HistoryEntry {
   tabId: string;
@@ -177,6 +177,26 @@ export const useEditorStore = defineStore("editor", () => {
     return false;
   }
 
+  // 打开工具标签页
+  function openToolTab(toolId: string, toolName: string) {
+    const existing = tabs.value.find((t) => t.id === toolId);
+    if (existing) {
+      activeTabId.value = existing.id;
+      return;
+    }
+
+    const toolTab: EditorTab = {
+      id: toolId,
+      title: toolName,
+      path: `tool://${toolId}`,
+      content: "",
+      type: EditorTabType.Tool,
+      modified: false,
+    };
+    tabs.value.push(toolTab);
+    activeTabId.value = toolId;
+  }
+
   return {
     tabs,
     activeTabId,
@@ -205,5 +225,6 @@ export const useEditorStore = defineStore("editor", () => {
     closeAllTabs,
     closeOtherTabs,
     selectAll,
+    openToolTab,
   };
 });

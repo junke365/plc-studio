@@ -9,22 +9,26 @@
     "start": "node dist/main.js"
   },
   "dependencies": {
-    "@smart-plc/shared": "*",
-    "@smart-plc/plc-core": "*",
-    "fastify": "^4.25.0",
     "@fastify/cors": "^8.5.0",
-    "@fastify/websocket": "^11.0.0",
+    "@fastify/websocket": "^9.0.0",
+    "@serialport/parser-readline": "^12.0.0",
+    "@smart-plc/plc-core": "*",
+    "@smart-plc/shared": "*",
     "better-sqlite3": "^9.4.3",
-    "socket.io": "^4.7.4",
     "chokidar": "^3.5.3",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.25.0",
+    "serialport": "^12.0.0",
+    "socket.io": "^4.7.4",
     "winston": "^3.11.0",
-    "dotenv": "^16.3.1"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/node": "^20.11.5",
     "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.11.5",
+    "@types/ws": "^8.5.10",
+    "nodemon": "^3.0.3",
     "tsx": "^4.7.0",
-    "nodemon": "^3.0.3"
+    "typescript": "^5.3.3"
   }
 }

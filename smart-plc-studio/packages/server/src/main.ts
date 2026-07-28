@@ -4,6 +4,8 @@ import websocket from '@fastify/websocket'
 import { createProjectRoutes } from './modules/project/project.routes.js'
 import { createRuntimeRoutes } from './modules/runtime/runtime.routes.js'
 import { createDebugGateway } from './modules/debug/debug.gateway.js'
+import { createToolsRoutes } from './modules/tools/tools.routes.js'
+import { createToolsGateway } from './modules/tools/tools.gateway.js'
 
 const server = Fastify({
   logger: true
@@ -19,9 +21,11 @@ await server.register(websocket)
 // 注册路由
 await server.register(createProjectRoutes, { prefix: '/api/project' })
 await server.register(createRuntimeRoutes, { prefix: '/api/runtime' })
+await server.register(createToolsRoutes)
 
 // 注册 WebSocket
 createDebugGateway(server)
+createToolsGateway(server)
 
 // 健康检查
 server.get('/api/health', async () => {

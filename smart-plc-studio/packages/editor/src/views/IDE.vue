@@ -49,6 +49,11 @@
                 v-show="tab.id === editorStore.activeTabId"
                 :tab="tab"
               />
+              <ToolPanel
+                v-else-if="tab.type === EditorTabType.Tool"
+                v-show="tab.id === editorStore.activeTabId"
+                :tool-id="tab.id"
+              />
             </template>
           </template>
         </div>
@@ -107,7 +112,7 @@
 <script setup lang="ts">
 import { useEditorStore } from "../stores/editor";
 import { useUiStore } from "../stores/ui";
-import { EditorLanguage } from "@smart-plc/shared";
+import { EditorLanguage, EditorTabType } from "@smart-plc/shared";
 import TopNavBar from "../layouts/TopNavBar.vue";
 import ActivityBar from "../layouts/ActivityBar.vue";
 import ProjectTree from "../components/project/ProjectTree.vue";
@@ -119,6 +124,7 @@ import STEditor from "../components/editors/ST/STEditor.vue";
 import FBDEditor from "../components/editors/FBD/FBDEditor.vue";
 import HMIDesigner from "../components/editors/HMI/HMIDesigner.vue";
 import KinematicsEditor from "../components/editors/Kinematics/KinematicsEditor.vue";
+import ToolPanel from "./ToolPanel.vue";
 import Welcome from "./Welcome.vue";
 import OutputPanel from "../components/debug/OutputPanel.vue";
 import DebugOutput from "../components/debug/DebugOutput.vue";

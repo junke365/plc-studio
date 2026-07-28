@@ -1,0 +1,37 @@
+appId: com.smartplc.studio
+productName: PLC Studio
+directories:
+  output: release
+  buildResources: electron/build
+files:
+  - electron/dist/**/*
+  - packages/editor/dist/**/*
+  - "!node_modules/**/{test,__tests__,tests,powered-test,example,examples}"
+asar: true
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: electron/build/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: electron/build/icon.icns
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  icon: electron/build
+extraResources:
+  - from: packages/runtime
+    to: runtime
+    filter:
+      - "**/*"

@@ -223,6 +223,66 @@ const submenuItems = computed<Record<string, MenuItem[]>>(() => ({
     { label: "导入XML文件...", action: () => logAction("导入XML") },
     { label: "导入硬件配置...", action: () => logAction("导入硬件配置") },
   ],
+
+  // UART 调试子菜单
+  uartDebug: [
+    { label: "串口终端", action: () => openToolPanel("uart-terminal") },
+    { divider: true, label: "" },
+    { label: "UART 波形查看器", action: () => openToolPanel("uart-waveform") },
+    { label: "UART 数据记录", action: () => openToolPanel("uart-logger") },
+    { divider: true, label: "" },
+    { label: "UART 配置", action: () => openToolPanel("uart-config") },
+  ],
+
+  // Modbus 调试子菜单
+  modbusDebug: [
+    { label: "Modbus RTU 调试器", action: () => openToolPanel("modbus-rtu") },
+    { label: "Modbus TCP 调试器", action: () => openToolPanel("modbus-tcp") },
+    { divider: true, label: "" },
+    { label: "Modbus 数据监控", action: () => openToolPanel("modbus-monitor") },
+    { label: "Modbus 寄存器图表", action: () => openToolPanel("modbus-chart") },
+    { divider: true, label: "" },
+    { label: "Modbus 协议分析", action: () => openToolPanel("modbus-analyzer") },
+  ],
+
+  // CAN / CANopen 调试子菜单
+  canDebug: [
+    { label: "CAN 总线监控", action: () => openToolPanel("can-monitor") },
+    { label: "CAN 帧发送器", action: () => openToolPanel("can-sender") },
+    { divider: true, label: "" },
+    { label: "CANopen 网络管理", action: () => openToolPanel("canopen-nmt") },
+    { label: "CANopen SDO 调试", action: () => openToolPanel("canopen-sdo") },
+    { label: "CANopen PDO 监控", action: () => openToolPanel("canopen-pdo") },
+    { divider: true, label: "" },
+    { label: "CAN 报文图表", action: () => openToolPanel("can-chart") },
+  ],
+
+  // 网络调试子菜单
+  networkDebug: [
+    { label: "TCP 服务端", action: () => openToolPanel("tcp-server") },
+    { label: "TCP 客户端", action: () => openToolPanel("tcp-client") },
+    { divider: true, label: "" },
+    { label: "UDP 服务端", action: () => openToolPanel("udp-server") },
+    { label: "UDP 客户端", action: () => openToolPanel("udp-client") },
+    { divider: true, label: "" },
+    { label: "WebSocket 调试", action: () => openToolPanel("websocket-debug") },
+    { label: "HTTP 请求测试", action: () => openToolPanel("http-tester") },
+    { divider: true, label: "" },
+    { label: "网络数据图表", action: () => openToolPanel("network-chart") },
+  ],
+
+  // 电机调试子菜单
+  motorDebug: [
+    { label: "PID 调谐器", action: () => openToolPanel("pid-tuner") },
+    { label: "电机响应曲线", action: () => openToolPanel("motor-response") },
+    { divider: true, label: "" },
+    { label: "步进电机调试", action: () => openToolPanel("stepper-debug") },
+    { label: "伺服电机调试", action: () => openToolPanel("servo-debug") },
+    { label: "变频器调试", action: () => openToolPanel("vfd-debug") },
+    { divider: true, label: "" },
+    { label: "运动轨迹图表", action: () => openToolPanel("motion-chart") },
+    { label: "扭矩/速度监控", action: () => openToolPanel("torque-monitor") },
+  ],
 }));
 
 // ==================== 编辑菜单 ====================
@@ -351,6 +411,32 @@ const simulatorMenuEntries: MenuItem[] = [
 
 // ==================== 工具菜单 ====================
 const toolsMenuEntries: MenuItem[] = [
+  {
+    label: "UART 调试",
+    arrow: true,
+    submenu: "uartDebug",
+  },
+  {
+    label: "Modbus 调试",
+    arrow: true,
+    submenu: "modbusDebug",
+  },
+  {
+    label: "CAN / CANopen 调试",
+    arrow: true,
+    submenu: "canDebug",
+  },
+  {
+    label: "网络调试",
+    arrow: true,
+    submenu: "networkDebug",
+  },
+  {
+    label: "电机调试",
+    arrow: true,
+    submenu: "motorDebug",
+  },
+  { divider: true, label: "" },
   {
     label: "代码格式化",
     shortcut: "Ctrl+Shift+F",
@@ -571,6 +657,45 @@ function handleCloseActiveTab() {
 
 function handleCloseAllTabs() {
   editorStore.closeAllTabs();
+}
+
+// 工具面板操作
+function openToolPanel(toolId: string) {
+  const toolNames: Record<string, string> = {
+    "uart-terminal": "UART 终端",
+    "uart-waveform": "UART 波形查看器",
+    "uart-logger": "UART 数据记录",
+    "uart-config": "UART 配置",
+    "modbus-rtu": "Modbus RTU 调试器",
+    "modbus-tcp": "Modbus TCP 调试器",
+    "modbus-monitor": "Modbus 数据监控",
+    "modbus-chart": "Modbus 寄存器图表",
+    "modbus-analyzer": "Modbus 协议分析",
+    "can-monitor": "CAN 总线监控",
+    "can-sender": "CAN 帧发送器",
+    "canopen-nmt": "CANopen 网络管理",
+    "canopen-sdo": "CANopen SDO 调试",
+    "canopen-pdo": "CANopen PDO 监控",
+    "can-chart": "CAN 报文图表",
+    "tcp-server": "TCP 服务端",
+    "tcp-client": "TCP 客户端",
+    "udp-server": "UDP 服务端",
+    "udp-client": "UDP 客户端",
+    "websocket-debug": "WebSocket 调试",
+    "http-tester": "HTTP 请求测试",
+    "network-chart": "网络数据图表",
+    "pid-tuner": "PID 调谐器",
+    "motor-response": "电机响应曲线",
+    "stepper-debug": "步进电机调试",
+    "servo-debug": "伺服电机调试",
+    "vfd-debug": "变频器调试",
+    "motion-chart": "运动轨迹图表",
+    "torque-monitor": "扭矩/速度监控",
+  };
+  const toolName = toolNames[toolId] || toolId;
+  debugStore.addLog("info", `打开工具: ${toolName}`);
+  editorStore.openToolTab(toolId, toolName);
+  closeMenu();
 }
 
 // ==================== 菜单交互 ====================
