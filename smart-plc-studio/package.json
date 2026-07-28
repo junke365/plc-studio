@@ -1,0 +1,58 @@
+{
+  "name": "smart-plc-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "智能 PLC IDE - IEC 61131-3 集成开发环境",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:editor\"",
+    "dev:editor": "npm run dev --workspace=@smart-plc/editor",
+    "dev:server": "npm run dev --workspace=@smart-plc/server",
+    "build": "npm run build --workspaces",
+    "build:shared": "npm run build --workspace=@smart-plc/shared",
+    "build:plc-core": "npm run build --workspace=@smart-plc/plc-core",
+    "build:editor": "npm run build --workspace=@smart-plc/editor",
+    "build:server": "npm run build --workspace=@smart-plc/server",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
+    "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "format": "prettier --write src/",
+    "clean": "rimraf node_modules packages/*/node_modules packages/*/dist"
+  },
+  "dependencies": {
+    "fastify": "^4.25.0",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/websocket": "^11.0.0",
+    "better-sqlite3": "^9.4.3",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4",
+    "glob": "^10.3.10",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vue": "^3.4.15",
+    "vite": "^5.0.11",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "pinia": "^2.1.7",
+    "vue-router": "^4.2.5",
+    "naive-ui": "^2.37.3",
+    "@vueuse/core": "^10.7.2",
+    "fabric": "^5.3.0",
+    "@monaco-editor/loader": "^1.4.0",
+    "three": "^0.160.0",
+    "concurrently": "^8.2.2",
+    "@types/node": "^20.11.5",
+    "@types/better-sqlite3": "^7.6.8",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "prettier": "^3.2.4",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "nodemon": "^3.0.3"
+  }
+}

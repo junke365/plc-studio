@@ -1,0 +1,463 @@
+<!DOCTYPE html><html class="dark" lang="zh-CN"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "tertiary-fixed": "#ffd6fd",
+                "outline-variant": "#424754",
+                "surface-container": "#171f33",
+                "surface-tint": "#adc6ff",
+                "surface-bright": "#31394d",
+                "secondary-fixed-dim": "#4edea3",
+                "tertiary-container": "#e14ef6",
+                "surface-variant": "#2d3449",
+                "surface-dim": "#0b1326",
+                "primary": "#adc6ff",
+                "on-primary-fixed-variant": "#004395",
+                "secondary-container": "#00a572",
+                "on-surface-variant": "#c2c6d6",
+                "on-secondary-fixed": "#002113",
+                "on-error": "#690005",
+                "primary-fixed": "#d8e2ff",
+                "tertiary": "#fbabff",
+                "surface-container-lowest": "#060e20",
+                "inverse-on-surface": "#283044",
+                "secondary-fixed": "#6ffbbe",
+                "secondary": "#4edea3",
+                "on-tertiary-fixed": "#36003e",
+                "on-secondary-fixed-variant": "#005236",
+                "on-primary": "#002e6a",
+                "on-surface": "#dae2fd",
+                "surface-container-highest": "#2d3449",
+                "on-background": "#dae2fd",
+                "tertiary-fixed-dim": "#fbabff",
+                "on-tertiary-container": "#4d0059",
+                "primary-container": "#4d8eff",
+                "on-secondary-container": "#00311f",
+                "on-error-container": "#ffdad6",
+                "background": "#0b1326",
+                "inverse-surface": "#dae2fd",
+                "inverse-primary": "#005ac2",
+                "surface-container-high": "#222a3d",
+                "error-container": "#93000a",
+                "primary-fixed-dim": "#adc6ff",
+                "on-secondary": "#003824",
+                "on-primary-container": "#00285d",
+                "outline": "#8c909f",
+                "error": "#ffb4ab",
+                "surface": "#0b1326",
+                "on-tertiary-fixed-variant": "#7c008e",
+                "surface-container-low": "#131b2e",
+                "on-tertiary": "#580065",
+                "on-primary-fixed": "#001a42"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "unit": "4px",
+                "toolbar-height": "40px",
+                "sidebar-width": "260px",
+                "gutter": "1px",
+                "padding-xs": "4px",
+                "inspector-width": "300px",
+                "padding-sm": "8px",
+                "padding-md": "12px"
+            },
+            "fontFamily": {
+                "headline-sm": ["Inter"],
+                "code-sm": ["JetBrains Mono"],
+                "code-md": ["JetBrains Mono"],
+                "body-sm": ["Inter"],
+                "body-md": ["Inter"],
+                "label-caps": ["Inter"]
+            },
+            "fontSize": {
+                "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    }catch(_e){}</script></head><body class="bg-background text-on-surface flex flex-col h-screen overflow-hidden font-body-md">
+    <!-- 顶部导航栏 -->
+    <header class="flex justify-between items-center h-toolbar-height px-md w-full bg-surface-container-highest border-b border-outline-variant z-50">
+        <div class="flex items-center gap-md">
+            <span class="font-headline-sm text-headline-sm font-black text-secondary">PLC Studio</span>
+            <nav class="hidden md:flex gap-padding-md"><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">文件</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">编辑</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">视图</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">工程</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">编译</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">在线</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">调试</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">工具</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">窗口</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors px-2" href="#">帮助</a></nav>
+        </div>
+        <div class="flex items-center gap-padding-md">
+            <button class="text-primary hover:bg-surface-variant p-1 rounded transition-colors">
+                <span class="material-symbols-outlined" data-original-icon="play_arrow">circle</span>
+            </button>
+            <button class="text-on-surface-variant hover:bg-surface-variant p-1 rounded transition-colors">
+                <span class="material-symbols-outlined" data-original-icon="account_tree">circle</span>
+            </button>
+            <button class="text-on-surface-variant hover:bg-surface-variant p-1 rounded transition-colors">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 左侧项目管理器 -->
+        <aside class="flex flex-col h-full w-sidebar-width bg-surface-container border-r border-outline-variant">
+            <div class="p-padding-md border-b border-outline-variant flex items-center gap-sm">
+                <div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary" data-original-icon="precision_manufacturing">circle</span>
+                </div>
+                <div>
+                    <h2 class="font-label-caps text-label-caps text-on-surface">项目资源管理器</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Main_Controller.plc</p>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto">
+                <div class="flex flex-col p-1">
+                    <div class="flex items-center gap-sm px-padding-md py-padding-sm bg-primary-container text-on-primary-container border-l-2 border-primary cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]" data-original-icon="precision_manufacturing">circle</span>
+                        <span class="font-label-caps text-label-caps uppercase">设备</span>
+                    </div>
+                    <div class="flex items-center gap-sm px-padding-md py-padding-sm text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all">
+                        <span class="material-symbols-outlined text-[18px]" data-original-icon="folder_open">circle</span>
+                        <span class="font-label-caps text-label-caps uppercase">文件</span>
+                    </div>
+                    <div class="flex items-center gap-sm px-padding-md py-padding-sm text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all">
+                        <span class="material-symbols-outlined text-[18px]">search</span>
+                        <span class="font-label-caps text-label-caps uppercase">搜索</span>
+                    </div>
+                    <div class="flex items-center gap-sm px-padding-md py-padding-sm text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all">
+                        <span class="material-symbols-outlined text-[18px]" data-original-icon="pest_control">circle</span>
+                        <span class="font-label-caps text-label-caps uppercase">调试</span>
+                    </div>
+                </div>
+                <div class="mt-padding-md border-t border-outline-variant">
+                    <div class="p-padding-md">
+                        <h3 class="font-label-caps text-label-caps text-outline mb-padding-sm">运动学树</h3>
+                        <ul class="font-body-sm text-body-sm space-y-1">
+                            <li class="flex items-center gap-2 text-on-surface hover:bg-surface-variant p-1 rounded cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px]" data-original-icon="chevron_right">circle</span>
+                                <span class="">龙门轴组</span>
+                            </li>
+                            <li class="flex items-center gap-2 text-secondary hover:bg-surface-variant p-1 rounded cursor-pointer font-bold">
+                                <span class="material-symbols-outlined text-[16px]" data-original-icon="expand_more">circle</span>
+                                <span class="">六轴机器人主站</span>
+                            </li>
+                            <li class="ml-6 border-l border-outline-variant pl-2 py-1 text-on-surface-variant">关节_01 (X)</li>
+                            <li class="ml-6 border-l border-outline-variant pl-2 py-1 text-on-surface-variant">关节_02 (Y)</li>
+                            <li class="ml-6 border-l border-outline-variant pl-2 py-1 text-on-surface-variant">手腕工具</li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div class="p-padding-md border-t border-outline-variant">
+                <button class="w-full bg-primary text-on-primary font-bold py-2 px-4 rounded text-label-caps uppercase transition-opacity hover:opacity-90">
+                    全部编译
+                </button>
+            </div>
+        </aside>
+
+        <!-- 主工作区 -->
+        <main class="flex-1 flex flex-col bg-surface-dim overflow-hidden">
+            <!-- 标签栏 -->
+            <div class="flex h-toolbar-height bg-surface-container-low border-b border-outline-variant items-center px-padding-sm overflow-x-auto">
+                <div class="flex h-full items-center px-4 bg-surface-dim border-t-2 border-primary text-primary font-bold text-body-sm cursor-pointer whitespace-nowrap">
+                    运动学配置
+                </div>
+                <div class="flex h-full items-center px-4 text-on-surface-variant hover:bg-surface-variant text-body-sm cursor-pointer whitespace-nowrap">
+                    轴映射.cfg
+                </div>
+                <div class="flex h-full items-center px-4 text-on-surface-variant hover:bg-surface-variant text-body-sm cursor-pointer whitespace-nowrap">
+                    运动安全.st
+                </div>
+            </div>
+
+            <!-- 内容区：运动学库 -->
+            <div class="flex-1 overflow-y-auto p-gutter bg-outline-variant">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter h-fit">
+                    <!-- 模型卡片: 龙门 -->
+                    <div class="kinematic-card bg-surface-container p-padding-md flex flex-col gap-padding-sm group cursor-pointer" onclick="selectModel(this, '龙门式机器人')">
+                        <div class="bg-surface-variant p-2 rounded text-secondary font-bold text-label-caps flex justify-between items-center">
+                            <span class="">龙门式机器人 (2/3/5 轴)</span>
+                            <span class="material-symbols-outlined text-[16px]">info</span>
+                        </div>
+                        <div class="aspect-video bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+                            <img class="w-full h-full object-contain" alt="龙门机器人" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAkMyNZ8Gzc3MOLd3Ws492OqgVdxnCQiPR2BHbBbAwlDn_u-gk3kKnflUV4H64VdmGbp8AmXertUGupwwWqOsailU0s2ShQhK9hFnBE1N_TLeY7zhFVz5QDqaZoDb7uCnoSYqIJr_yYHt1Og3r1VJyFwhvgClTHByxvd6Kw960tI7ENbAyv63eDyH3i3EKD_JHI0szTovVs5-45DYkDE5NIIpBJH8OQM4WoZafPkhGPutk5vN5OfT6m6UMI9gE_IWHoHaMhN_hz0w7">
+                        </div>
+                        <div class="flex justify-between text-on-surface-variant font-body-sm px-1">
+                            <span class="">类型: 笛卡尔</span>
+                            <span class="">型号: G_235_STD</span>
+                        </div>
+                    </div>
+                    <!-- 模型卡片: 极坐标 -->
+                    <div class="kinematic-card bg-surface-container p-padding-md flex flex-col gap-padding-sm group cursor-pointer" onclick="selectModel(this, '极坐标机器人')">
+                        <div class="bg-surface-variant p-2 rounded text-secondary font-bold text-label-caps flex justify-between items-center">
+                            <span class="">极坐标机器人</span>
+                            <span class="material-symbols-outlined text-[16px]">info</span>
+                        </div>
+                        <div class="aspect-video bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+                            <img class="w-full h-full object-contain" alt="极坐标机器人" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDltcBF141844kw6xUWVi8DD3gYi9bfh2Q5TR654imjlZVDdYIM4udXbIUdRLE_jC53tHELbMaS63qs2TfPNm1693Uu2zeMwNIFF2saawsmn_66Z1Orp7mdmcTT3FeZ_BcDv9m3PpraF3WN67dKf-u8AwNEBm5XJ-Jo47moFsm5SPn8yntvkbNzOCfleeqMOw8yYelqR5Ty6KTOCjID45w8bxCCPlBOI1wvuiNxuueRocz5udMoh9kjmyMG-vz6FsuIQUcUWpBFzTVY">
+                        </div>
+                        <div class="flex justify-between text-on-surface-variant font-body-sm px-1">
+                            <span class="">类型: 极坐标</span>
+                            <span class="">型号: P_ROB_01</span>
+                        </div>
+                    </div>
+                    <!-- 模型卡片: 4轴 SCARA -->
+                    <div class="kinematic-card bg-surface-container p-padding-md flex flex-col gap-padding-sm group cursor-pointer" onclick="selectModel(this, '4轴码垛机器人')">
+                        <div class="bg-surface-variant p-2 rounded text-secondary font-bold text-label-caps flex justify-between items-center">
+                            <span class="">4 轴码垛机器人</span>
+                            <span class="material-symbols-outlined text-[16px]">info</span>
+                        </div>
+                        <div class="aspect-video bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+                            <img class="w-full h-full object-contain" alt="码垛机器人" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRx5z3m-N6IE2x4DQI5ueUNHuQqiGqpGi-3H4HUn9dcLVqfL4AI101WnczqphnjQdRXkILUoEkjkvKeuV7qyDF7NlTlfRPc_ceGiNZKRUnK95uPhDPX830xccn8KglreMZh0nO7rbEn61ShlzanzvuTLGHu1egPAdAUdhb-y7Fbn-Xd14U2DUWCj1HQhCkmvvbUNLNrliDIho3GkLGwVgZg43CT4SobBSAObqQSgofBIezRuyFvbW0sfSEJ-5rqHRSpPHwDjt1Pc-S">
+                        </div>
+                        <div class="flex justify-between text-on-surface-variant font-body-sm px-1">
+                            <span class="">类型: 码垛型</span>
+                            <span class="">型号: P4_600_S</span>
+                        </div>
+                    </div>
+                    <!-- 模型卡片: 6轴关节型 -->
+                    <div class="kinematic-card bg-surface-container p-padding-md flex flex-col gap-padding-sm group cursor-pointer active-model" onclick="selectModel(this, '六轴关节机器人')">
+                        <div class="bg-surface-variant p-2 rounded text-secondary font-bold text-label-caps flex justify-between items-center">
+                            <span class="">6 轴关节机器人</span>
+                            <span class="material-symbols-outlined text-[16px]" data-original-icon="check_circle">circle</span>
+                        </div>
+                        <div class="aspect-video bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+                            <img class="w-full h-full object-contain" alt="关节机器人" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_tisH7YeAuhTMbSYu8XiFbZyFevk9w_iCRRW_EVaWrB_I7eoP_pbkUzyxJ3ksv7VswPplyN_sflnqjiUZLGqBROV9kw33EjxRNZ1kbzmMdhxw0WqubvtIh9pCGC8PmFdKXuI26jXolPZBpeLdqnjEQqOg74of2cYKKIgZfVON_8ihlJs1eFSd-Q4seOKFEsgKaEZEEbBW5lIITE7xZRX7bObGfCU8S_f42VatiRq7rFeQCNlvsdxt7wSSyCTv8nRLSjTHcxB7goyy">
+                        </div>
+                        <div class="flex justify-between text-on-surface-variant font-body-sm px-1">
+                            <span class="">类型: 关节型</span>
+                            <span class="">型号: R6_MAIN_CTRL</span>
+                        </div>
+                    </div>
+                    <!-- 模型卡片: SCARA -->
+                    <div class="kinematic-card bg-surface-container p-padding-md flex flex-col gap-padding-sm group cursor-pointer" onclick="selectModel(this, 'SCARA 机器人')">
+                        <div class="bg-surface-variant p-2 rounded text-secondary font-bold text-label-caps flex justify-between items-center">
+                            <span class="">SCARA 机器人</span>
+                            <span class="material-symbols-outlined text-[16px]">info</span>
+                        </div>
+                        <div class="aspect-video bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+                            <img class="w-full h-full object-contain" alt="SCARA机器人" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzSvjTKgyFRDvWMQNN8QnceC-QweuMZe7KakM0GIeKx02TwAYFA2b-Jy5ivnIbCXYP2y3otvs2X77zDfECG_-cqopBQ_mZdAnJ68uEru98Au8CdcK1RQGby3jmxgEj4UunJ075TYil5FacWgUDcLvf4PdWSjvUW3C44VarSo2GBh65jKfzOXAJ7-lI18Xqxeb-iuDeyBA_6SrHVb-hCTuXcUQ48uSK_Y2Leh18nxQlnFWUDzO8UuO1wfreTk_Gi-5p0BZ-q4YBMPRR">
+                        </div>
+                        <div class="flex justify-between text-on-surface-variant font-body-sm px-1">
+                            <span class="">类型: SCARA</span>
+                            <span class="">型号: S_400_PRO</span>
+                        </div>
+                    </div>
+                    <!-- 模型卡片: 并联 -->
+                    <div class="kinematic-card bg-surface-container p-padding-md flex flex-col gap-padding-sm group cursor-pointer" onclick="selectModel(this, '并联机器人')">
+                        <div class="bg-surface-variant p-2 rounded text-secondary font-bold text-label-caps flex justify-between items-center">
+                            <span class="">并联机器人 (Delta)</span>
+                            <span class="material-symbols-outlined text-[16px]">info</span>
+                        </div>
+                        <div class="aspect-video bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+                            <img class="w-full h-full object-contain" alt="并联机器人" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIrj1shAtFC2MOiDEgGnSHGMoq13Cggwdr5scunI9CrUw7t4FylRPQyuP_M4Y-fZNE9Re6bxwzifAVFYr6VPsBsmFQOvlBS9Tf_bkjBZU5-bJ6O-QGCjMMFR5Khnge_I1jzUf5CgH5dKOoWYo5vACo0RsQ0fmBnd-P6fBCRHAZ7yRgsVDIwzsvDT32Dh4d-eImfUZoff17y259sldojU-mSoimjGp7d9--Aby4v5G9J5Xo6cMZ-Ll7H1aiUOGVF-73OpgJnVnfmbCu">
+                        </div>
+                        <div class="flex justify-between text-on-surface-variant font-body-sm px-1">
+                            <span class="">类型: 并联型</span>
+                            <span class="">型号: D_HIGH_SPD</span>
+                        </div>
+                    </div>
+                    <!-- 模型卡片: 机械腕 -->
+                    <div class="kinematic-card bg-surface-container p-padding-md flex flex-col gap-padding-sm group cursor-pointer" onclick="selectModel(this, '机械腕配置')">
+                        <div class="bg-surface-variant p-2 rounded text-secondary font-bold text-label-caps flex justify-between items-center">
+                            <span class="">机械腕 Kin_Wrist2/3</span>
+                            <span class="material-symbols-outlined text-[16px]">info</span>
+                        </div>
+                        <div class="aspect-video bg-surface-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+                            <img class="w-full h-full object-contain" alt="机械腕" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJoH2kbi48ct4XO0dlWCMzalgiASR61hWaB8p2iK0_U1P24fVMNfzy3N7-Sbm_BFNMLrUvwnK9wDadC-cDLDASHTGFJwPWkYkXtSR9AnSK8HyrdesDeru9iM_d18wcaiJRS9N6sXzTmY6tHXiZ3JWpU4XVea6-aF3uysJr3-2f2GSFISfSExgCWXw8YMQyyp28YzEXqU8snAmiM_GBik5IX_ncDyn2t2F6R0MQ0hQE23ASVGmTqDP1FMzBcEOJwcen-OFPJNCgtOih">
+                        </div>
+                        <div class="flex justify-between text-on-surface-variant font-body-sm px-1">
+                            <span class="">类型: 机械腕</span>
+                            <span class="">型号: KIN_WR_X2</span>
+                        </div>
+                    </div>
+                    <!-- 导入模型 -->
+                    <div class="kinematic-card bg-surface-container-low p-padding-md flex flex-col gap-padding-sm items-center justify-center border border-dashed border-outline-variant group cursor-pointer">
+                        <span class="material-symbols-outlined text-[32px] text-outline group-hover:text-primary">add_box</span>
+                        <span class="text-label-caps font-bold text-outline">导入模型</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部面板: 诊断 / 终端 -->
+            <footer class="h-48 bg-surface-container-low border-t border-outline-variant flex flex-col">
+                <div class="flex border-b border-outline-variant bg-surface-container-high px-padding-sm">
+                    <button class="px-padding-md py-1 text-primary font-bold border-b-2 border-primary text-body-sm">诊断日志</button>
+                    <button class="px-padding-md py-1 text-on-surface-variant hover:text-on-surface text-body-sm">终端</button>
+                    <button class="px-padding-md py-1 text-on-surface-variant hover:text-on-surface text-body-sm">任务监控</button>
+                </div>
+                <div class="flex-1 p-padding-md font-code-sm text-code-sm text-on-surface-variant overflow-y-auto" id="diagnostic-log">
+                    <p class="text-secondary">[系统] 运动内核已成功初始化。</p>
+                    <p class="">[信息] 已加载模型: R6_MAIN_CTRL (六轴关节机器人)</p>
+                    <p class="">[信息] SMC_SmoothPath: 路径平滑算法已启用。</p>
+                    <p class="">[信息] 当前 TCP 位置: X: 450.2mm, Y: -12.4mm, Z: 890.1mm</p>
+                    <p class="text-error">[警告] 轴 3 (J3) 检测到抖动 | 4µs 偏移</p>
+                    <p class="text-on-surface-variant opacity-50">上次编译于 2.4s 前完成...</p>
+                </div>
+            </footer>
+        </main>
+
+        <!-- 右侧属性检查器 -->
+        <aside class="hidden xl:flex flex-col w-inspector-width bg-surface-container border-l border-outline-variant">
+            <div class="p-padding-md border-b border-outline-variant">
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">属性</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant" id="active-model-name">六轴机器人主站</p>
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <!-- 3D 预览缩略图 -->
+                <div class="p-padding-md border-b border-outline-variant bg-surface-dim">
+                    <h3 class="font-label-caps text-label-caps text-primary mb-2">3D 实时预览</h3>
+                    <div class="aspect-square bg-surface-container-highest border border-outline-variant rounded relative flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[48px] text-outline opacity-20" data-original-icon="view_in_ar">circle</span>
+                        <div class="absolute bottom-2 right-2 flex gap-1">
+                            <button class="w-6 h-6 bg-surface-variant rounded text-[12px] flex items-center justify-center hover:bg-outline">XYZ</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 配置部分: 轴映射 -->
+                <div class="p-padding-md border-b border-outline-variant">
+                    <h3 class="font-label-caps text-label-caps text-primary mb-2">轴映射 (AXIS MAPPING)</h3>
+                    <div class="grid grid-cols-2 gap-y-2 font-body-sm">
+                        <div class="text-outline-variant text-right pr-2">轴 1 (基座):</div>
+                        <input class="bg-surface-dim border border-outline-variant text-secondary font-code-sm h-6 px-1 focus:border-primary outline-none" type="text" value="DRIVE_X1">
+                        <div class="text-outline-variant text-right pr-2">轴 2 (大臂):</div>
+                        <input class="bg-surface-dim border border-outline-variant text-secondary font-code-sm h-6 px-1 focus:border-primary outline-none" type="text" value="DRIVE_Y1">
+                        <div class="text-outline-variant text-right pr-2">轴 3 (肘部):</div>
+                        <input class="bg-surface-dim border border-outline-variant text-secondary font-code-sm h-6 px-1 focus:border-primary outline-none" type="text" value="DRIVE_Z1">
+                    </div>
+                </div>
+                <!-- 配置部分: 动力学限制 -->
+                <div class="p-padding-md">
+                    <h3 class="font-label-caps text-label-caps text-primary mb-2">动力学限制 (DYNAMIC LIMITS)</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-body-sm mb-1">
+                                <span class="text-on-surface-variant">最大速度</span>
+                                <span class="text-on-surface">2500 mm/s</span>
+                            </div>
+                            <div class="h-1 bg-surface-variant rounded-full overflow-hidden">
+                                <div class="h-full bg-secondary w-3/4"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-body-sm mb-1">
+                                <span class="text-on-surface-variant">最大加速度</span>
+                                <span class="text-on-surface">12.5 m/s²</span>
+                            </div>
+                            <div class="h-1 bg-surface-variant rounded-full overflow-hidden">
+                                <div class="h-full bg-secondary w-1/2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 配置部分: TCP 偏移 -->
+                <div class="p-padding-md border-t border-outline-variant">
+                    <h3 class="font-label-caps text-label-caps text-primary mb-2">TCP 偏移量 (mm)</h3>
+                    <div class="grid grid-cols-3 gap-1">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-label-caps text-[8px] text-center">X</span>
+                            <input class="bg-surface-dim border border-outline-variant text-on-surface font-code-sm h-8 text-center outline-none" type="number" value="120.0">
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-label-caps text-[8px] text-center">Y</span>
+                            <input class="bg-surface-dim border border-outline-variant text-on-surface font-code-sm h-8 text-center outline-none" type="number" value="0.0">
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-label-caps text-[8px] text-center">Z</span>
+                            <input class="bg-surface-dim border border-outline-variant text-on-surface font-code-sm h-8 text-center outline-none" type="number" value="25.4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-padding-md bg-surface-container-high border-t border-outline-variant space-y-2">
+                <button class="w-full bg-surface-variant text-on-surface border border-outline-variant py-2 text-label-caps uppercase hover:bg-outline-variant transition-colors">应用更改</button>
+                <button class="w-full bg-error-container text-on-error-container py-2 text-label-caps uppercase hover:opacity-90 transition-opacity">重置运动学</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 状态栏 -->
+    <footer class="fixed bottom-0 w-full h-8 flex items-center justify-between px-md bg-surface-dim border-t border-outline-variant z-50">
+        <div class="flex items-center gap-padding-md font-code-sm text-code-sm">
+            <span class="flex items-center gap-1 text-secondary">
+                <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                PLC 状态: 运行中 (RUNNING)
+            </span>
+            <span class="text-on-surface-variant">循环时间: 12ms</span>
+            <span class="text-on-surface-variant">内核抖动: 4µs</span>
+        </div>
+        <div class="flex items-center gap-padding-md font-code-sm text-code-sm text-on-surface-variant">
+            <span class="hover:text-primary cursor-pointer transition-colors">状态正常</span>
+            <span class="hover:text-primary cursor-pointer transition-colors">同步激活</span>
+            <span class="font-bold text-secondary-fixed">v2.4.1</span>
+        </div>
+    </footer>
+
+    <script>
+        function selectModel(element, modelName) {
+            // 移除所有卡片的激活状态
+            document.querySelectorAll('.kinematic-card').forEach(card => {
+                card.classList.remove('active-model');
+                const badge = card.querySelector('.material-symbols-outlined');
+                if (badge) {
+                    badge.textContent = 'info';
+                }
+            });
+
+            // 添加点击卡片的激活状态
+            element.classList.add('active-model');
+            const activeBadge = element.querySelector('.material-symbols-outlined');
+            if (activeBadge) {
+                activeBadge.textContent = 'check_circle';
+            }
+            
+            // 更新右侧属性栏名称
+            document.getElementById('active-model-name').textContent = modelName;
+
+            // 简单的点击缩放反馈
+            element.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                element.style.transform = '';
+            }, 100);
+
+            // 在日志中添加切换记录
+            const logContainer = document.getElementById('diagnostic-log');
+            const p = document.createElement('p');
+            p.textContent = `[信息] 已切换到模型: ${modelName}`;
+            logContainer.appendChild(p);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // 诊断日志模拟
+        const logContainer = document.getElementById('diagnostic-log');
+        function addLogLine() {
+            const lines = [
+                "[信息] SMC_SmoothPath: 正在优化插补路径点...",
+                "[信息] 正在监控轴 4 同步状态...",
+                "[信息] 心跳响应: 1ms",
+                "[系统] 指令队列缓存已清除。",
+                "[信息] 正在针对动态工具更换重新校准 TCP...",
+                "[警告] Modbus TCP 节点 12 出现非预期延迟"
+            ];
+            const line = lines[Math.floor(Math.random() * lines.length)];
+            const p = document.createElement('p');
+            p.textContent = line;
+            if (line.includes('警告')) p.className = 'text-error';
+            logContainer.appendChild(p);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // 限制日志行数
+            while (logContainer.children.length > 30) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+        setInterval(addLogLine,</script></body></html>

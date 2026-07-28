@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Control Studio - PLC Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for engineering density */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #131b2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #424754;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8c909f;
+        }
+        .editor-grid {
+            background-size: 20px 20px;
+            background-image: radial-gradient(circle, #2d3449 1px, transparent 1px);
+        }
+        .ladder-rail {
+            width: 2px;
+            height: 100%;
+            background-color: #8c909f;
+        }
+        .ladder-line-active {
+            box-shadow: 0 0 8px #4edea3;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#002e6a",
+                        "on-tertiary-fixed": "#36003e",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#4edea3",
+                        "surface-container-lowest": "#060e20",
+                        "tertiary": "#fbabff",
+                        "inverse-on-surface": "#283044",
+                        "on-error": "#690005",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface-variant": "#c2c6d6",
+                        "secondary-container": "#00a572",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-dim": "#0b1326",
+                        "primary": "#adc6ff",
+                        "surface-variant": "#2d3449",
+                        "tertiary-container": "#e14ef6",
+                        "surface-tint": "#adc6ff",
+                        "surface-container": "#171f33",
+                        "secondary-fixed-dim": "#4edea3",
+                        "surface-bright": "#31394d",
+                        "outline-variant": "#424754",
+                        "tertiary-fixed": "#ffd6fd",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary": "#580065",
+                        "on-primary-fixed": "#001a42",
+                        "outline": "#8c909f",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#7c008e",
+                        "surface": "#0b1326",
+                        "inverse-primary": "#005ac2",
+                        "inverse-surface": "#dae2fd",
+                        "on-secondary": "#003824",
+                        "on-primary-container": "#00285d",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-high": "#222a3d",
+                        "error-container": "#93000a",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#00311f",
+                        "background": "#0b1326",
+                        "primary-container": "#4d8eff",
+                        "tertiary-fixed-dim": "#fbabff",
+                        "on-tertiary-container": "#4d0059",
+                        "surface-container-highest": "#2d3449",
+                        "on-background": "#dae2fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "padding-md": "12px",
+                        "padding-xs": "4px",
+                        "inspector-width": "300px",
+                        "padding-sm": "8px",
+                        "toolbar-height": "40px",
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "gutter": "1px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "code-md": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "code-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md overflow-hidden h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface-container-high dark:bg-surface-container-high border-b border-outline-variant dark:border-outline-variant flex justify-between items-center w-full px-padding-md h-toolbar-height z-50">
+<div class="flex items-center gap-6">
+<span class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary">Nexus Control Studio</span>
+<nav class="flex items-center gap-4">
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 py-1 font-label-caps text-label-caps">File</button>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 py-1 font-label-caps text-label-caps">Edit</button>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 py-1 font-label-caps text-label-caps">Project</button>
+<button class="text-primary dark:text-primary border-b-2 border-primary transition-colors duration-150 px-2 py-1 font-label-caps text-label-caps">Motion</button>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 py-1 font-label-caps text-label-caps">CNC</button>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 py-1 font-label-caps text-label-caps">Simulation</button>
+</nav>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container-low p-0.5 rounded border border-outline-variant">
+<button class="flex items-center gap-1.5 px-3 py-1 bg-secondary-container text-on-secondary-container rounded-sm transition-all hover:brightness-110">
+<span class="material-symbols-outlined fill-icon text-[14px]">play_arrow</span>
+<span class="font-label-caps text-label-caps">Run</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1 text-on-surface-variant hover:bg-surface-variant rounded-sm transition-all">
+<span class="material-symbols-outlined text-[14px]">build</span>
+<span class="font-label-caps text-label-caps">Build</span>
+</button>
+</div>
+<div class="flex gap-2 ml-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="bug_report">bug_report</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="settings">settings</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="help">help</span>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar (Activity Bar + Explorer) -->
+<aside class="flex w-sidebar-width h-full bg-surface-container-low border-r border-outline-variant">
+<!-- Tiny Activity Bar -->
+<div class="w-12 bg-surface-container-lowest flex flex-col items-center py-4 gap-6 border-r border-outline-variant">
+<div class="p-2 bg-surface-container-highest text-primary border-l-2 border-primary">
+<span class="material-symbols-outlined fill-icon" data-icon="account_tree">account_tree</span>
+</div>
+<div class="p-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+</div>
+<div class="p-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+</div>
+<div class="p-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+</div>
+<div class="mt-auto flex flex-col gap-6 pb-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+</div>
+</div>
+<!-- Explorer Content -->
+<div class="flex-1 flex flex-col">
+<div class="p-padding-md border-b border-outline-variant flex justify-between items-center bg-surface-container">
+<div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Project Explorer</div>
+<div class="font-bold text-primary">Project Alpha</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">unfold_less</span>
+</div>
+<div class="flex-1 overflow-y-auto py-2 font-body-sm text-body-sm">
+<!-- Tree Nodes -->
+<div class="flex items-center gap-1 px-2 py-1 hover:bg-surface-variant cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+<span class="material-symbols-outlined text-[14px] text-primary">folder</span>
+<span>POUs</span>
+</div>
+<div class="pl-8 flex items-center gap-1.5 px-2 py-1 hover:bg-surface-variant cursor-pointer text-secondary">
+<span class="material-symbols-outlined text-[14px]">description</span>
+<span>MotorControl_PRG (LD)</span>
+</div>
+<div class="pl-8 flex items-center gap-1.5 px-2 py-1 hover:bg-surface-variant cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">description</span>
+<span>AlarmHandler (ST)</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-1 hover:bg-surface-variant cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="material-symbols-outlined text-[14px] text-primary">folder</span>
+<span>GVLs</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-1 hover:bg-surface-variant cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="material-symbols-outlined text-[14px] text-primary">folder</span>
+<span>Task Configuration</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-1 hover:bg-surface-variant cursor-pointer text-on-surface">
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+<span class="material-symbols-outlined text-[14px] text-primary">storage</span>
+<span>Hardware</span>
+</div>
+<div class="pl-8 flex items-center gap-1.5 px-2 py-1 hover:bg-surface-variant cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">router</span>
+<span>PLC-104-Motion</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Central Workspace -->
+<main class="flex-1 flex flex-col bg-surface overflow-hidden">
+<!-- Tabs -->
+<div class="h-8 bg-surface-container-low border-b border-outline-variant flex items-center">
+<div class="bg-surface px-4 h-full flex items-center border-t-2 border-primary gap-2 text-primary font-body-sm">
+<span class="material-symbols-outlined text-[14px]">description</span>
+<span>MotorControl_PRG</span>
+<span class="material-symbols-outlined text-[14px] ml-2 opacity-50 hover:opacity-100 cursor-pointer">close</span>
+</div>
+<div class="px-4 h-full flex items-center border-r border-outline-variant gap-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer font-body-sm">
+<span class="material-symbols-outlined text-[14px]">analytics</span>
+<span>HMI_Main</span>
+<span class="material-symbols-outlined text-[14px] ml-2 opacity-0 hover:opacity-100">close</span>
+</div>
+</div>
+<!-- Editor Split View -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Ladder Logic Editor (Top/Left) -->
+<div class="flex-1 border-r border-outline-variant flex flex-col bg-surface-dim editor-grid overflow-auto">
+<div class="bg-surface-container p-1 border-b border-outline-variant flex items-center justify-between">
+<span class="font-label-caps text-label-caps px-2 py-0.5 bg-surface-variant rounded">Ladder Diagram (LD)</span>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">zoom_in</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">grid_on</span>
+</div>
+</div>
+<!-- Network 1 -->
+<div class="p-6">
+<div class="flex items-center gap-4 mb-2">
+<span class="text-on-surface-variant font-code-sm text-code-sm">NW 1: Power Control</span>
+</div>
+<div class="flex items-center h-32 relative">
+<div class="ladder-rail"></div>
+<div class="flex-1 flex items-center">
+<!-- Contact -->
+<div class="flex flex-col items-center ml-8">
+<div class="text-secondary font-code-sm text-code-sm mb-1">xStartDrive</div>
+<div class="w-8 h-8 flex items-center justify-center relative">
+<div class="absolute h-0.5 w-full bg-secondary ladder-line-active"></div>
+<div class="h-6 w-0.5 bg-secondary left-1/4 absolute ladder-line-active"></div>
+<div class="h-6 w-0.5 bg-secondary right-1/4 absolute ladder-line-active"></div>
+</div>
+</div>
+<!-- Line -->
+<div class="h-0.5 w-16 bg-secondary ladder-line-active"></div>
+<!-- FB Block MC_Power -->
+<div class="w-48 bg-surface-container-high border-2 border-primary rounded shadow-xl flex flex-col overflow-hidden">
+<div class="bg-primary text-on-primary font-bold px-2 py-1 text-center font-label-caps text-[10px]">MC_Power</div>
+<div class="flex p-2 font-code-sm text-code-sm gap-2">
+<div class="flex-1 text-left text-on-surface-variant space-y-1">
+<div>Enable</div>
+<div>RegulatorOn</div>
+</div>
+<div class="flex-1 text-right text-secondary space-y-1">
+<div>Status</div>
+<div>Error</div>
+</div>
+</div>
+</div>
+<!-- Line to Right Rail -->
+<div class="flex-1 h-0.5 bg-outline"></div>
+</div>
+<div class="ladder-rail"></div>
+</div>
+</div>
+<!-- Network 2 -->
+<div class="p-6 pt-0">
+<div class="flex items-center gap-4 mb-2">
+<span class="text-on-surface-variant font-code-sm text-code-sm">NW 2: Absolute Motion</span>
+</div>
+<div class="flex items-center h-48 relative">
+<div class="ladder-rail"></div>
+<div class="flex-1 flex items-center">
+<div class="h-0.5 w-12 bg-outline"></div>
+<!-- FB Block MC_MoveAbsolute -->
+<div class="w-56 bg-surface-container-high border border-outline rounded flex flex-col overflow-hidden">
+<div class="bg-surface-variant text-on-surface font-bold px-2 py-1 text-center font-label-caps text-[10px]">MC_MoveAbsolute</div>
+<div class="flex p-2 font-code-sm text-code-sm gap-4">
+<div class="flex-1 text-left text-on-surface-variant space-y-1">
+<div>Execute</div>
+<div>Position</div>
+<div>Velocity</div>
+<div>Accel</div>
+</div>
+<div class="flex-1 text-right text-on-surface-variant space-y-1">
+<div>Done</div>
+<div>Busy</div>
+<div>Active</div>
+<div>Error</div>
+</div>
+</div>
+</div>
+<div class="flex-1 h-0.5 bg-outline"></div>
+</div>
+<div class="ladder-rail"></div>
+</div>
+</div>
+</div>
+<!-- Structured Text Editor (Bottom/Right) -->
+<div class="w-1/3 flex flex-col bg-surface-container-lowest">
+<div class="bg-surface-container p-1 border-b border-outline-variant">
+<span class="font-label-caps text-label-caps px-2 py-0.5 bg-surface-variant rounded">Structured Text (ST)</span>
+</div>
+<div class="flex-1 font-code-md text-code-md p-4 overflow-auto bg-surface-container-lowest leading-relaxed">
+<div class="flex gap-4">
+<div class="text-outline text-right select-none w-6 border-r border-outline-variant pr-2">
+                                01<br/>02<br/>03<br/>04<br/>05<br/>06<br/>07<br/>08<br/>09<br/>10<br/>11<br/>12
+                            </div>
+<div class="flex-1">
+<span class="text-tertiary">IF</span> xStartDrive <span class="text-tertiary">THEN</span><br/>
+                                  fbPower(<br/>
+                                    Enable := <span class="text-secondary">TRUE</span>,<br/>
+                                    RegulatorOn := <span class="text-secondary">TRUE</span>,<br/>
+                                    DriveStart := <span class="text-secondary">TRUE</span><br/>
+                                  );<br/>
+<span class="text-tertiary">ELSIF</span> xStopDrive <span class="text-tertiary">THEN</span><br/>
+                                  fbPower.Enable := <span class="text-secondary">FALSE</span>;<br/>
+<span class="text-tertiary">END_IF</span><br/>
+<br/>
+<span class="text-outline-variant">// Position Update</span><br/>
+                                rTargetPos := rCurrentPos + 100.0;
+                            </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Panel: Console/Errors -->
+<div class="h-32 border-t border-outline-variant flex flex-col bg-surface-container-low">
+<div class="flex border-b border-outline-variant bg-surface-container">
+<button class="px-4 py-1.5 border-b-2 border-primary text-primary font-label-caps text-label-caps">Build Output</button>
+<button class="px-4 py-1.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-variant">Error List (0)</button>
+<button class="px-4 py-1.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-variant">PLC Shell</button>
+</div>
+<div class="flex-1 p-2 overflow-y-auto font-code-sm text-code-sm text-on-surface-variant bg-surface-container-low">
+<p>[14:32:01] Building Project 'Alpha'...</p>
+<p>[14:32:04] Generating POU Code for 'MotorControl_PRG'...</p>
+<p>[14:32:05] Build Succeeded. 0 Errors, 0 Warnings.</p>
+<p>[14:32:06] Online: Loaded code to PLC_01 successfully.</p>
+</div>
+</div>
+</main>
+<!-- Right Panel (Inspector) -->
+<aside class="w-inspector-width bg-surface-container-low border-l border-outline-variant flex flex-col">
+<!-- Watch Window -->
+<div class="flex-1 flex flex-col">
+<div class="p-2 border-b border-outline-variant bg-surface-container font-label-caps text-label-caps text-on-surface-variant flex justify-between items-center">
+<span>Variable Watch</span>
+<span class="material-symbols-outlined text-[14px]">add</span>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left font-body-sm text-body-sm border-collapse">
+<thead class="bg-surface-container-lowest text-outline sticky top-0">
+<tr>
+<th class="px-2 py-1 font-normal border-b border-outline-variant">Name</th>
+<th class="px-2 py-1 font-normal border-b border-outline-variant">Value</th>
+<th class="px-2 py-1 font-normal border-b border-outline-variant">Type</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr class="hover:bg-surface-variant/50">
+<td class="px-2 py-1 text-on-surface">xStartDrive</td>
+<td class="px-2 py-1 text-secondary">TRUE</td>
+<td class="px-2 py-1 text-outline">BOOL</td>
+</tr>
+<tr class="hover:bg-surface-variant/50">
+<td class="px-2 py-1 text-on-surface">rTargetPos</td>
+<td class="px-2 py-1 text-primary">1250.00</td>
+<td class="px-2 py-1 text-outline">REAL</td>
+</tr>
+<tr class="hover:bg-surface-variant/50">
+<td class="px-2 py-1 text-on-surface">rCurrentPos</td>
+<td class="px-2 py-1 text-primary">1148.24</td>
+<td class="px-2 py-1 text-outline">REAL</td>
+</tr>
+<tr class="hover:bg-surface-variant/50">
+<td class="px-2 py-1 text-on-surface">iState</td>
+<td class="px-2 py-1">20</td>
+<td class="px-2 py-1 text-outline">INT</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Properties -->
+<div class="h-1/3 border-t border-outline-variant flex flex-col">
+<div class="p-2 border-b border-outline-variant bg-surface-container font-label-caps text-label-caps text-on-surface-variant">
+                    Properties: MC_Power
+                </div>
+<div class="p-2 space-y-2 overflow-auto">
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Instance Name:</span>
+<span class="text-on-surface">fbPower</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Update Task:</span>
+<span class="text-on-surface">FastTask</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Trace Enabled:</span>
+<div class="w-8 h-4 bg-secondary/20 border border-secondary rounded-full relative">
+<div class="absolute right-0.5 top-0.5 w-2.5 h-2.5 bg-secondary rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Status Bar -->
+<footer class="h-6 bg-primary text-on-primary px-padding-md flex justify-between items-center font-label-caps text-[10px]">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-on-primary animate-pulse"></div>
+<span>Connected: PLC_01 (Running)</span>
+</div>
+<div class="border-l border-on-primary/30 h-4 mx-2"></div>
+<span>Scan Time: 2ms</span>
+<span>Jitter: 45µs</span>
+</div>
+<div class="flex items-center gap-4">
+<span>Mem: 42%</span>
+<span>CPU: 18%</span>
+<span>Line 12, Col 8</span>
+<span class="material-symbols-outlined text-[14px]">sensors</span>
+</div>
+</footer>
+<script>
+        // Micro-interaction for Ladder diagram active states
+        document.querySelectorAll('.hover\\:bg-surface-variant').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.transition = 'all 0.1s ease';
+            });
+        });
+
+        // Simulating some real-time value changes in watch window
+        setInterval(() => {
+            const currentPosEl = document.querySelectorAll('td.text-primary')[1];
+            if (currentPosEl) {
+                let val = parseFloat(currentPosEl.innerText);
+                val += (Math.random() * 0.5);
+                currentPosEl.innerText = val.toFixed(2);
+            }
+        }, 100);
+    </script>
+</body></html>

@@ -1,0 +1,30 @@
+{
+  "name": "@smart-plc/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec tsx src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@smart-plc/shared": "*",
+    "@smart-plc/plc-core": "*",
+    "fastify": "^4.25.0",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/websocket": "^11.0.0",
+    "better-sqlite3": "^9.4.3",
+    "socket.io": "^4.7.4",
+    "chokidar": "^3.5.3",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.5",
+    "@types/better-sqlite3": "^7.6.8",
+    "tsx": "^4.7.0",
+    "nodemon": "^3.0.3"
+  }
+}

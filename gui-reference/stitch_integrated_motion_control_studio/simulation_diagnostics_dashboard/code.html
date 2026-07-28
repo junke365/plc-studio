@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Control Studio - Simulation &amp; Digital Twin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #131b2e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #424754;
+            border-radius: 2px;
+        }
+        .scanline {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(173, 198, 255, 0.05) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .status-active {
+            animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .grid-bg {
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#002e6a",
+                        "on-tertiary-fixed": "#36003e",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#4edea3",
+                        "surface-container-lowest": "#060e20",
+                        "tertiary": "#fbabff",
+                        "inverse-on-surface": "#283044",
+                        "on-error": "#690005",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface-variant": "#c2c6d6",
+                        "secondary-container": "#00a572",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-dim": "#0b1326",
+                        "primary": "#adc6ff",
+                        "surface-variant": "#2d3449",
+                        "tertiary-container": "#e14ef6",
+                        "surface-tint": "#adc6ff",
+                        "surface-container": "#171f33",
+                        "secondary-fixed-dim": "#4edea3",
+                        "surface-bright": "#31394d",
+                        "outline-variant": "#424754",
+                        "tertiary-fixed": "#ffd6fd",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary": "#580065",
+                        "on-primary-fixed": "#001a42",
+                        "outline": "#8c909f",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#7c008e",
+                        "surface": "#0b1326",
+                        "inverse-primary": "#005ac2",
+                        "inverse-surface": "#dae2fd",
+                        "on-secondary": "#003824",
+                        "on-primary-container": "#00285d",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-high": "#222a3d",
+                        "error-container": "#93000a",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#00311f",
+                        "background": "#0b1326",
+                        "primary-container": "#4d8eff",
+                        "tertiary-fixed-dim": "#fbabff",
+                        "on-tertiary-container": "#4d0059",
+                        "surface-container-highest": "#2d3449",
+                        "on-background": "#dae2fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "padding-md": "12px",
+                        "padding-xs": "4px",
+                        "inspector-width": "300px",
+                        "padding-sm": "8px",
+                        "toolbar-height": "40px",
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "gutter": "1px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "code-md": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "code-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md overflow-hidden h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface-container-high dark:bg-surface-container-high border-b border-outline-variant dark:border-outline-variant flex justify-between items-center w-full px-padding-md h-toolbar-height flex-shrink-0 z-50">
+<div class="flex items-center gap-6">
+<span class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary">Nexus Control Studio</span>
+<nav class="hidden md:flex items-center h-full">
+<a class="px-3 h-full flex items-center transition-colors duration-150 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright font-label-caps text-label-caps" href="#">File</a>
+<a class="px-3 h-full flex items-center transition-colors duration-150 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright font-label-caps text-label-caps" href="#">Edit</a>
+<a class="px-3 h-full flex items-center transition-colors duration-150 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright font-label-caps text-label-caps" href="#">Project</a>
+<a class="px-3 h-full flex items-center transition-colors duration-150 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright font-label-caps text-label-caps" href="#">Motion</a>
+<a class="px-3 h-full flex items-center transition-colors duration-150 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright font-label-caps text-label-caps" href="#">CNC</a>
+<a class="px-3 h-full flex items-center transition-colors duration-150 text-primary dark:text-primary border-b-2 border-primary font-label-caps text-label-caps" href="#">Simulation</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1">
+<button class="bg-primary-container text-on-primary-container px-3 py-1 rounded-sm font-label-caps text-label-caps hover:brightness-110 transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">play_arrow</span> Run
+                </button>
+<button class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-sm font-label-caps text-label-caps hover:bg-surface-bright transition-all">Build</button>
+</div>
+<div class="flex items-center gap-2 border-l border-outline-variant pl-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">bug_report</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">settings</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">help</span>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant dark:border-outline-variant w-sidebar-width h-full flex flex-col flex-shrink-0">
+<div class="p-padding-md border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">precision_manufacturing</span>
+</div>
+<div>
+<div class="text-primary font-label-caps text-label-caps">Project Alpha</div>
+<div class="text-on-surface-variant text-[11px] opacity-70">PLC-104-Motion</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 py-2 overflow-y-auto custom-scrollbar">
+<div class="px-2 mb-2">
+<div class="flex items-center gap-3 px-3 py-2 bg-surface-variant text-on-surface-variant font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">account_tree</span> Explorer
+                    </div>
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant transition-all font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">account_tree</span> Logic
+                    </div>
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant transition-all font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">query_stats</span> Motion
+                    </div>
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant transition-all font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">precision_manufacturing</span> G-Code
+                    </div>
+<div class="flex items-center gap-3 px-3 py-2 bg-surface-container-highest text-primary border-l-2 border-primary transition-all font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">dashboard</span> HMI / Simulation
+                    </div>
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant transition-all font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">settings_input_component</span> Hardware
+                    </div>
+</div>
+<!-- IO Forcing Table (Left Panel Content) -->
+<div class="mt-4 px-3">
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-caps font-label-caps text-on-surface-variant opacity-60">IO FORCING</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">filter_list</span>
+</div>
+<div class="space-y-[1px] bg-outline-variant/30 rounded-sm overflow-hidden">
+<div class="grid grid-cols-12 bg-surface-container-high py-1 px-2 items-center hover:bg-surface-bright transition-colors group">
+<span class="col-span-6 font-code-sm text-code-sm text-on-surface-variant">X00_StartBtn</span>
+<span class="col-span-3 text-center"><div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(78,222,163,0.5)] mx-auto status-active"></div></span>
+<span class="col-span-3 text-right font-code-sm text-code-sm text-secondary">TRUE</span>
+</div>
+<div class="grid grid-cols-12 bg-surface-container-high py-1 px-2 items-center hover:bg-surface-bright transition-colors group">
+<span class="col-span-6 font-code-sm text-code-sm text-on-surface-variant">X01_Estop</span>
+<span class="col-span-3 text-center"><div class="w-2 h-2 rounded-full bg-outline mx-auto"></div></span>
+<span class="col-span-3 text-right font-code-sm text-code-sm text-outline">FALSE</span>
+</div>
+<div class="grid grid-cols-12 bg-surface-container-high py-1 px-2 items-center hover:bg-surface-bright transition-colors group">
+<span class="col-span-6 font-code-sm text-code-sm text-on-surface-variant">Y00_Motor_EN</span>
+<span class="col-span-3 text-center font-code-sm text-code-sm text-tertiary">FORCE</span>
+<span class="col-span-3 text-right font-code-sm text-code-sm text-secondary">TRUE</span>
+</div>
+<div class="grid grid-cols-12 bg-surface-container-high py-1 px-2 items-center hover:bg-surface-bright transition-colors group">
+<span class="col-span-6 font-code-sm text-code-sm text-on-surface-variant">Y01_Brake_RLS</span>
+<span class="col-span-3 text-center"><div class="w-2 h-2 rounded-full bg-secondary mx-auto"></div></span>
+<span class="col-span-3 text-right font-code-sm text-code-sm text-secondary">TRUE</span>
+</div>
+</div>
+</div>
+<div class="mt-6 px-3">
+<div class="text-label-caps font-label-caps text-on-surface-variant opacity-60 mb-2">SCENARIOS</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between p-2 rounded-sm bg-surface-container-high border border-outline-variant">
+<span class="text-body-sm font-body-sm">Palletizing Cycle</span>
+<span class="material-symbols-outlined text-[16px] text-primary">radio_button_checked</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-sm bg-surface-container-low border border-transparent hover:border-outline-variant transition-all cursor-pointer">
+<span class="text-body-sm font-body-sm opacity-60">High-Speed Pick</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+</nav>
+<div class="mt-auto border-t border-outline-variant">
+<div class="flex items-center gap-3 px-padding-md py-3 text-on-surface-variant hover:bg-surface-variant transition-all cursor-pointer font-label-caps text-label-caps">
+<span class="material-symbols-outlined">settings</span> Settings
+                </div>
+<div class="flex items-center gap-3 px-padding-md py-3 text-on-surface-variant hover:bg-surface-variant transition-all cursor-pointer font-label-caps text-label-caps border-t border-outline-variant/30">
+<span class="material-symbols-outlined">person</span> Engineer Profile
+                </div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden relative">
+<!-- 3D Digital Twin Stage -->
+<div class="flex-1 bg-surface-container-lowest relative overflow-hidden grid-bg">
+<div class="absolute inset-0 scanline opacity-20"></div>
+<!-- 3D Visualization Placeholder -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-[80%] h-[80%] relative flex flex-col items-center justify-center">
+<!-- Robot Arm Visualization Simulation via CSS/Placeholder -->
+<div class="relative w-full h-full flex items-center justify-center">
+
+<!-- Static overlay elements for the "Simulation" feel -->
+<div class="absolute top-8 left-8 p-4 border border-primary/20 bg-surface/80 backdrop-blur-sm rounded">
+<div class="text-label-caps font-label-caps text-primary mb-2">AXIS COORDINATES</div>
+<div class="grid grid-cols-2 gap-x-8 gap-y-1 font-code-md text-code-md">
+<span class="text-on-surface-variant">X-AXIS</span><span class="text-secondary text-right">452.21 mm</span>
+<span class="text-on-surface-variant">Y-AXIS</span><span class="text-secondary text-right">-12.04 mm</span>
+<span class="text-on-surface-variant">Z-AXIS</span><span class="text-secondary text-right">89.50 mm</span>
+<span class="text-on-surface-variant">THETA</span><span class="text-secondary text-right">12.5°</span>
+</div>
+</div>
+<div class="absolute top-8 right-8 flex flex-col gap-2">
+<div class="bg-surface/80 backdrop-blur-sm border border-outline-variant p-2 rounded flex items-center gap-4">
+<div class="flex flex-col">
+<span class="text-[10px] font-label-caps text-on-surface-variant">CYCLE TIME</span>
+<span class="font-code-md text-code-md text-primary">02:44:12</span>
+</div>
+<div class="w-[1px] h-8 bg-outline-variant"></div>
+<div class="flex flex-col">
+<span class="text-[10px] font-label-caps text-on-surface-variant">LOAD FACTOR</span>
+<div class="flex items-center gap-2">
+<div class="w-16 h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[42%]"></div>
+</div>
+<span class="font-code-sm text-code-sm text-secondary">42%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Scope Overlay (Oscilloscope) -->
+<div class="absolute bottom-4 right-4 w-[400px] h-[180px] bg-surface-container-high/90 backdrop-blur-md border border-outline-variant rounded p-3 flex flex-col shadow-xl">
+<div class="flex justify-between items-center mb-2 border-b border-outline-variant/30 pb-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">monitoring</span>
+<span class="font-label-caps text-label-caps text-primary">REAL-TIME SCOPE</span>
+</div>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px] cursor-pointer">settings</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[16px] cursor-pointer">close</span>
+</div>
+</div>
+<div class="flex-1 relative border-l border-b border-outline-variant/50">
+<!-- Simulated Oscilloscope Waveform -->
+<div class="absolute inset-0 p-1">
+
+</div>
+<!-- Legend -->
+<div class="absolute top-1 right-1 flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-[9px] font-label-caps text-on-surface-variant">POS_ACTUAL</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-[9px] font-label-caps text-on-surface-variant">POS_TARGET</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Camera Controls Overlay -->
+<div class="absolute bottom-4 left-4 flex gap-1 p-1 bg-surface/60 backdrop-blur-sm rounded border border-outline-variant">
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">videocam</span>
+</button>
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">3d_rotation</span>
+</button>
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">grid_on</span>
+</button>
+<div class="w-[1px] h-5 bg-outline-variant my-auto mx-1"></div>
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">fullscreen</span>
+</button>
+</div>
+</div>
+<!-- Debug Controls (Bottom Panel) -->
+<footer class="h-[200px] bg-surface-container border-t border-outline-variant flex flex-col flex-shrink-0">
+<div class="flex items-center justify-between h-8 bg-surface-container-high px-padding-md border-b border-outline-variant">
+<div class="flex gap-4 h-full">
+<button class="h-full px-2 border-b-2 border-primary text-primary font-label-caps text-label-caps flex items-center gap-2">
+                            DEBUG CONSOLE <span class="bg-primary/20 text-primary px-1 rounded-full text-[9px]">4</span>
+</button>
+<button class="h-full px-2 text-on-surface-variant font-label-caps text-label-caps flex items-center gap-2 hover:bg-surface-bright transition-all">
+                            WATCH LIST
+                        </button>
+<button class="h-full px-2 text-on-surface-variant font-label-caps text-label-caps flex items-center gap-2 hover:bg-surface-bright transition-all">
+                            DIAGNOSTICS
+                        </button>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 h-full bg-surface-container-low border-x border-outline-variant/30">
+<button class="text-on-surface-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">play_arrow</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">step_into</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">step_over</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">step_out</span></button>
+<button class="text-error hover:text-error/80 transition-colors"><span class="material-symbols-outlined text-[18px]">stop</span></button>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">keyboard_arrow_down</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-3 bg-surface-container-lowest font-code-sm text-code-sm">
+<div class="flex gap-4 py-0.5 border-b border-outline-variant/10">
+<span class="text-outline shrink-0">[10:44:01]</span>
+<span class="text-secondary shrink-0">[PLC_INFO]</span>
+<span class="text-on-surface">Sequence 03 started. Arm moving to Home position.</span>
+</div>
+<div class="flex gap-4 py-0.5 border-b border-outline-variant/10 bg-primary/5">
+<span class="text-outline shrink-0">[10:44:05]</span>
+<span class="text-primary shrink-0">[BREAKPOINT]</span>
+<span class="text-on-surface">Execution paused at Line 142 (Motion_Control.scl)</span>
+</div>
+<div class="flex gap-4 py-0.5 border-b border-outline-variant/10">
+<span class="text-outline shrink-0">[10:44:06]</span>
+<span class="text-on-secondary-container shrink-0">[LOGIC]</span>
+<span class="text-on-surface">Watch Variable: Axis_X.ActualPos = 452.21</span>
+</div>
+<div class="flex gap-4 py-0.5 border-b border-outline-variant/10">
+<span class="text-outline shrink-0">[10:44:07]</span>
+<span class="text-error shrink-0">[WARN]</span>
+<span class="text-on-surface">Following error threshold approached (Axis_Y: 2.4mm)</span>
+</div>
+<div class="flex gap-4 py-0.5 border-b border-outline-variant/10">
+<span class="text-outline shrink-0">[10:44:08]</span>
+<span class="text-secondary shrink-0">[PLC_INFO]</span>
+<span class="text-on-surface">Step Into initiated by user 'Admin_EN'</span>
+</div>
+</div>
+</footer>
+</main>
+<!-- Right Property Inspector (Added for professional layout) -->
+<aside class="w-inspector-width bg-surface-container border-l border-outline-variant flex flex-col flex-shrink-0">
+<div class="p-padding-md border-b border-outline-variant bg-surface-container-high">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-primary">INSPECTOR</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">info</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-3">
+<div class="mb-4">
+<div class="text-[10px] font-label-caps text-outline mb-2">OBJECT PROPERTIES</div>
+<div class="bg-surface-container-low rounded border border-outline-variant/30 divide-y divide-outline-variant/30">
+<div class="grid grid-cols-2 p-2">
+<span class="text-on-surface-variant text-[11px]">Model ID</span>
+<span class="font-code-sm text-code-sm text-right">RBT-3AX-V2</span>
+</div>
+<div class="grid grid-cols-2 p-2">
+<span class="text-on-surface-variant text-[11px]">Physics Rate</span>
+<span class="font-code-sm text-code-sm text-right">1000 Hz</span>
+</div>
+<div class="grid grid-cols-2 p-2">
+<span class="text-on-surface-variant text-[11px]">Collision Mesh</span>
+<span class="font-code-sm text-code-sm text-right text-secondary">ACTIVE</span>
+</div>
+</div>
+</div>
+<div class="mb-4">
+<div class="text-[10px] font-label-caps text-outline mb-2">MOTION PARAMETERS</div>
+<div class="space-y-2">
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-[11px] text-on-surface-variant">Velocity Scale</span>
+<span class="text-primary text-[11px]">1.0x</span>
+</div>
+<input class="w-full h-1 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<span class="text-[11px] text-on-surface-variant">Joint Dampening</span>
+<span class="text-primary text-[11px]">0.42</span>
+</div>
+<input class="w-full h-1 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+</div>
+</div>
+</div>
+<div>
+<div class="text-[10px] font-label-caps text-outline mb-2">LINKED VARIABLES</div>
+<div class="space-y-1">
+<div class="flex items-center gap-2 p-2 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-surface-bright transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-primary">link</span>
+<span class="font-code-sm text-code-sm">Axis_X_Drive.Status</span>
+</div>
+<div class="flex items-center gap-2 p-2 bg-surface-container-lowest border border-outline-variant/20 rounded hover:bg-surface-bright transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-primary">link</span>
+<span class="font-code-sm text-code-sm">Global_IO.Safety_OK</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-3 bg-surface-container-high border-t border-outline-variant">
+<button class="w-full py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-sm hover:brightness-110 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+                    RE-SYNC TWIN
+                </button>
+</div>
+</aside>
+</div>
+<!-- Background Atmospheric Effect -->
+<script>
+        // Simple micro-interaction for the oscilloscope or console
+        document.addEventListener('DOMContentLoaded', () => {
+            const consoleArea = document.querySelector('footer div:last-child');
+            
+            // Periodically add a generic debug line to simulate live execution
+            setInterval(() => {
+                const lines = [
+                    "Memory scan complete. 0 errors found.",
+                    "Heartbeat pulse received from PLC-104.",
+                    "Updating simulation mesh state...",
+                    "Axis_Z position updated: 89.50",
+                    "Network latency: 1.2ms"
+                ];
+                const line = lines[Math.floor(Math.random() * lines.length)];
+                const timestamp = new Date().toLocaleTimeString([], { hour12: false });
+                
+                const div = document.createElement('div');
+                div.className = 'flex gap-4 py-0.5 border-b border-outline-variant/10 opacity-0 transition-opacity duration-500';
+                div.innerHTML = `
+                    <span class="text-outline shrink-0">[${timestamp}]</span>
+                    <span class="text-on-surface-variant/50 shrink-0">[SYSTEM]</span>
+                    <span class="text-on-surface/80">${line}</span>
+                `;
+                consoleArea.appendChild(div);
+                setTimeout(() => div.classList.remove('opacity-0'), 10);
+                
+                if (consoleArea.children.length > 50) {
+                    consoleArea.removeChild(consoleArea.firstChild);
+                }
+                consoleArea.scrollTop = consoleArea.scrollHeight;
+            }, 5000);
+        });
+    </script>
+</body></html>

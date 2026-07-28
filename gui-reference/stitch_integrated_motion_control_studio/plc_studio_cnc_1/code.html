@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLC Studio - CNC 配置</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#002e6a",
+                    "on-tertiary-fixed": "#36003e",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-surface": "#dae2fd",
+                    "secondary-fixed": "#6ffbbe",
+                    "secondary": "#4edea3",
+                    "surface-container-lowest": "#060e20",
+                    "tertiary": "#fbabff",
+                    "inverse-on-surface": "#283044",
+                    "on-error": "#690005",
+                    "primary-fixed": "#d8e2ff",
+                    "on-surface-variant": "#c2c6d6",
+                    "secondary-container": "#00a572",
+                    "on-secondary-fixed": "#002113",
+                    "on-primary-fixed-variant": "#004395",
+                    "surface-dim": "#0b1326",
+                    "primary": "#adc6ff",
+                    "surface-variant": "#2d3449",
+                    "tertiary-container": "#e14ef6",
+                    "surface-tint": "#adc6ff",
+                    "surface-container": "#171f33",
+                    "secondary-fixed-dim": "#4edea3",
+                    "surface-bright": "#31394d",
+                    "outline-variant": "#424754",
+                    "tertiary-fixed": "#ffd6fd",
+                    "surface-container-low": "#131b2e",
+                    "on-tertiary": "#580065",
+                    "on-primary-fixed": "#001a42",
+                    "outline": "#8c909f",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed-variant": "#7c008e",
+                    "surface": "#0b1326",
+                    "inverse-primary": "#005ac2",
+                    "inverse-surface": "#dae2fd",
+                    "on-secondary": "#003824",
+                    "on-primary-container": "#00285d",
+                    "primary-fixed-dim": "#adc6ff",
+                    "surface-container-high": "#222a3d",
+                    "error-container": "#93000a",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-container": "#00311f",
+                    "background": "#0b1326",
+                    "primary-container": "#4d8eff",
+                    "tertiary-fixed-dim": "#fbabff",
+                    "on-tertiary-container": "#4d0059",
+                    "surface-container-highest": "#2d3449",
+                    "on-background": "#dae2fd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "padding-md": "12px",
+                    "padding-xs": "4px",
+                    "inspector-width": "300px",
+                    "padding-sm": "8px",
+                    "toolbar-height": "40px",
+                    "unit": "4px",
+                    "sidebar-width": "260px",
+                    "gutter": "1px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "code-md": ["JetBrains Mono"],
+                    "headline-sm": ["Inter"],
+                    "code-sm": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow: hidden;
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #424754; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8c909f; }
+
+        .editor-line-active {
+            background: rgba(173, 198, 255, 0.1);
+            border-left: 2px solid #adc6ff;
+        }
+        
+        .axis-indicator-glow {
+            box-shadow: 0 0 8px rgba(78, 222, 163, 0.3);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface-container-high border-b border-outline-variant flex justify-between items-center w-full px-padding-md h-toolbar-height shrink-0">
+<div class="flex items-center gap-6">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">PLC Studio</span>
+<nav class="hidden md:flex items-center gap-1 h-full">
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">文件</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">编辑</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">项目</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">运动控制</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-primary border-b-2 border-primary transition-colors duration-150" href="#">CNC</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">仿真</a>
+</nav>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 mr-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1">bug_report</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1">settings</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1">help</button>
+</div>
+<button class="bg-surface-container-highest px-4 py-1 font-label-caps text-label-caps text-primary border border-outline-variant hover:bg-surface-variant transition-all">编译</button>
+<button class="bg-primary-container px-4 py-1 font-label-caps text-label-caps text-on-primary-container font-bold hover:opacity-90 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                运行
+            </button>
+</div>
+</header>
+<div class="flex-1 flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-surface-container-low border-r border-outline-variant flex flex-col w-sidebar-width h-full shrink-0">
+<div class="p-padding-md border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+</div>
+<div>
+<div class="font-label-caps text-label-caps text-primary">阿尔法项目</div>
+<div class="text-[10px] text-on-surface-variant">PLC-104-运动控制</div>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 py-2 overflow-y-auto">
+<div class="px-2 py-1 flex items-center gap-3 bg-surface-container-highest text-primary border-l-2 border-primary cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-caps text-label-caps">资源管理器</span>
+</div>
+<div class="px-2 py-1 flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-caps text-label-caps">逻辑控制</span>
+</div>
+<!-- Network Config Sections -->
+<div class="mt-4 px-padding-md">
+<div class="text-[10px] font-bold text-outline mb-2 uppercase tracking-widest">网络配置</div>
+<div class="space-y-1">
+<div class="flex items-center gap-2 px-2 py-1 hover:bg-surface-variant rounded cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-secondary">hub</span>
+<span class="font-body-sm text-body-sm text-on-surface">EtherCAT 接口</span>
+</div>
+<div class="flex items-center gap-2 px-2 py-1 hover:bg-surface-variant rounded cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-tertiary">alt_route</span>
+<span class="font-body-sm text-body-sm text-on-surface">CAN 总线</span>
+</div>
+<div class="flex items-center gap-2 px-2 py-1 hover:bg-surface-variant rounded cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-primary">router</span>
+<span class="font-body-sm text-body-sm text-on-surface">Modbus TCP/RTU</span>
+</div>
+</div>
+</div>
+<!-- Motion Tree -->
+<div class="mt-4 px-padding-md">
+<div class="text-[10px] font-bold text-outline mb-2 uppercase tracking-widest">运动控制树</div>
+<div class="space-y-1">
+<div class="flex items-center gap-1 group cursor-pointer">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface">chevron_right</span>
+<span class="material-symbols-outlined text-secondary text-sm">settings_input_component</span>
+<span class="font-body-sm text-body-sm text-on-surface">X 轴 (Axis_X)</span>
+</div>
+<div class="flex items-center gap-1 group cursor-pointer">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface">chevron_right</span>
+<span class="material-symbols-outlined text-secondary text-sm">settings_input_component</span>
+<span class="font-body-sm text-body-sm text-on-surface">Y 轴 (Axis_Y)</span>
+</div>
+<div class="flex items-center gap-1 group cursor-pointer">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface">chevron_right</span>
+<span class="material-symbols-outlined text-secondary text-sm">settings_input_component</span>
+<span class="font-body-sm text-body-sm text-on-surface">Z 轴 (Axis_Z)</span>
+</div>
+<div class="flex items-center gap-1 group cursor-pointer pl-4">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface">chevron_right</span>
+<span class="material-symbols-outlined text-primary text-sm">route</span>
+<span class="font-body-sm text-body-sm text-on-surface">CNC 路径</span>
+</div>
+<div class="flex items-center gap-1 group cursor-pointer pl-8">
+<span class="material-symbols-outlined text-primary text-sm">description</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">轮廓切割_V1</span>
+</div>
+</div>
+</div>
+</nav>
+<div class="mt-auto border-t border-outline-variant py-2">
+<div class="px-padding-md py-2 flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">系统设置</span>
+</div>
+<div class="px-padding-md py-2 flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps">工程师配置文件</span>
+</div>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 flex flex-col bg-surface min-w-0">
+<!-- Central Panels (Editor & Preview) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- G-Code Editor -->
+<section class="flex-1 flex flex-col border-r border-outline-variant bg-[#0F172A]">
+<div class="h-8 flex items-center px-4 bg-surface-container border-b border-outline-variant">
+<span class="font-label-caps text-label-caps text-primary">轮廓切割_V1.nc</span>
+<span class="ml-auto material-symbols-outlined text-on-surface-variant cursor-pointer">close</span>
+</div>
+<div class="flex-1 overflow-auto font-code-md text-code-md p-4 space-y-0 text-on-surface-variant leading-relaxed">
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">01</span>
+<span class="text-secondary">%</span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">02</span>
+<span class="text-tertiary">O0001 (主程序)</span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">03</span>
+<span class="text-primary-container">G21 G90 G40 G80</span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">04</span>
+<span class="text-secondary">M06 T01</span> <span class="text-outline">(刀具交换)</span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors editor-line-active">
+<span class="w-8 text-outline text-right pr-4 select-none">05</span>
+<span>N01 <span class="text-primary">G01 X100 Y100 F1000</span></span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">06</span>
+<span>N02 <span class="text-primary">G01 X150 Y100</span></span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">07</span>
+<span>N03 <span class="text-primary">G02 X200 Y150 R50</span></span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">08</span>
+<span>N04 <span class="text-primary">G01 X200 Y200</span></span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">09</span>
+<span>N05 <span class="text-primary">G01 X100 Y200</span></span>
+</div>
+<div class="flex hover:bg-surface-variant/20 px-2 transition-colors">
+<span class="w-8 text-outline text-right pr-4 select-none">10</span>
+<span class="text-primary-container">M30</span>
+</div>
+</div>
+</section>
+<!-- 3D Path Preview -->
+<section class="flex-1 relative bg-surface-container-low overflow-hidden group">
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="absolute top-4 left-4 z-10 flex gap-2">
+<button class="bg-surface-container-high p-2 rounded border border-outline-variant hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="bg-surface-container-high p-2 rounded border border-outline-variant hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">grid_4x4</span>
+</button>
+<button class="bg-surface-container-high p-2 rounded border border-outline-variant hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">3d_rotation</span>
+</button>
+</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<!-- Simulated 3D Path Placeholder -->
+<div class="w-3/4 h-3/4 border border-outline-variant/30 flex items-center justify-center rotate-x-12 rotate-y-12 transform-gpu">
+<svg class="w-full h-full text-primary drop-shadow-lg" viewbox="0 0 400 400">
+<path d="M 50,50 L 350,50 L 350,350 L 50,350 Z" fill="none" opacity="0.3" stroke="currentColor" stroke-dasharray="4" stroke-width="1"></path>
+<path d="M 100,100 L 250,100 A 50,50 0 0 1 300,150 L 300,300 L 100,300 Z" fill="none" id="motion-path" stroke="#4edea3" stroke-width="3"></path>
+<circle class="animate-ping" cx="100" cy="100" fill="#fbabff" r="4"></circle>
+<circle cx="100" cy="100" fill="#fbabff" r="4"></circle>
+</svg>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 bg-surface-container-high/80 backdrop-blur-md p-3 border border-outline-variant rounded-lg">
+<div class="text-[10px] font-label-caps text-outline uppercase mb-2">视图控制</div>
+<div class="grid grid-cols-2 gap-2">
+<button class="text-xs font-label-caps bg-surface-container px-2 py-1 border border-outline-variant">顶部</button>
+<button class="text-xs font-label-caps bg-surface-container px-2 py-1 border border-outline-variant">正前</button>
+<button class="text-xs font-label-caps bg-surface-container px-2 py-1 border border-outline-variant">等轴</button>
+<button class="text-xs font-label-caps bg-primary-container text-on-primary-container px-2 py-1 border border-outline-variant">3D 预览</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Panel: Status Console & Jog Controls -->
+<section class="h-[200px] border-t border-outline-variant bg-surface-container-low flex overflow-hidden shrink-0">
+<div class="flex-1 flex flex-col border-r border-outline-variant">
+<div class="h-8 flex items-center px-4 bg-surface-container border-b border-outline-variant gap-4">
+<button class="font-label-caps text-label-caps text-primary border-b-2 border-primary h-full px-2">控制台</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary h-full px-2">变量查看</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary h-full px-2">监视列表</button>
+</div>
+<div class="flex-1 overflow-y-auto p-3 font-code-sm text-code-sm bg-[#060e20]">
+<div class="text-secondary">[14:02:11] 控制器已联机。</div>
+<div class="text-on-surface-variant">[14:02:12] 轮廓切割_V1 加载成功。</div>
+<div class="text-on-surface-variant">[14:02:15] 语法检查：0 错误，0 警告。</div>
+<div class="text-primary-container">[14:05:00] G代码执行在第 05 行暂停。</div>
+<div class="text-on-surface-variant">[14:05:05] 等待手动启动触发。</div>
+<div class="flex gap-2 animate-pulse mt-2">
+<span class="text-outline">&gt;</span>
+<div class="h-4 w-2 bg-primary"></div>
+</div>
+</div>
+</div>
+<div class="w-[320px] p-4 bg-surface-container flex flex-col gap-3">
+<div class="font-label-caps text-label-caps text-on-surface-variant flex justify-between">
+<span>手动点动控制 (JOG)</span>
+<span class="text-secondary flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> 就绪</span>
+</div>
+<div class="grid grid-cols-3 gap-2 flex-1">
+<div></div>
+<button class="bg-surface-variant hover:bg-primary-container hover:text-on-primary-container border border-outline-variant flex items-center justify-center p-2 rounded transition-all">
+<span class="material-symbols-outlined">expand_less</span>
+</button>
+<div></div>
+<button class="bg-surface-variant hover:bg-primary-container hover:text-on-primary-container border border-outline-variant flex items-center justify-center p-2 rounded transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="bg-error-container text-on-error-container font-bold text-xs p-2 rounded flex items-center justify-center border border-error">
+                            急停
+                        </button>
+<button class="bg-surface-variant hover:bg-primary-container hover:text-on-primary-container border border-outline-variant flex items-center justify-center p-2 rounded transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<div></div>
+<button class="bg-surface-variant hover:bg-primary-container hover:text-on-primary-container border border-outline-variant flex items-center justify-center p-2 rounded transition-all">
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+<div></div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-surface-bright border border-outline-variant py-1 text-[10px] font-label-caps">全轴回零</button>
+<button class="flex-1 bg-surface-bright border border-outline-variant py-1 text-[10px] font-label-caps">坐标清零</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Right Panel: Axis Tuning & Status -->
+<aside class="w-inspector-width bg-surface-container-low border-l border-outline-variant flex flex-col shrink-0 overflow-y-auto">
+<div class="p-4 border-b border-outline-variant">
+<div class="font-label-caps text-label-caps text-primary mb-4">轴状态与调试</div>
+<!-- Axis Cards -->
+<div class="space-y-4">
+<!-- Axis X -->
+<div class="p-3 bg-surface-container rounded border border-outline-variant">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm font-bold text-on-surface">X 轴 (Axis_X)</span>
+<span class="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 rounded">活动中</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-baseline">
+<span class="text-body-sm text-outline">位置</span>
+<span class="font-code-md text-primary">100.000 <span class="text-[10px] text-outline">mm</span></span>
+</div>
+<div class="flex justify-between items-baseline">
+<span class="text-body-sm text-outline">速度</span>
+<span class="font-code-md text-on-surface">15.5 <span class="text-[10px] text-outline">m/min</span></span>
+</div>
+<div class="h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-1/3 axis-indicator-glow"></div>
+</div>
+<div class="flex justify-between text-[10px] text-outline">
+<span>扭矩</span>
+<span>34%</span>
+</div>
+</div>
+</div>
+<!-- Axis Y -->
+<div class="p-3 bg-surface-container rounded border border-outline-variant">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm font-bold text-on-surface">Y 轴 (Axis_Y)</span>
+<span class="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 rounded">活动中</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-baseline">
+<span class="text-body-sm text-outline">位置</span>
+<span class="font-code-md text-primary">100.000 <span class="text-[10px] text-outline">mm</span></span>
+</div>
+<div class="flex justify-between items-baseline">
+<span class="text-body-sm text-outline">速度</span>
+<span class="font-code-md text-on-surface">15.5 <span class="text-[10px] text-outline">m/min</span></span>
+</div>
+<div class="h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-1/3 axis-indicator-glow"></div>
+</div>
+<div class="flex justify-between text-[10px] text-outline">
+<span>扭矩</span>
+<span>32%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Kinematics & Tuning -->
+<div class="p-4 flex-1">
+<div class="font-label-caps text-label-caps text-outline uppercase mb-4">运动学与控制回路</div>
+<div class="space-y-4">
+<!-- Kinematics Section -->
+<div class="mb-4 p-3 bg-surface-container-high rounded border border-outline-variant">
+<div class="text-[10px] font-label-caps text-primary uppercase mb-2">多轴运动变换</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<span class="text-body-sm text-on-surface-variant">坐标系 (WCS)</span>
+<select class="bg-surface-variant border-none text-[11px] text-primary py-0 px-2 rounded">
+<option>Cartesian 3D</option>
+<option>Delta Parallel</option>
+<option>Scara 4-Axis</option>
+</select>
+</div>
+<div class="grid grid-cols-3 gap-1">
+<div class="text-center bg-surface-dim p-1 rounded border border-outline-variant">
+<div class="text-[9px] text-outline">Rot_X</div>
+<div class="text-xs font-code-sm text-secondary">0.00°</div>
+</div>
+<div class="text-center bg-surface-dim p-1 rounded border border-outline-variant">
+<div class="text-[9px] text-outline">Rot_Y</div>
+<div class="text-xs font-code-sm text-secondary">0.00°</div>
+</div>
+<div class="text-center bg-surface-dim p-1 rounded border border-outline-variant">
+<div class="text-[9px] text-outline">Rot_Z</div>
+<div class="text-xs font-code-sm text-secondary">0.00°</div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 items-center gap-2">
+<label class="text-body-sm text-on-surface-variant">比例系数 (K-P)</label>
+<input class="bg-surface-variant border border-outline-variant text-primary font-code-sm px-2 py-1 outline-none focus:border-primary transition-all rounded" type="text" value="1.250"/>
+</div>
+<div class="grid grid-cols-2 items-center gap-2">
+<label class="text-body-sm text-on-surface-variant">积分系数 (K-I)</label>
+<input class="bg-surface-variant border border-outline-variant text-primary font-code-sm px-2 py-1 outline-none focus:border-primary transition-all rounded" type="text" value="0.045"/>
+</div>
+<div class="grid grid-cols-2 items-center gap-2">
+<label class="text-body-sm text-on-surface-variant">微分系数 (K-D)</label>
+<input class="bg-surface-variant border border-outline-variant text-primary font-code-sm px-2 py-1 outline-none focus:border-primary transition-all rounded" type="text" value="0.000"/>
+</div>
+<div class="mt-6">
+<div class="text-[10px] font-label-caps text-outline uppercase mb-2">进给倍率覆盖</div>
+<div class="flex items-center gap-3">
+<input class="flex-1 accent-primary h-1 bg-surface-variant rounded-lg appearance-none cursor-pointer" type="range"/>
+<span class="font-code-md text-primary min-w-[3rem] text-right">100%</span>
+</div>
+</div>
+<button class="w-full mt-4 bg-primary text-on-primary py-2 rounded font-label-caps text-label-caps hover:opacity-90 transition-all">应用调试参数</button>
+</div>
+</div>
+</aside>
+</div>
+<!-- Scripts for simple interactions -->
+<script>
+        console.log("PLC Studio initialized.");
+        
+        // Simple console log simulator
+        const consoleEl = document.querySelector('.flex-1.overflow-y-auto.p-3.font-code-sm');
+        setInterval(() => {
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            const msgs = [
+                "X 轴位置更新：校验通过。",
+                "缓冲区状态：85% 容量。",
+                "CNC 解释器：正在解析 N06...",
+                "冷却系统：检查正常。",
+                "扭矩波动在额定范围内。"
+            ];
+            const msg = msgs[Math.floor(Math.random() * msgs.length)];
+            const div = document.createElement('div');
+            div.className = 'text-on-surface-variant opacity-70';
+            div.innerHTML = `<span class="text-outline">[${time}]</span> ${msg}`;
+            consoleEl.prepend(div);
+            if (consoleEl.children.length > 20) consoleEl.lastChild.remove();
+        }, 8000);
+    </script>
+</body></html>

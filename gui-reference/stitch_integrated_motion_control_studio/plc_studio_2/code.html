@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLC Studio - 设备管理与组态</title>
+<!-- Load Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="industrial-theme">
+    body {
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      font-size: 12px;
+      color: #000;
+      background-color: #A0A0A0; /* Window background dark gray */
+      overflow: hidden;
+    }
+    .win-border {
+      border: 1px solid #707070;
+    }
+    .tree-node:hover {
+      background-color: #E5F3FF;
+    }
+    .selected-node {
+      background-color: #3399FF !important;
+      color: white;
+    }
+    .context-menu-shadow {
+      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+    }
+    /* Mimic the dotted lines in the tree view */
+    .tree-line {
+      border-left: 1px dotted #888;
+    }
+    .tree-line-horizontal {
+      border-bottom: 1px dotted #888;
+    }
+  </style>
+<style data-purpose="menu-styles">
+    .menu-item {
+      padding: 3px 20px 3px 28px;
+      position: relative;
+      cursor: default;
+      white-space: nowrap;
+    }
+    .menu-item:hover {
+      background-color: #91C9F7;
+      border: 1px solid #3399FF;
+      padding: 2px 19px 2px 27px; /* Adjust for border */
+    }
+    .menu-separator {
+      height: 1px;
+      background-color: #E0E0E0;
+      margin: 3px 2px;
+    }
+    .icon-placeholder {
+      position: absolute;
+      left: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col">
+<!-- BEGIN: Top Toolbar -->
+<header class="bg-[#F0F0F0] border-b border-[#A0A0A0] flex flex-col" data-purpose="main-header">
+<nav class="flex items-center px-2 py-1 space-x-4 border-b border-white">
+<span class="cursor-default">文件</span>
+<span class="cursor-default">编辑</span>
+<span class="cursor-default">视图</span>
+<span class="cursor-default">工程</span>
+<span class="cursor-default">编译</span>
+<span class="cursor-default">在线</span>
+<span class="cursor-default">调试</span>
+<span class="cursor-default">工具</span>
+<span class="cursor-default">窗口</span>
+<span class="cursor-default">帮助</span>
+</nav>
+<div class="flex items-center p-1 space-x-1 bg-[#F0F0F0]">
+<!-- Toolbar Icons Placeholder -->
+<div class="flex space-x-1 px-2 border-r border-[#C0C0C0]">
+<div class="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center">📄</div>
+<div class="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center">📂</div>
+<div class="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center">💾</div>
+</div>
+<div class="flex space-x-1 px-2">
+<div class="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center">↩️</div>
+<div class="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center">↪️</div>
+</div>
+</div>
+</header>
+<!-- END: Top Toolbar -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-grow flex overflow-hidden">
+<!-- BEGIN: Left Sidebar (Device Tree) -->
+<aside class="w-72 bg-white border-r border-[#808080] flex flex-col shrink-0" data-purpose="device-tree">
+<div class="bg-[#F0F0F0] p-1 border-b border-[#808080] flex justify-between items-center font-bold">
+<span>设备</span>
+<div class="flex space-x-1">
+<span>📌</span>
+<span>✖</span>
+</div>
+</div>
+<div class="overflow-auto p-1 bg-white flex-grow">
+<!-- Root node -->
+<div class="flex items-center space-x-1 py-0.5">
+<span>➖</span>
+<span class="text-blue-700">📁</span>
+<span>未命名2.project</span>
+</div>
+<!-- Device Node -->
+<div class="ml-4 border-l border-dotted border-gray-400">
+<div class="flex items-center space-x-1 py-0.5 ml-2">
+<span>➖</span>
+<span class="text-gray-600">🗄️</span>
+<span>Device (AC712)</span>
+</div>
+<!-- Device Sub-items -->
+<div class="ml-8 border-l border-dotted border-gray-400">
+<div class="flex items-center space-x-1 py-0.5 ml-2 tree-node">
+<span class="text-blue-500">🔍</span>
+<span>故障诊断</span>
+</div>
+<div class="flex items-center space-x-1 py-0.5 ml-2 tree-node">
+<span class="text-green-600">🕸️</span>
+<span>网络组态</span>
+</div>
+<div class="flex items-center space-x-1 py-0.5 ml-2">
+<span>➖</span>
+<span class="text-blue-700">📜</span>
+<span>PLC 逻辑</span>
+</div>
+<!-- PLC Logic Sub-items -->
+<div class="ml-6 border-l border-dotted border-gray-400">
+<div class="flex items-center space-x-1 py-0.5 ml-2 bg-[#3399FF] text-white border border-red-500 relative" data-purpose="active-node">
+<span>➖</span>
+<span class="text-yellow-400">⚙️</span>
+<span>Application</span>
+<!-- Red outline highlight from screenshot -->
+<div class="absolute inset-0 border-2 border-red-500 opacity-70 pointer-events-none"></div>
+</div>
+<!-- More items below Application -->
+<div class="ml-4 mt-1 space-y-1">
+<div class="flex items-center space-x-1 py-0.5 tree-node">
+<span class="text-red-500">📊</span>
+<span>Trace</span>
+</div>
+<div class="flex items-center space-x-1 py-0.5 tree-node">
+<span class="text-orange-500">🖥️</span>
+<span>视图管理器</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- END: Left Sidebar -->
+<!-- BEGIN: Workspace Area -->
+<section class="flex-grow bg-[#808080] relative" data-purpose="workspace">
+<!-- Background Workspace -->
+<div class="absolute inset-0 bg-[#A0A0A0]"></div>
+<!-- BEGIN: Floating Context Menu (First Level) -->
+<div class="absolute top-10 left-[-20px] w-52 bg-[#F0F0F0] win-border context-menu-shadow z-50 py-1" data-purpose="main-context-menu">
+<div class="menu-item"><span class="icon-placeholder">📄</span>复制</div>
+<div class="menu-item"><span class="icon-placeholder">📋</span>粘贴</div>
+<div class="menu-item"><span class="icon-placeholder">✂️</span>剪切</div>
+<div class="menu-item"><span class="icon-placeholder">❌</span>删除</div>
+<div class="menu-separator"></div>
+<div class="menu-item">重构<span class="float-right">▶</span></div>
+<div class="menu-separator"></div>
+<div class="menu-item">属性...</div>
+<!-- Highlighted Parent Menu Item -->
+<div class="menu-item bg-[#91C9F7] border border-[#3399FF]">
+<span class="icon-placeholder">✨</span>添加对象<span class="float-right">▶</span>
+<div class="absolute inset-0 border border-red-500 pointer-events-none"></div>
+</div>
+<div class="menu-item"><span class="icon-placeholder">📂</span>添加文件夹...</div>
+<div class="menu-item"><span class="icon-placeholder">📝</span>编辑对象</div>
+<div class="menu-item">折叠Application</div>
+<div class="menu-item"><span class="icon-placeholder">🔑</span>登录到</div>
+</div>
+<!-- END: Floating Context Menu -->
+<!-- BEGIN: Sub-Menu (Add Objects) -->
+<div class="absolute top-[200px] left-[188px] w-64 bg-[#F0F0F0] win-border context-menu-shadow z-50 py-1" data-purpose="sub-context-menu">
+<div class="menu-item">AddAxisGroup(轴组插件功能)...</div>
+<div class="menu-item">Axis Group...</div>
+<div class="menu-item">cam表...</div>
+<!-- Highlighted CNC Item -->
+<div class="menu-item bg-[#91C9F7] border border-[#3399FF] relative">
+<span class="icon-placeholder">🌀</span>CNC程序...
+          <div class="absolute inset-0 border-2 border-red-500 pointer-events-none"></div>
+</div>
+<div class="menu-item">DUT...</div>
+<div class="menu-item">PersistentVarsValueDetector...</div>
+<div class="menu-item"><span class="icon-placeholder">⚠️</span>报警配置...</div>
+<div class="menu-item"><span class="icon-placeholder">📦</span>程序组织单元...</div>
+<div class="menu-item"><span class="icon-placeholder">🔄</span>单位转换...</div>
+<div class="menu-item"><span class="icon-placeholder">🔋</span>掉电保持变量...</div>
+<div class="menu-item"><span class="icon-placeholder">🔡</span>符号配置...</div>
+<div class="menu-item"><span class="icon-placeholder">📈</span>跟踪...</div>
+<div class="menu-item"><span class="icon-placeholder">🔑</span>界面...</div>
+<div class="menu-item"><span class="icon-placeholder">🍱</span>配方管理器...</div>
+<div class="menu-item"><span class="icon-placeholder">📉</span>趋势记录管理器...</div>
+<div class="menu-item">全局变量列表...</div>
+<div class="menu-item">全局网络变量列表...</div>
+<div class="menu-item">视图...</div>
+<div class="menu-item">外部文件...</div>
+<div class="menu-item">网络变量列表（发行人）...</div>
+<div class="menu-item">文本列表...</div>
+<div class="menu-item">应用...</div>
+<div class="menu-item">映像池...</div>
+<div class="menu-item">用于隐含检查的POU...</div>
+</div>
+<!-- END: Sub-Menu -->
+</section>
+<!-- END: Workspace Area -->
+</main>
+<!-- END: Main Content Area -->
+<!-- BEGIN: Bottom Status Bar -->
+<footer class="bg-[#F0F0F0] border-t border-[#808080] p-1 flex justify-between text-[11px] h-6 items-center" data-purpose="status-bar">
+<div class="flex space-x-4">
+<span>就绪</span>
+</div>
+<div class="flex space-x-4 divide-x divide-gray-400">
+<span class="px-2">Ln 1, Col 1</span>
+<span class="px-2">CAPS</span>
+<span class="px-2">NUM</span>
+</div>
+</footer>
+<!-- END: Bottom Status Bar -->
+</body></html>

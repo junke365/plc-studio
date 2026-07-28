@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLC Studio - Kinetic Precision</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        surface: '#0b1326',
+                        'surface-dim': '#0b1326',
+                        'surface-bright': '#31394d',
+                        'surface-container-lowest': '#060e20',
+                        'surface-container-low': '#131b2e',
+                        'surface-container-medium': '#1b243a',
+                        'surface-container-high': '#252e44',
+                        'surface-container-highest': '#2f384e',
+                        primary: '#3b82f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'custom': '4px',
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-size: 13px;
+            color: #e2e8f0;
+            background-color: #0b1326;
+            overflow: hidden;
+        }
+        .tree-node:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .selected-node {
+            background-color: #3b82f6 !important;
+            color: white;
+        }
+        .menu-item {
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            cursor: default;
+            transition: all 0.1s;
+        }
+        .menu-item:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .menu-separator {
+            height: 1px;
+            background-color: #2f384e;
+            margin: 4px 0;
+        }
+        .active-ring {
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col font-sans">
+<!-- Header / Ribbon -->
+<header class="bg-surface-container-medium border-b border-surface-container-highest flex flex-col z-30" data-purpose="main-header">
+<nav class="flex items-center px-4 py-1 space-x-6 text-xs text-gray-400">
+<span class="cursor-pointer hover:text-white">文件</span>
+<span class="cursor-pointer hover:text-white">编辑</span>
+<span class="cursor-pointer hover:text-white">视图</span>
+<span class="cursor-pointer hover:text-white">工程</span>
+<span class="cursor-pointer hover:text-white">编译</span>
+<span class="cursor-pointer hover:text-white">在线</span>
+<span class="cursor-pointer hover:text-white">调试</span>
+<span class="cursor-pointer hover:text-white">工具</span>
+<span class="cursor-pointer hover:text-white">窗口</span>
+<span class="cursor-pointer hover:text-white">帮助</span>
+</nav>
+<div class="flex items-center p-2 space-x-3 bg-surface-container-low">
+<div class="flex space-x-2 pr-3 border-r border-surface-container-highest">
+<button class="w-8 h-8 rounded-custom hover:bg-surface-container-high flex items-center justify-center text-gray-300">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</button>
+<button class="w-8 h-8 rounded-custom hover:bg-surface-container-high flex items-center justify-center text-gray-300">
+<span class="material-symbols-outlined text-[20px]">folder_open</span>
+</button>
+<button class="w-8 h-8 rounded-custom hover:bg-surface-container-high flex items-center justify-center text-gray-300">
+<span class="material-symbols-outlined text-[20px]">save</span>
+</button>
+</div>
+<div class="flex space-x-2">
+<button class="w-8 h-8 rounded-custom hover:bg-surface-container-high flex items-center justify-center text-gray-300">
+<span class="material-symbols-outlined text-[20px]">undo</span>
+</button>
+<button class="w-8 h-8 rounded-custom hover:bg-surface-container-high flex items-center justify-center text-gray-300">
+<span class="material-symbols-outlined text-[20px]">redo</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow flex overflow-hidden">
+<!-- Left Sidebar: Device Tree -->
+<aside class="w-72 bg-surface-container-low border-r border-surface-container-highest flex flex-col shrink-0" data-purpose="device-tree">
+<div class="bg-surface-container-medium px-3 py-2 border-b border-surface-container-highest flex justify-between items-center">
+<span class="font-semibold text-gray-200">设备</span>
+<div class="flex space-x-2 text-gray-400">
+<span class="material-symbols-outlined text-[16px] cursor-pointer hover:text-white">push_pin</span>
+<span class="material-symbols-outlined text-[16px] cursor-pointer hover:text-white">close</span>
+</div>
+</div>
+<div class="overflow-auto p-2 scrollbar-hide flex-grow">
+<!-- Root node -->
+<div class="flex items-center space-x-2 py-1 px-1 rounded-custom tree-node">
+<span class="material-symbols-outlined text-[16px] text-gray-500">expand_more</span>
+<span class="material-symbols-outlined text-[18px] text-primary">folder</span>
+<span class="text-gray-300">未命名2.project</span>
+</div>
+<div class="ml-4 pl-1 border-l border-surface-container-highest">
+<!-- Device Node -->
+<div class="flex items-center space-x-2 py-1 px-1 rounded-custom tree-node">
+<span class="material-symbols-outlined text-[16px] text-gray-500">expand_more</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400">memory</span>
+<span class="text-gray-300">Device (AC712)</span>
+</div>
+<div class="ml-4 pl-1 border-l border-surface-container-highest space-y-0.5">
+<div class="flex items-center space-x-2 py-1 px-1 rounded-custom tree-node">
+<span class="material-symbols-outlined text-[18px] text-blue-400">search</span>
+<span>故障诊断</span>
+</div>
+<div class="flex items-center space-x-2 py-1 px-1 rounded-custom tree-node">
+<span class="material-symbols-outlined text-[18px] text-green-400">lan</span>
+<span>网络组态</span>
+</div>
+<div class="flex items-center space-x-2 py-1 px-1 rounded-custom tree-node">
+<span class="material-symbols-outlined text-[16px] text-gray-500">expand_more</span>
+<span class="material-symbols-outlined text-[18px] text-blue-500">description</span>
+<span>PLC 逻辑</span>
+</div>
+<!-- PLC Logic Sub-items -->
+<div class="ml-4 pl-1 border-l border-surface-container-highest">
+<div class="flex items-center space-x-2 py-1 px-2 rounded-custom bg-primary text-white relative active-ring" data-purpose="active-node">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span class="font-medium">Application</span>
+</div>
+<div class="ml-4 mt-1 space-y-1">
+<div class="flex items-center space-x-2 py-1 px-1 rounded-custom tree-node">
+<span class="material-symbols-outlined text-[18px] text-red-400">analytics</span>
+<span>Trace</span>
+</div>
+<div class="flex items-center space-x-2 py-1 px-1 rounded-custom tree-node">
+<span class="material-symbols-outlined text-[18px] text-orange-400">desktop_windows</span>
+<span>视图管理器</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Workspace -->
+<section class="flex-grow bg-surface relative" data-purpose="workspace">
+<!-- Main Context Menu -->
+<div class="absolute top-8 left-4 w-56 bg-surface-container-highest border border-surface-container-bright rounded-custom shadow-2xl z-40 py-1 overflow-hidden" data-purpose="main-context-menu">
+<div class="menu-item">
+<span class="material-symbols-outlined text-[18px] mr-3 opacity-70">content_copy</span>复制
+            </div>
+<div class="menu-item">
+<span class="material-symbols-outlined text-[18px] mr-3 opacity-70">content_paste</span>粘贴
+            </div>
+<div class="menu-item">
+<span class="material-symbols-outlined text-[18px] mr-3 opacity-70">content_cut</span>剪切
+            </div>
+<div class="menu-item text-red-400">
+<span class="material-symbols-outlined text-[18px] mr-3">delete</span>删除
+            </div>
+<div class="menu-separator"></div>
+<div class="menu-item justify-between">
+<div class="flex items-center">
+<span class="w-[18px] mr-3"></span>重构
+                </div>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</div>
+<div class="menu-separator"></div>
+<div class="menu-item">
+<span class="w-[18px] mr-3"></span>属性...
+            </div>
+<!-- Active Add Object -->
+<div class="menu-item bg-primary text-white justify-between">
+<div class="flex items-center font-medium">
+<span class="material-symbols-outlined text-[18px] mr-3">add_circle</span>添加对象
+                </div>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</div>
+<div class="menu-item">
+<span class="material-symbols-outlined text-[18px] mr-3 opacity-70">create_new_folder</span>添加文件夹...
+            </div>
+<div class="menu-item">
+<span class="material-symbols-outlined text-[18px] mr-3 opacity-70">edit</span>编辑对象
+            </div>
+<div class="menu-item">
+<span class="w-[18px] mr-3"></span>折叠Application
+            </div>
+<div class="menu-item">
+<span class="material-symbols-outlined text-[18px] mr-3 opacity-70">vpn_key</span>登录到
+            </div>
+</div>
+<!-- Sub Context Menu (Add Objects) -->
+<div class="absolute top-48 left-60 w-72 bg-surface-container-highest border border-surface-container-bright rounded-custom shadow-2xl z-50 py-1 max-h-[70vh] overflow-y-auto scrollbar-hide" data-purpose="sub-context-menu">
+<div class="menu-item">AddAxisGroup(轴组插件功能)...</div>
+<div class="menu-item">Axis Group...</div>
+<div class="menu-item">cam表...</div>
+<!-- Highlighted CNC -->
+<div class="menu-item bg-primary text-white font-medium">
+<span class="material-symbols-outlined text-[18px] mr-3">motion_photos_on</span>CNC程序...
+            </div>
+<div class="menu-item">DUT...</div>
+<div class="menu-item">PersistentVarsValueDetector...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-yellow-400">warning</span>报警配置...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-blue-400">package</span>程序组织单元...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-green-400">sync_alt</span>单位转换...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-orange-400">battery_charging_full</span>掉电保持变量...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-indigo-400">abc</span>符号配置...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-red-400">show_chart</span>跟踪...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-cyan-400">key</span>界面...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-pink-400">fastfood</span>配方管理器...</div>
+<div class="menu-item"><span class="material-symbols-outlined text-[18px] mr-3 text-emerald-400">trending_down</span>趋势记录管理器...</div>
+<div class="menu-item">全局变量列表...</div>
+<div class="menu-item">全局网络变量列表...</div>
+<div class="menu-item">视图...</div>
+<div class="menu-item">外部文件...</div>
+<div class="menu-item">网络变量列表（发行人）...</div>
+<div class="menu-item">文本列表...</div>
+<div class="menu-item">应用...</div>
+<div class="menu-item">映像池...</div>
+<div class="menu-item">用于隐含检查的POU...</div>
+</div>
+</section>
+</main>
+<!-- Status Bar -->
+<footer class="bg-surface-container-medium border-t border-surface-container-highest px-4 py-1 flex justify-between items-center text-[11px] text-gray-400" data-purpose="status-bar">
+<div class="flex items-center space-x-4">
+<span class="flex items-center"><span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>就绪</span>
+</div>
+<div class="flex items-center space-x-4 divide-x divide-surface-container-highest">
+<span class="pl-4">Ln 1, Col 1</span>
+<span class="pl-4">CAPS</span>
+<span class="pl-4 font-bold text-gray-300">NUM</span>
+</div>
+</footer>
+</body></html>

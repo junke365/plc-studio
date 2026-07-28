@@ -1,0 +1,460 @@
+<!DOCTYPE html><html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1326; /* surface-dim */
+            color: #dae2fd; /* on-surface */
+            overflow: hidden;
+            height: 100vh;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .editor-grid {
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr var(--inspector-width);
+            grid-template-rows: var(--toolbar-height) 1fr 180px 32px;
+            height: 100vh;
+        }
+        .custom-dashed-border {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23424754' stroke-width='1' stroke-dasharray='4%2c 4' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffd6fd",
+                        "outline-variant": "#424754",
+                        "surface-container": "#171f33",
+                        "surface-tint": "#adc6ff",
+                        "surface-bright": "#31394d",
+                        "secondary-fixed-dim": "#4edea3",
+                        "tertiary-container": "#e14ef6",
+                        "surface-variant": "#2d3449",
+                        "surface-dim": "#0b1326",
+                        "primary": "#adc6ff",
+                        "on-primary-fixed-variant": "#004395",
+                        "secondary-container": "#00a572",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary-fixed": "#002113",
+                        "on-error": "#690005",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary": "#fbabff",
+                        "surface-container-lowest": "#060e20",
+                        "inverse-on-surface": "#283044",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#4edea3",
+                        "on-tertiary-fixed": "#36003e",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-primary": "#002e6a",
+                        "on-surface": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "on-background": "#dae2fd",
+                        "tertiary-fixed-dim": "#fbabff",
+                        "on-tertiary-container": "#4d0059",
+                        "primary-container": "#4d8eff",
+                        "on-secondary-container": "#00311f",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0b1326",
+                        "inverse-surface": "#dae2fd",
+                        "inverse-primary": "#005ac2",
+                        "surface-container-high": "#222a3d",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary": "#003824",
+                        "on-primary-container": "#00285d",
+                        "outline": "#8c909f",
+                        "error": "#ffb4ab",
+                        "surface": "#0b1326",
+                        "on-tertiary-fixed-variant": "#7c008e",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary": "#580065",
+                        "on-primary-fixed": "#001a42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "toolbar-height": "40px",
+                        "sidebar-width": "260px",
+                        "gutter": "1px",
+                        "padding-xs": "4px",
+                        "inspector-width": "300px",
+                        "padding-sm": "8px",
+                        "padding-md": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "code-sm": ["JetBrains Mono"],
+                        "code-md": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background select-none">
+<!-- TopNavBar -->
+<header class="bg-surface-container-highest flex justify-between items-center h-toolbar-height px-md w-full border-b border-outline-variant z-50 fixed top-0">
+<div class="flex items-center gap-padding-md">
+<span class="font-headline-sm text-headline-sm font-black text-secondary">PLC Studio</span>
+<nav class="hidden md:flex gap-padding-md ml-padding-md"><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">文件</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">编辑</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">视图</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">工程</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">编译</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">在线</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">调试</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">工具</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">窗口</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant hover:text-on-surface px-padding-xs transition-colors duration-150" href="#">帮助</a></nav>
+</div>
+<div class="flex items-center gap-padding-sm">
+<div class="flex items-center bg-surface-container rounded px-padding-sm py-1 border border-outline-variant">
+<span class="material-symbols-outlined text-outline mr-padding-xs" style="font-size: 16px;">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm p-0 w-32 placeholder:text-outline-variant" placeholder="搜索资源..." type="text">
+</div>
+<button class="p-padding-xs hover:bg-surface-variant rounded transition-colors"><span class="material-symbols-outlined text-on-surface-variant">settings</span></button>
+<button class="p-padding-xs hover:bg-surface-variant rounded transition-colors"><span class="material-symbols-outlined text-on-surface-variant">account_tree</span></button>
+<button class="p-padding-xs bg-primary-container text-on-primary-container rounded flex items-center gap-1 px-2 py-0.5"><span class="material-symbols-outlined" style="font-size: 16px;">play_arrow</span> <span class="font-label-caps text-label-caps">RUN</span></button>
+</div>
+</header>
+<div class="flex h-full pt-toolbar-height pb-8">
+<!-- SideNavBar -->
+<aside class="bg-surface-container flex flex-col h-full w-sidebar-width border-r border-outline-variant flex-shrink-0">
+<div class="p-padding-md border-b border-outline-variant bg-surface-container-high">
+<div class="flex items-center gap-padding-sm mb-padding-xs">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+</div>
+<div>
+<div class="font-label-caps text-label-caps text-on-surface">Project Explorer</div>
+<div class="font-body-sm text-body-sm text-outline">Main_Controller.plc</div>
+</div>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container font-label-caps text-label-caps py-padding-xs rounded mt-padding-sm hover:opacity-90 transition-opacity">Build All</button>
+</div>
+<div class="flex-1 overflow-y-auto scrollbar-hide py-padding-sm">
+<div class="px-padding-md mb-padding-sm flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline">DEVICES</span>
+<span class="material-symbols-outlined text-outline cursor-pointer" style="font-size: 14px;">add</span>
+</div>
+<!-- Device Tree -->
+<div class="space-y-padding-xs">
+<div class="flex items-center gap-padding-xs px-padding-md py-1 bg-primary-container/20 text-primary border-l-2 border-primary cursor-pointer">
+<span class="material-symbols-outlined" style="font-size: 16px;">keyboard_arrow_down</span>
+<span class="material-symbols-outlined" style="font-size: 16px;">router</span>
+<span class="font-body-sm text-body-sm truncate">Main_Controller [192.168.1.10]</span>
+</div>
+<div class="flex items-center gap-padding-xs pl-8 pr-padding-md py-1 hover:bg-surface-variant cursor-pointer group">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface" style="font-size: 16px;">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-secondary" style="font-size: 16px;">hub</span>
+<span class="font-body-sm text-body-sm">EtherCAT Master</span>
+</div>
+<div class="flex items-center gap-padding-xs pl-8 pr-padding-md py-1 hover:bg-surface-variant cursor-pointer group">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface" style="font-size: 16px;">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-tertiary" style="font-size: 16px;">settings_input_component</span>
+<span class="font-body-sm text-body-sm">CAN Bus Interface</span>
+</div>
+<div class="flex items-center gap-padding-xs pl-8 pr-padding-md py-1 hover:bg-surface-variant cursor-pointer group">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface" style="font-size: 16px;">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-primary" style="font-size: 16px;">memory</span>
+<span class="font-body-sm text-body-sm">Digital I/O Module</span>
+</div>
+</div>
+<div class="px-padding-md mt-padding-md mb-padding-sm">
+<span class="font-label-caps text-label-caps text-outline">PROGRAMS (POU)</span>
+</div>
+<div class="space-y-padding-xs">
+<div class="flex items-center gap-padding-xs px-padding-md py-1 hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined text-secondary" style="font-size: 16px;">code</span>
+<span class="font-body-sm text-body-sm">MainLoop [PRG]</span>
+</div>
+<div class="flex items-center gap-padding-xs px-padding-md py-1 hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined text-secondary" style="font-size: 16px;">view_kanban</span>
+<span class="font-body-sm text-body-sm">SafetyLogic [FBD]</span>
+</div>
+<div class="flex items-center gap-padding-xs px-padding-md py-1 hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined text-secondary" style="font-size: 16px;">account_tree</span>
+<span class="font-body-sm text-body-sm">MotionSequencer [SFC]</span>
+</div>
+</div>
+</div>
+<!-- Sidebar Footer Tabs -->
+<div class="border-t border-outline-variant bg-surface-container-high grid grid-cols-2 divide-x divide-outline-variant">
+<button class="flex flex-col items-center py-padding-xs hover:bg-surface-variant transition-all duration-200">
+<span class="material-symbols-outlined text-on-surface-variant">monitor_heart</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Diagnostics</span>
+</button>
+<button class="flex flex-col items-center py-padding-xs hover:bg-surface-variant transition-all duration-200">
+<span class="material-symbols-outlined text-on-surface-variant">terminal</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Terminal</span>
+</button>
+</div>
+</aside>
+<!-- Main Workspace (Editor Space) -->
+<main class="flex-1 flex flex-col bg-surface overflow-hidden relative">
+<!-- Workspace Tabs -->
+<div class="flex bg-surface-container-high h-8 border-b border-outline-variant">
+<div class="flex items-center px-padding-md gap-padding-sm bg-surface border-r border-outline-variant border-t-2 border-primary">
+<span class="material-symbols-outlined text-secondary" style="font-size: 14px;">hub</span>
+<span class="font-body-sm text-body-sm">System Diagnostics</span>
+<span class="material-symbols-outlined text-outline hover:text-on-surface cursor-pointer" style="font-size: 14px;">close</span>
+</div>
+<div class="flex items-center px-padding-md gap-padding-sm border-r border-outline-variant hover:bg-surface-variant cursor-pointer">
+<span class="material-symbols-outlined text-outline" style="font-size: 14px;">code</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">MainLoop [PRG]</span>
+<span class="material-symbols-outlined text-outline hover:text-on-surface cursor-pointer" style="font-size: 14px;">close</span>
+</div>
+</div>
+<!-- Dashboard Content: Bento Grid -->
+<div class="flex-1 p-padding-md overflow-y-auto scrollbar-hide grid grid-cols-12 grid-rows-6 gap-padding-md">
+<!-- Digital Twin Simulation -->
+<div class="col-span-8 row-span-4 bg-surface-container rounded border border-outline-variant relative overflow-hidden flex flex-col">
+<div class="p-padding-sm border-b border-outline-variant flex justify-between items-center bg-surface-container-high/50">
+<div class="flex items-center gap-padding-sm">
+<span class="material-symbols-outlined text-primary">view_in_ar</span>
+<span class="font-label-caps text-label-caps">Digital Twin Simulation</span>
+</div>
+<div class="flex items-center gap-padding-sm">
+<div class="flex items-center gap-1 bg-secondary/10 px-2 py-0.5 rounded">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse" style="opacity: 0.4;"></div>
+<span class="text-[9px] font-bold text-secondary">SYNCED</span>
+</div>
+<span class="material-symbols-outlined text-outline" style="font-size: 16px;">fullscreen</span>
+</div>
+</div>
+<div class="flex-1 relative">
+<img class="w-full h-full object-cover opacity-60" data-alt="A highly detailed 3D technical simulation of a multi-axis robotic assembly line in a dark industrial factory setting. The robot arm is highlighted with wireframe overlays and glowing blue motion paths. The background is a dark slate and navy blue environment with sharp architectural lines. Volumetric lighting hits the metallic surfaces, creating a high-performance engineering aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWkJR1cbwOza0Ef4DoBMzA_4nkDPEi5bgAyUpVL__boJG39PUhp-tIKOvivd1isRgAjE7jk0-UlXwJSh8k_SrYJCYVZzFT12Z_YoClh-Ah9a2jR98fixT1Z-Iamrsj_nTuvCGoJ549-I2tpZBg6eXvs2B7Bt1JRiLoM91mjIwCEyV0FPBf-_7IE22BBDSSf96NSlOA7f-FLFdRqogTRUTDV2JxfIVIAkVJ0yaSieksgttQ8ljLLNvR2ZyUon96FJnZLm3n1Y3X9bYz">
+<!-- Overlay UI -->
+<div class="absolute top-padding-md right-padding-md flex flex-col gap-padding-xs">
+<div class="bg-surface-container-highest/80 backdrop-blur p-padding-sm border border-outline-variant rounded">
+<div class="text-[10px] text-outline font-bold">AXIS VELOCITY</div>
+<div class="flex items-baseline gap-1">
+<span class="font-code-md text-code-md text-secondary">1,240</span>
+<span class="text-[9px] text-outline">mm/s</span>
+</div>
+</div>
+<div class="bg-surface-container-highest/80 backdrop-blur p-padding-sm border border-outline-variant rounded">
+<div class="text-[10px] text-outline font-bold">TORQUE LOAD</div>
+<div class="w-24 h-1 bg-outline-variant mt-1 rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-primary"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- EtherCAT Bus Status -->
+<div class="col-span-4 row-span-2 bg-surface-container rounded border border-outline-variant p-padding-md flex flex-col gap-padding-sm">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-outline">ETHERCAT MASTER</span>
+<span class="material-symbols-outlined text-secondary" style="font-size: 16px;">check_circle</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<div class="flex justify-between items-end">
+<div>
+<div class="text-[24px] font-headline-sm font-bold text-on-surface">250 <span class="text-sm font-normal text-outline">μs</span></div>
+<div class="text-[10px] text-outline uppercase tracking-wider">Cycle Time</div>
+</div>
+<div class="h-10 w-24 flex items-end gap-1">
+<div class="w-2 bg-primary h-4 rounded-t-sm"></div>
+<div class="w-2 bg-primary h-6 rounded-t-sm"></div>
+<div class="w-2 bg-primary h-5 rounded-t-sm"></div>
+<div class="w-2 bg-primary h-8 rounded-t-sm"></div>
+<div class="w-2 bg-primary h-7 rounded-t-sm"></div>
+<div class="w-2 bg-primary h-9 rounded-t-sm"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-padding-sm border-t border-outline-variant pt-padding-sm">
+<div>
+<div class="text-[9px] text-outline">Nodes</div>
+<div class="font-code-sm text-code-sm">12 Active</div>
+</div>
+<div>
+<div class="text-[9px] text-outline">Lost Frames</div>
+<div class="font-code-sm text-code-sm text-secondary">0</div>
+</div>
+</div>
+</div>
+<!-- CAN Bus Load -->
+<div class="col-span-4 row-span-2 bg-surface-container rounded border border-outline-variant p-padding-md flex flex-col gap-padding-sm">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-outline">CAN BUS LOAD</span>
+<span class="material-symbols-outlined text-tertiary" style="font-size: 16px;">speed</span>
+</div>
+<div class="flex-1 flex flex-col justify-center gap-padding-xs">
+<div class="flex justify-between items-center">
+<span class="text-on-surface text-[20px] font-bold">42.8%</span>
+<span class="text-[10px] text-secondary">STABLE</span>
+</div>
+<div class="h-2 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-tertiary w-[42.8%]"></div>
+</div>
+<div class="flex justify-between text-[9px] text-outline">
+<span class="">0%</span>
+<span class="">50%</span>
+<span class="">100%</span>
+</div>
+</div>
+</div>
+<!-- Modbus/TCP Status (Horizontal Bar) -->
+<div class="col-span-4 row-span-2 bg-surface-container rounded border border-outline-variant p-padding-md flex items-center gap-padding-md">
+<div class="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">lan</span>
+</div>
+<div class="flex-1">
+<div class="font-label-caps text-label-caps text-on-surface">Modbus/TCP Client</div>
+<div class="font-code-sm text-code-sm text-outline mt-0.5">Response: 12ms | Jitter: 2μs</div>
+</div>
+<div class="text-right">
+<div class="text-secondary font-bold font-code-sm">OK</div>
+<div class="text-[9px] text-outline">Status</div>
+</div>
+</div>
+<!-- Real-time Logic Monitor -->
+<div class="col-span-8 row-span-2 bg-surface-container rounded border border-outline-variant p-padding-md overflow-hidden flex flex-col">
+<div class="flex justify-between items-center mb-padding-sm">
+<span class="font-label-caps text-label-caps text-outline">LOGIC ANALYZER (IO_SCAN)</span>
+<div class="flex gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<!-- Waveform simulation -->
+<div class="flex-1 flex flex-col gap-padding-sm">
+<div class="flex items-center gap-padding-md">
+<span class="font-code-sm text-code-sm w-16 text-outline">D_IN_01</span>
+<div class="flex-1 h-6 relative overflow-hidden flex items-center">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 24">
+<path d="M0 20 H10 V4 H20 V20 H40 V4 H50 V20 H100" fill="none" stroke="#adc6ff" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-center gap-padding-md">
+<span class="font-code-sm text-code-sm w-16 text-outline">MTR_EN</span>
+<div class="flex-1 h-6 relative overflow-hidden flex items-center">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 24">
+<path d="M0 20 H30 V4 H90 V20 H100" fill="none" stroke="#4edea3" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Property Inspector -->
+<aside class="bg-surface-container w-inspector-width border-l border-outline-variant flex flex-col overflow-hidden">
+<div class="p-padding-md border-b border-outline-variant bg-surface-container-high">
+<span class="font-label-caps text-label-caps text-on-surface">Properties</span>
+</div>
+<div class="flex-1 overflow-y-auto scrollbar-hide">
+<div class="p-padding-sm space-y-px">
+<!-- Inspector Header -->
+<div class="flex items-center gap-padding-sm p-padding-sm bg-surface-variant/30 mb-padding-sm rounded">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">router</span>
+<div>
+<div class="font-body-md text-body-md font-bold">EtherCAT_Master</div>
+<div class="text-[10px] text-outline">Device ID: 0x012F</div>
+</div>
+</div>
+<!-- Inspector Rows -->
+<div class="grid grid-cols-2 border-b border-outline-variant/50 py-1.5 hover:bg-surface-variant transition-colors group">
+<div class="text-right pr-padding-sm font-body-sm text-outline group-hover:text-on-surface">Device Name</div>
+<div class="pl-padding-sm font-code-sm text-code-sm text-on-surface">Master_IO_01</div>
+</div>
+<div class="grid grid-cols-2 border-b border-outline-variant/50 py-1.5 hover:bg-surface-variant transition-colors group">
+<div class="text-right pr-padding-sm font-body-sm text-outline group-hover:text-on-surface">Vendor</div>
+<div class="pl-padding-sm font-code-sm text-code-sm text-on-surface">Beckhoff GmbH</div>
+</div>
+<div class="grid grid-cols-2 border-b border-outline-variant/50 py-1.5 hover:bg-surface-variant transition-colors group">
+<div class="text-right pr-padding-sm font-body-sm text-outline group-hover:text-on-surface">Sync Mode</div>
+<div class="pl-padding-sm font-code-sm text-code-sm text-secondary">Distributed Clock</div>
+</div>
+<div class="grid grid-cols-2 border-b border-outline-variant/50 py-1.5 hover:bg-surface-variant transition-colors group">
+<div class="text-right pr-padding-sm font-body-sm text-outline group-hover:text-on-surface">Watchdog</div>
+<div class="pl-padding-sm font-code-sm text-code-sm text-on-surface">100 ms</div>
+</div>
+<div class="grid grid-cols-2 border-b border-outline-variant/50 py-1.5 hover:bg-surface-variant transition-colors group">
+<div class="text-right pr-padding-sm font-body-sm text-outline group-hover:text-on-surface">Auto Restart</div>
+<div class="pl-padding-sm font-code-sm text-code-sm text-primary">Enabled</div>
+</div>
+</div>
+<!-- Tag Cloud / Quick Actions -->
+<div class="px-padding-md mt-padding-md">
+<span class="font-label-caps text-label-caps text-outline mb-padding-sm block uppercase tracking-widest">Diagnostic Tools</span>
+<div class="flex flex-wrap gap-padding-sm">
+<button class="bg-surface-variant text-[10px] text-on-surface-variant px-2 py-1 rounded border border-outline-variant hover:border-primary transition-all">Traffic Monitor</button>
+<button class="bg-surface-variant text-[10px] text-on-surface-variant px-2 py-1 rounded border border-outline-variant hover:border-primary transition-all">SDO Explorer</button>
+<button class="bg-surface-variant text-[10px] text-on-surface-variant px-2 py-1 rounded border border-outline-variant hover:border-primary transition-all">Topology Map</button>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Footer / Status Bar -->
+<footer class="fixed bottom-0 w-full z-50 h-8 flex items-center justify-between px-md bg-surface-dim border-t border-outline-variant">
+<div class="flex items-center gap-padding-md">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps text-on-surface">PLC: RUNNING</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<span class="font-code-sm text-code-sm text-secondary">Task Time: 12ms</span>
+<div class="h-4 w-px bg-outline-variant"></div>
+<span class="font-code-sm text-code-sm text-secondary">Jitter: 4μs</span>
+</div>
+<div class="flex items-center gap-padding-md">
+<div class="flex items-center gap-padding-xs group cursor-pointer hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant group-hover:text-primary">Status OK</span>
+</div>
+<div class="flex items-center gap-padding-xs cursor-pointer hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[14px]">sync</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Sync Active</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">v2.4.1</span>
+</div>
+</footer>
+<script>
+        // Micro-interaction for status indicators
+        const indicators = document.querySelectorAll('.animate-pulse');
+        setInterval(() => {
+            indicators.forEach(el => {
+                el.style.opacity = el.style.opacity === '0.4' ? '1' : '0.4';
+            });
+        }, 1000);
+
+        // Simple tab switching logic (visual only)
+        document.querySelectorAll('.workspace-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.workspace-tab').forEach(t => {
+                    t.classList.remove('bg-surface', 'border-t-2', 'border-primary');
+                    t.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                tab.classList.add('bg-surface', 'border-t-2', 'border-primary');
+                tab.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+            });
+        });
+    </script>
+
+
+
+</body></html>

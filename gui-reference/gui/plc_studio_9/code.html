@@ -1,0 +1,369 @@
+<!DOCTYPE html><html class="dark" lang="zh-CN"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffd6fd",
+                        "outline-variant": "#424754",
+                        "surface-container": "#171f33",
+                        "surface-tint": "#adc6ff",
+                        "surface-bright": "#31394d",
+                        "secondary-fixed-dim": "#4edea3",
+                        "tertiary-container": "#e14ef6",
+                        "surface-variant": "#2d3449",
+                        "surface-dim": "#0b1326",
+                        "primary": "#adc6ff",
+                        "on-primary-fixed-variant": "#004395",
+                        "secondary-container": "#00a572",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary-fixed": "#002113",
+                        "on-error": "#690005",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary": "#fbabff",
+                        "surface-container-lowest": "#060e20",
+                        "inverse-on-surface": "#283044",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#4edea3",
+                        "on-tertiary-fixed": "#36003e",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-primary": "#002e6a",
+                        "on-surface": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "on-background": "#dae2fd",
+                        "tertiary-fixed-dim": "#fbabff",
+                        "on-tertiary-container": "#4d0059",
+                        "primary-container": "#4d8eff",
+                        "on-secondary-container": "#00311f",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0b1326",
+                        "inverse-surface": "#dae2fd",
+                        "inverse-primary": "#005ac2",
+                        "surface-container-high": "#222a3d",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary": "#003824",
+                        "on-primary-container": "#00285d",
+                        "outline": "#8c909f",
+                        "error": "#ffb4ab",
+                        "surface": "#0b1326",
+                        "on-tertiary-fixed-variant": "#7c008e",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary": "#580065",
+                        "on-primary-fixed": "#001a42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "toolbar-height": "40px",
+                        "sidebar-width": "260px",
+                        "gutter": "1px",
+                        "padding-xs": "4px",
+                        "inspector-width": "300px",
+                        "padding-sm": "8px",
+                        "padding-md": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "code-sm": ["JetBrains Mono"],
+                        "code-md": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script></head><body class="bg-surface text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container overflow-hidden">
+
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface-container-highest flex justify-between items-center h-toolbar-height px-md border-b border-outline-variant">
+    <div class="flex items-center gap-padding-md">
+        <span class="font-headline-sm text-headline-sm font-black text-secondary">PLC Studio</span>
+        <nav class="flex items-center h-full ml-padding-md gap-padding-sm"><button class="px-padding-sm py-1 font-label-caps text-label-caps text-primary font-bold border-b-2 border-primary hover:bg-surface-variant transition-colors">文件</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">编辑</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">视图</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">工程</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">编译</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">在线</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">调试</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">工具</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">窗口</button><button class="px-padding-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-variant transition-colors">帮助</button></nav>
+    </div>
+    <div class="flex items-center gap-padding-sm">
+        <div class="flex items-center bg-surface-variant rounded px-padding-sm py-1 mr-padding-md">
+            <span class="material-symbols-outlined text-on-surface-variant">search</span>
+            <input class="bg-transparent border-none focus:ring-0 text-body-sm font-body-sm w-40 text-on-surface" placeholder="搜索资源..." type="text">
+        </div>
+        <button class="p-1 hover:bg-surface-variant rounded transition-colors" title="设置">
+            <span class="material-symbols-outlined text-on-surface-variant">settings</span>
+        </button>
+        <button class="p-1 hover:bg-surface-variant rounded transition-colors" title="窗口布局">
+            <span class="material-symbols-outlined text-on-surface-variant" data-original-icon="dashboard">circle</span>
+        </button>
+        <button class="p-1 bg-secondary-container text-on-secondary-container rounded transition-colors" title="运行仿真">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;" data-original-icon="play_arrow">circle</span>
+        </button>
+    </div>
+</header>
+
+<main class="pt-toolbar-height h-screen flex">
+    <!-- 工程管理器 (Project Explorer) -->
+    <aside class="w-[260px] flex flex-col bg-surface-container border-r border-outline-variant h-full">
+        <!-- 设备树 -->
+        <div class="flex-1 flex flex-col border-b border-outline-variant overflow-hidden">
+            <div class="p-padding-sm bg-surface-container-high border-b border-outline-variant flex justify-between items-center">
+                <span class="font-label-caps text-label-caps text-on-surface uppercase font-bold">设备管理器</span>
+                <button class="bg-primary text-on-primary px-padding-sm py-0.5 text-[10px] font-label-caps rounded hover:brightness-110">全部编译</button>
+            </div>
+            <div class="flex-1 overflow-y-auto py-padding-sm">
+                <div class="px-padding-md py-1 space-y-1">
+                    <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-on-surface cursor-pointer">
+                        <span class="material-symbols-outlined mr-2 text-[16px]" data-original-icon="expand_more">circle</span>
+                        <span class="material-symbols-outlined mr-2 text-[16px] text-primary">dns</span>
+                        <span class="font-body-sm text-body-sm">控制器 (CODESYS V3)</span>
+                    </div>
+                    <div class="pl-4 space-y-1">
+                        <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-on-surface-variant cursor-pointer">
+                            <span class="material-symbols-outlined mr-2 text-[16px]" data-original-icon="expand_more">circle</span>
+                            <span class="material-symbols-outlined mr-2 text-[16px]">terminal</span>
+                            <span class="font-body-sm text-body-sm">PLC 逻辑</span>
+                        </div>
+                        <div class="pl-4 space-y-1">
+                            <div class="flex items-center px-padding-sm py-1 bg-primary-container/20 text-primary cursor-pointer">
+                                <span class="material-symbols-outlined mr-2 text-[16px]" data-original-icon="expand_more">circle</span>
+                                <span class="material-symbols-outlined mr-2 text-[16px]" data-original-icon="folder_open">circle</span>
+                                <span class="font-body-sm text-body-sm">Application</span>
+                            </div>
+                            <div class="pl-4 space-y-1">
+                                <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-secondary cursor-pointer">
+                                    <span class="material-symbols-outlined mr-2 text-[16px]" data-original-icon="description">circle</span>
+                                    <span class="font-body-sm text-body-sm">PLC_PRG (PRG)</span>
+                                </div>
+                                <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-on-surface-variant cursor-pointer">
+                                    <span class="material-symbols-outlined mr-2 text-[16px]">grid_view</span>
+                                    <span class="font-body-sm text-body-sm">可视化窗口</span>
+                                </div>
+                                <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-on-surface-variant cursor-pointer">
+                                    <span class="material-symbols-outlined mr-2 text-[16px]" data-original-icon="menu_book">circle</span>
+                                    <span class="font-body-sm text-body-sm">库管理器</span>
+                                </div>
+                                <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-on-surface-variant cursor-pointer">
+                                    <span class="material-symbols-outlined mr-2 text-[16px]">schedule</span>
+                                    <span class="font-body-sm text-body-sm">任务配置</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- POU 树 -->
+        <div class="h-1/3 flex flex-col overflow-hidden bg-surface-container-low">
+            <div class="p-padding-sm bg-surface-container-high border-b border-outline-variant">
+                <span class="font-label-caps text-label-caps text-on-surface uppercase font-bold">程序组织单元 (POU)</span>
+            </div>
+            <div class="flex-1 overflow-y-auto py-padding-sm">
+                <div class="px-padding-md py-1 space-y-1">
+                    <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-on-surface cursor-pointer">
+                        <span class="material-symbols-outlined mr-2 text-[16px]" data-original-icon="expand_more">circle</span>
+                        <span class="material-symbols-outlined mr-2 text-[16px] text-tertiary" data-original-icon="account_tree">circle</span>
+                        <span class="font-body-sm text-body-sm">工程设置</span>
+                    </div>
+                    <div class="pl-4">
+                        <div class="flex items-center px-padding-sm py-1 hover:bg-surface-variant text-on-surface-variant cursor-pointer">
+                            <span class="material-symbols-outlined mr-2 text-[16px]">functions</span>
+                            <span class="font-body-sm text-body-sm">POU_2 (PRG)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 中间主编辑区 -->
+    <div class="flex-1 flex flex-col bg-surface-container-lowest overflow-hidden">
+        <!-- 选项卡栏 -->
+        <div class="h-8 bg-surface-container flex items-center border-b border-outline-variant">
+            <div class="px-padding-md h-full flex items-center bg-surface-container-lowest border-t-2 border-primary text-primary font-medium text-body-sm gap-2 border-r border-outline-variant">
+                <span class="material-symbols-outlined text-[14px]" data-original-icon="description">circle</span>
+                PLC_PRG
+                <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-error">close</span>
+            </div>
+            <div class="px-padding-md h-full flex items-center text-on-surface-variant text-body-sm gap-2 border-r border-outline-variant hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[14px]" data-original-icon="monitoring">circle</span>
+                实时追踪_01
+                <span class="material-symbols-outlined text-[14px]">close</span>
+            </div>
+        </div>
+        
+        <!-- 变量定义区 (ST) -->
+        <div class="h-1/4 bg-[#0F172A] border-b border-outline-variant flex flex-col">
+            <div class="bg-surface-container-high px-padding-sm py-0.5 border-b border-outline-variant flex items-center">
+                <span class="text-[10px] font-label-caps text-outline uppercase">变量声明区</span>
+            </div>
+            <div class="flex-1 p-padding-md font-code-md text-code-md overflow-y-auto">
+                <div class="flex gap-4">
+                    <div class="text-outline-variant text-right select-none w-8 border-r border-outline-variant pr-2">1<br>2<br>3<br>4<br>5<br>6</div>
+                    <div class="flex-1">
+                        <span class="text-[#E14EF6]">PROGRAM</span> PLC_PRG<br>
+                        <span class="text-[#E14EF6]">VAR</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;n测试次数 : <span class="text-[#4D8EFF]">BYTE</span>;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;变量_1 : <span class="text-[#4D8EFF]">BOOL</span>;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;变量_2 : <span class="text-[#4D8EFF]">BOOL</span>;<br>
+                        <span class="text-[#E14EF6]">END_VAR</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图形化编辑器 (LD/FBD) -->
+        <div class="flex-1 bg-[#0F172A] overflow-auto relative flex flex-col">
+            <div class="bg-surface-container-high px-padding-sm py-0.5 border-b border-outline-variant flex items-center">
+                <span class="text-[10px] font-label-caps text-outline uppercase">逻辑编辑器 (梯形图)</span>
+            </div>
+            <div class="flex-1 p-padding-md relative">
+                <div class="absolute top-2 right-2 flex gap-1 z-10">
+                    <button class="p-1 bg-surface-container rounded border border-outline-variant hover:bg-surface-variant">
+                        <span class="material-symbols-outlined">zoom_in</span>
+                    </button>
+                    <button class="p-1 bg-surface-container rounded border border-outline-variant hover:bg-surface-variant">
+                        <span class="material-symbols-outlined" data-original-icon="zoom_out">circle</span>
+                    </button>
+                </div>
+                <!-- Logic Diagram SVG -->
+                <svg class="min-w-[600px]" height="300" width="100%">
+                    <text class="fill-outline-variant font-code-sm text-[11px]" x="10" y="20">程序段 1: 主控制逻辑</text>
+                    <line class="ladder-contact" x1="40" x2="40" y1="60" y2="160"></line>
+                    <!-- Contact -->
+                    <g transform="translate(40, 110)">
+                        <line class="ladder-contact active" x1="0" x2="30" y1="0" y2="0"></line>
+                        <rect class="ladder-contact active" height="20" width="10" x="30" y="-10"></rect>
+                        <rect class="ladder-contact active" height="20" width="10" x="50" y="-10"></rect>
+                        <text class="fill-secondary font-code-sm text-center" x="30" y="-15">变量_1</text>
+                        <line class="ladder-contact active" x1="60" x2="100" y1="0" y2="0"></line>
+                    </g>
+                    <!-- ADD Box -->
+                    <g transform="translate(140, 80)">
+                        <rect class="node-box" height="60" rx="2" width="80" x="0" y="0"></rect>
+                        <text class="fill-on-surface font-label-caps" text-anchor="middle" x="40" y="35">加法 (ADD)</text>
+                        <circle class="fill-outline" cx="0" cy="20" r="3"></circle>
+                        <circle class="fill-outline" cx="0" cy="40" r="3"></circle>
+                        <circle class="fill-secondary" cx="80" cy="30" r="3"></circle>
+                    </g>
+                    <!-- Coil -->
+                    <g transform="translate(450, 110)">
+                        <line class="ladder-contact active" x1="-100" x2="0" y1="0" y2="0"></line>
+                        <path class="ladder-contact active" d="M 0,-10 C 10,-10 10,10 0,10"></path>
+                        <path class="ladder-contact active" d="M 20,-10 C 10,-10 10,10 20,10"></path>
+                        <line class="ladder-contact active" x1="20" x2="100" y1="0" y2="0"></line>
+                        <text class="fill-secondary font-code-sm" x="0" y="-15">电机使能</text>
+                    </g>
+                    <line class="ladder-contact" x1="550" x2="550" y1="60" y2="160"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 消息/编译输出 -->
+        <div class="h-32 bg-surface-container border-t border-outline-variant flex flex-col">
+            <div class="flex items-center border-b border-outline-variant bg-surface-container-high px-padding-md h-7 gap-padding-md">
+                <button class="text-primary font-bold text-[11px] border-b-2 border-primary h-full flex items-center px-padding-sm uppercase">消息</button>
+                <button class="text-on-surface-variant text-[11px] hover:text-on-surface h-full flex items-center px-padding-sm uppercase">断点</button>
+                <button class="text-on-surface-variant text-[11px] hover:text-on-surface h-full flex items-center px-padding-sm uppercase">监视器 1</button>
+                <div class="ml-auto flex items-center gap-padding-md">
+                    <span class="flex items-center text-on-error text-body-sm bg-error/20 px-2 rounded"><span class="material-symbols-outlined text-[14px] mr-1">cancel</span> 0</span>
+                    <span class="flex items-center text-secondary text-body-sm bg-secondary/10 px-2 rounded"><span class="material-symbols-outlined text-[14px] mr-1" data-original-icon="check_circle">circle</span> 0</span>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-padding-sm font-code-sm text-code-sm">
+                <div class="flex gap-2 py-px">
+                    <span class="text-outline-variant">[14:20:01]</span>
+                    <span class="text-secondary">开始编译: 应用程序: 控制器.S...</span>
+                </div>
+                <div class="flex gap-2 py-px">
+                    <span class="text-outline-variant">[14:20:05]</span>
+                    <span class="text-secondary">编译成功。0 错误，0 警告。</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧面板 (属性与工具箱) -->
+    <aside class="w-[300px] flex flex-col bg-surface-container border-l border-outline-variant">
+        <!-- 属性面板 -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div class="p-padding-md border-b border-outline-variant bg-surface-container-high">
+                <h3 class="font-label-caps text-label-caps text-on-surface uppercase font-bold">属性</h3>
+                <p class="font-body-sm text-[10px] text-on-surface-variant">当前选择: 电机使能</p>
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <div class="border-b border-outline-variant">
+                    <button class="w-full flex items-center justify-between p-padding-sm bg-surface-container-low hover:bg-surface-variant">
+                        <span class="font-label-caps text-[11px] font-bold">常用</span>
+                        <span class="material-symbols-outlined text-[16px]" data-original-icon="expand_more">circle</span>
+                    </button>
+                    <div class="p-padding-sm space-y-2">
+                        <div class="grid grid-cols-2 items-center text-body-sm">
+                            <span class="text-on-surface-variant text-right pr-padding-md">名称</span>
+                            <input class="bg-surface-dim border border-outline-variant text-on-surface p-1 rounded text-[11px] focus:ring-0" type="text" value="电机使能">
+                        </div>
+                        <div class="grid grid-cols-2 items-center text-body-sm">
+                            <span class="text-on-surface-variant text-right pr-padding-md">数据类型</span>
+                            <span class="text-primary font-code-sm">BOOL</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-b border-outline-variant">
+                    <button class="w-full flex items-center justify-between p-padding-sm bg-surface-container-low hover:bg-surface-variant">
+                        <span class="font-label-caps text-[11px] font-bold">执行参数</span>
+                        <span class="material-symbols-outlined text-[16px]" data-original-icon="expand_more">circle</span>
+                    </button>
+                    <div class="p-padding-sm space-y-1">
+                         <div class="grid grid-cols-2 items-center text-body-sm">
+                            <span class="text-on-surface-variant text-right pr-padding-md">优先级</span>
+                            <span class="text-on-surface font-code-sm">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 工具箱 -->
+        <div class="h-1/2 border-t border-outline-variant flex flex-col bg-surface-container-low">
+            <div class="p-padding-sm bg-surface-container-high border-b border-outline-variant">
+                <span class="font-label-caps text-label-caps text-on-surface font-bold uppercase">工具箱</span>
+            </div>
+            <div class="p-padding-md grid grid-cols-2 gap-2 overflow-y-auto">
+                <button class="flex items-center gap-2 p-2 bg-surface-variant rounded border border-outline-variant hover:bg-outline-variant">
+                    <span class="material-symbols-outlined text-primary" data-original-icon="add_circle">circle</span>
+                    <span class="text-[11px]">常开触点</span>
+                </button>
+                <button class="flex items-center gap-2 p-2 bg-surface-variant rounded border border-outline-variant hover:bg-outline-variant">
+                    <span class="material-symbols-outlined text-primary" data-original-icon="radio_button_checked">circle</span>
+                    <span class="text-[11px]">线圈</span>
+                </button>
+                <button class="flex items-center gap-2 p-2 bg-surface-variant rounded border border-outline-variant hover:bg-outline-variant">
+                    <span class="material-symbols-outlined text-primary">terminal</span>
+                    <span class="text-[11px]">功能块 (FBD)</span>
+                </button>
+                <button class="flex items-center gap-2 p-2 bg-surface-variant rounded border border-outline-variant hover:bg-outline-variant">
+                    <span class="material-symbols-outlined text-primary">link</span>
+                    <span class="text-[11px]">跳转</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+</main>
+
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full z-50 flex items-center justify-between px-md bg-surface-dim h-8 border-t border-outline-variant">
+    <div class="flex items-center gap-padding-md">
+        <span class="flex items-center gap-1 text-secondary font-code-sm text-code-sm">
+            <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+            PLC 状态: 运行中
+        </span>
+        </div></footer></body></html>

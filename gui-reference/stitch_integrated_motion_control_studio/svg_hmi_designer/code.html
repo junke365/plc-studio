@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Control Studio - HMI Designer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#002e6a",
+                    "on-tertiary-fixed": "#36003e",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-surface": "#dae2fd",
+                    "secondary-fixed": "#6ffbbe",
+                    "secondary": "#4edea3",
+                    "surface-container-lowest": "#060e20",
+                    "tertiary": "#fbabff",
+                    "inverse-on-surface": "#283044",
+                    "on-error": "#690005",
+                    "primary-fixed": "#d8e2ff",
+                    "on-surface-variant": "#c2c6d6",
+                    "secondary-container": "#00a572",
+                    "on-secondary-fixed": "#002113",
+                    "on-primary-fixed-variant": "#004395",
+                    "surface-dim": "#0b1326",
+                    "primary": "#adc6ff",
+                    "surface-variant": "#2d3449",
+                    "tertiary-container": "#e14ef6",
+                    "surface-tint": "#adc6ff",
+                    "surface-container": "#171f33",
+                    "secondary-fixed-dim": "#4edea3",
+                    "surface-bright": "#31394d",
+                    "outline-variant": "#424754",
+                    "tertiary-fixed": "#ffd6fd",
+                    "surface-container-low": "#131b2e",
+                    "on-tertiary": "#580065",
+                    "on-primary-fixed": "#001a42",
+                    "outline": "#8c909f",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed-variant": "#7c008e",
+                    "surface": "#0b1326",
+                    "inverse-primary": "#005ac2",
+                    "inverse-surface": "#dae2fd",
+                    "on-secondary": "#003824",
+                    "on-primary-container": "#00285d",
+                    "primary-fixed-dim": "#adc6ff",
+                    "surface-container-high": "#222a3d",
+                    "error-container": "#93000a",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-container": "#00311f",
+                    "background": "#0b1326",
+                    "primary-container": "#4d8eff",
+                    "tertiary-fixed-dim": "#fbabff",
+                    "on-tertiary-container": "#4d0059",
+                    "surface-container-highest": "#2d3449",
+                    "on-background": "#dae2fd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "padding-md": "12px",
+                    "padding-xs": "4px",
+                    "inspector-width": "300px",
+                    "padding-sm": "8px",
+                    "toolbar-height": "40px",
+                    "unit": "4px",
+                    "sidebar-width": "260px",
+                    "gutter": "1px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "code-md": ["JetBrains Mono"],
+                    "headline-sm": ["Inter"],
+                    "code-sm": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow: hidden;
+            height: 100vh;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
+        }
+        .canvas-grid {
+            background-image: 
+                linear-gradient(to right, #2d3449 1px, transparent 1px),
+                linear-gradient(to bottom, #2d3449 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .hmi-slider::-webkit-slider-runnable-track {
+            background: #171f33;
+            border-radius: 2px;
+            height: 4px;
+        }
+        .hmi-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #adc6ff;
+            border-radius: 0;
+            margin-top: -4px;
+            cursor: pointer;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0b1326;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface-container-high dark:bg-surface-container-high border-b border-outline-variant dark:border-outline-variant flex justify-between items-center w-full px-padding-md h-toolbar-height z-50">
+<div class="flex items-center gap-6">
+<div class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary">Nexus Control Studio</div>
+<nav class="hidden md:flex items-center gap-4 h-full">
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 h-full flex items-center" href="#">File</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 h-full flex items-center" href="#">Edit</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 h-full flex items-center" href="#">Project</a>
+<a class="font-label-caps text-label-caps text-primary dark:text-primary border-b-2 border-primary transition-colors duration-150 px-2 h-full flex items-center" href="#">HMI</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 h-full flex items-center" href="#">CNC</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-bright transition-colors duration-150 px-2 h-full flex items-center" href="#">Simulation</a>
+</nav>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1 text-[20px]">bug_report</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1 text-[20px]">settings</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1 text-[20px]">help</button>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant mx-1"></div>
+<button class="font-label-caps text-label-caps px-4 py-1 bg-surface-variant hover:bg-surface-bright text-on-surface transition-colors">Build</button>
+<button class="font-label-caps text-label-caps px-4 py-1 bg-primary text-on-primary hover:opacity-90 transition-opacity">Run</button>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden relative">
+<!-- SideNavBar -->
+<aside class="bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant dark:border-outline-variant flex flex-col w-[64px] h-full transition-all duration-200">
+<div class="flex flex-col items-center py-4 gap-6">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-all group">
+<span class="material-symbols-outlined">account_tree</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-all group">
+<span class="material-symbols-outlined">query_stats</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-all group">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+</button>
+<button class="flex flex-col items-center gap-1 bg-surface-container-highest text-primary border-l-2 border-primary transition-all py-2 w-full">
+<span class="material-symbols-outlined">dashboard</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-all group">
+<span class="material-symbols-outlined">settings_input_component</span>
+</button>
+</div>
+<div class="mt-auto flex flex-col items-center py-4 gap-6 border-t border-outline-variant">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">person</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">settings</button>
+</div>
+</aside>
+<!-- Left Panel: UI Toolbox -->
+<aside class="w-sidebar-width bg-surface-container-low border-r border-outline-variant flex flex-col">
+<div class="h-toolbar-height flex items-center px-padding-md border-b border-outline-variant bg-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">HMI Toolbox</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-padding-sm space-y-4">
+<!-- UI Components -->
+<div>
+<h4 class="font-label-caps text-[9px] text-outline mb-2 uppercase px-1">Common Controls</h4>
+<div class="grid grid-cols-2 gap-padding-xs">
+<button class="flex flex-col items-center justify-center p-2 bg-surface-variant hover:bg-surface-bright rounded gap-1 group transition-colors">
+<span class="material-symbols-outlined text-[18px] text-secondary">smart_button</span>
+<span class="font-label-caps text-[9px]">Button</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-variant hover:bg-surface-bright rounded gap-1 group transition-colors">
+<span class="material-symbols-outlined text-[18px] text-secondary">text_fields</span>
+<span class="font-label-caps text-[9px]">Text Label</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-variant hover:bg-surface-bright rounded gap-1 group transition-colors">
+<span class="material-symbols-outlined text-[18px] text-secondary">check_box</span>
+<span class="font-label-caps text-[9px]">Toggle</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-variant hover:bg-surface-bright rounded gap-1 group transition-colors">
+<span class="material-symbols-outlined text-[18px] text-secondary">linear_scale</span>
+<span class="font-label-caps text-[9px]">Slider</span>
+</button>
+</div>
+</div>
+<!-- Industrial SVGs -->
+<div>
+<h4 class="font-label-caps text-[9px] text-outline mb-2 uppercase px-1">Industrial Library</h4>
+<div class="grid grid-cols-2 gap-padding-xs">
+<div class="aspect-square bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center group cursor-grab active:cursor-grabbing overflow-hidden relative">
+
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant">propane_tank</span>
+<div class="absolute bottom-1 left-1 font-label-caps text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">Tank 01</div>
+</div>
+<div class="aspect-square bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center group cursor-grab active:cursor-grabbing overflow-hidden">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant">speed</span>
+<div class="absolute bottom-1 left-1 font-label-caps text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">Analog Gauge</div>
+</div>
+<div class="aspect-square bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center group cursor-grab active:cursor-grabbing overflow-hidden">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant">cyclone</span>
+<div class="absolute bottom-1 left-1 font-label-caps text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">Motor/Pump</div>
+</div>
+<div class="aspect-square bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center group cursor-grab active:cursor-grabbing overflow-hidden">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant">valve</span>
+<div class="absolute bottom-1 left-1 font-label-caps text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">Valve Control</div>
+</div>
+</div>
+</div>
+<!-- Asset Browser -->
+<div class="pt-2 border-t border-outline-variant">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-label-caps text-[9px] text-outline uppercase px-1">Assets</h4>
+<span class="material-symbols-outlined text-[14px] text-outline">search</span>
+</div>
+<ul class="space-y-[1px]">
+<li class="px-2 py-1 flex items-center gap-2 hover:bg-surface-variant cursor-pointer rounded">
+<span class="material-symbols-outlined text-[14px] text-primary">folder</span>
+<span class="font-body-sm text-body-sm">Piping_Library</span>
+</li>
+<li class="px-2 py-1 flex items-center gap-2 hover:bg-surface-variant cursor-pointer rounded">
+<span class="material-symbols-outlined text-[14px] text-primary">folder</span>
+<span class="font-body-sm text-body-sm">Electrical_Symbols</span>
+</li>
+<li class="px-2 py-1 flex items-center gap-2 hover:bg-surface-variant cursor-pointer rounded">
+<span class="material-symbols-outlined text-[14px] text-secondary">image</span>
+<span class="font-body-sm text-body-sm">Logo_Main.svg</span>
+</li>
+</ul>
+</div>
+</div>
+</aside>
+<!-- Main Canvas Area -->
+<main class="flex-1 flex flex-col bg-surface overflow-hidden">
+<!-- Canvas Toolbar -->
+<div class="h-toolbar-height bg-surface-container flex items-center justify-between px-padding-md border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 bg-surface-container-low rounded p-[2px]">
+<button class="p-1 px-3 bg-surface-container-highest text-primary font-label-caps text-[10px] rounded">EDITOR</button>
+<button class="p-1 px-3 text-on-surface-variant hover:text-on-surface font-label-caps text-[10px] rounded transition-colors" id="previewToggle">LIVE PREVIEW</button>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-on-surface">zoom_in</button>
+<span class="font-code-sm text-code-sm text-outline">100%</span>
+<button class="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-on-surface">zoom_out</button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 font-label-caps text-[10px] text-secondary border border-secondary px-2 py-[2px] rounded hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[14px]">save</span> SAVE XML
+                    </button>
+<button class="material-symbols-outlined text-[18px] text-on-surface-variant">grid_on</button>
+</div>
+</div>
+<!-- The Drawing Canvas -->
+<div class="flex-1 relative overflow-auto custom-scrollbar canvas-grid bg-surface-dim flex items-center justify-center p-12">
+<div class="relative w-[1024px] h-[600px] bg-surface-container-lowest border border-outline shadow-2xl overflow-hidden" id="hmi-canvas">
+<!-- Layer 0: Background Visuals -->
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+
+</div>
+<!-- HMI UI Layout Components (Simulated Design) -->
+<div class="absolute top-0 left-0 w-full h-12 bg-surface-container-high border-b border-outline-variant flex items-center justify-between px-6 z-10">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-on-primary font-bold">N</div>
+<h2 class="font-headline-sm text-headline-sm">OVERVIEW_MAIN_STATION_04</h2>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm text-secondary">PLC_ONLINE</span>
+<span class="font-code-sm text-[10px] text-outline">Latency: 12ms</span>
+</div>
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse mt-1"></div>
+</div>
+</div>
+<!-- Gauges & Widgets -->
+<div class="grid grid-cols-12 gap-4 p-6 pt-16 h-full">
+<!-- Left Column: Primary Gauges -->
+<div class="col-span-3 space-y-4">
+<div class="bg-surface-container p-4 border border-outline-variant rounded">
+<div class="flex justify-between mb-2">
+<span class="font-label-caps text-[10px] text-outline">PUMP PRESSURE</span>
+<span class="font-code-md text-code-md text-secondary">42.5 PSI</span>
+</div>
+<div class="relative h-24 flex items-center justify-center">
+<svg class="w-full h-full" viewbox="0 0 100 60">
+<path d="M10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#2d3449" stroke-width="8"></path>
+<path d="M10 50 A 40 40 0 0 1 50 10" fill="none" stroke="#4edea3" stroke-dasharray="100" stroke-dashoffset="30" stroke-width="8"></path>
+<line stroke="#ffffff" stroke-width="2" x1="50" x2="30" y1="50" y2="25"></line>
+</svg>
+</div>
+</div>
+<div class="bg-surface-container p-4 border border-outline-variant rounded">
+<div class="flex justify-between mb-2">
+<span class="font-label-caps text-[10px] text-outline">FLOW RATE</span>
+<span class="font-code-md text-code-md text-primary">12.8 m³/h</span>
+</div>
+<div class="h-16 flex items-end gap-1">
+<div class="flex-1 bg-primary/20 h-[60%] border-t border-primary"></div>
+<div class="flex-1 bg-primary/20 h-[45%] border-t border-primary"></div>
+<div class="flex-1 bg-primary/20 h-[75%] border-t border-primary"></div>
+<div class="flex-1 bg-primary/20 h-[90%] border-t border-primary"></div>
+<div class="flex-1 bg-primary/20 h-[80%] border-t border-primary"></div>
+<div class="flex-1 bg-primary/20 h-[65%] border-t border-primary"></div>
+</div>
+</div>
+</div>
+<!-- Center Column: Tank Visualization -->
+<div class="col-span-6 relative flex flex-col items-center justify-center">
+<div class="w-48 h-80 bg-surface-container border-2 border-outline-variant rounded-xl relative overflow-hidden group">
+<div class="absolute inset-0 bg-surface-variant/30 flex flex-col-reverse">
+<div class="w-full bg-primary/40 h-[65%] border-t-2 border-primary relative">
+<div class="absolute top-2 left-0 w-full text-center font-code-md text-on-primary">65%</div>
+
+</div>
+</div>
+<div class="absolute top-4 right-4 flex flex-col gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary border border-on-secondary"></div>
+<div class="w-3 h-3 rounded-full bg-outline-variant border border-on-surface-variant"></div>
+</div>
+<div class="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-10">
+<div class="h-[1px] w-10 bg-outline-variant"></div>
+<div class="h-[1px] w-10 bg-outline-variant"></div>
+<div class="h-[1px] w-10 bg-outline-variant"></div>
+</div>
+</div>
+<div class="mt-6 flex gap-4">
+<button class="px-6 py-2 bg-surface-container-high border border-outline-variant rounded font-label-caps text-on-surface hover:border-primary transition-colors">DRAIN VALVE</button>
+<button class="px-6 py-2 bg-secondary text-on-secondary-fixed rounded font-label-caps hover:bg-secondary/90 transition-colors">FILL CYCLE</button>
+</div>
+</div>
+<!-- Right Column: System Logs & Stats -->
+<div class="col-span-3 space-y-4">
+<div class="bg-surface-container-high border border-outline-variant rounded flex-1 overflow-hidden flex flex-col">
+<div class="p-2 border-b border-outline-variant font-label-caps text-[9px] text-outline bg-surface-container">SYSTEM EVENTS</div>
+<div class="p-3 font-code-sm text-[10px] space-y-2">
+<div class="text-secondary">[12:44:01] Fill Cycle Started</div>
+<div class="text-on-surface-variant">[12:43:55] Low Limit Sensor OK</div>
+<div class="text-error">[12:42:10] Critical: High Temp Warning</div>
+<div class="text-on-surface-variant">[12:41:00] Calibration Routine Cpl</div>
+</div>
+</div>
+<div class="bg-surface-container-high border border-outline-variant rounded p-4">
+<span class="font-label-caps text-[10px] text-outline block mb-3">TEMPERATURE CONTROL</span>
+<input class="w-full hmi-slider mb-4" type="range" value="72"/>
+<div class="flex justify-between font-code-md text-code-md">
+<span class="text-on-surface-variant">SET: 72°C</span>
+<span class="text-secondary">ACTUAL: 71.8°C</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Panel: Property Editor -->
+<aside class="w-inspector-width bg-surface-container-low border-l border-outline-variant flex flex-col">
+<div class="h-toolbar-height flex items-center px-padding-md border-b border-outline-variant bg-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">Properties</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Selection Header -->
+<div class="p-padding-md border-b border-outline-variant bg-surface-container/50">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px] text-primary">propane_tank</span>
+<span class="font-body-md text-body-md font-bold">Tank_Visual_01</span>
+</div>
+<span class="font-label-caps text-[9px] text-outline">Component Type: AnimatedSVG</span>
+</div>
+<!-- Accordion: Identity -->
+<div class="border-b border-outline-variant">
+<button class="w-full px-padding-md py-2 flex items-center justify-between hover:bg-surface-variant transition-colors">
+<span class="font-label-caps text-[10px] uppercase">Identity</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<div class="p-padding-md space-y-3">
+<div class="flex items-center">
+<label class="w-24 font-label-caps text-[9px] text-outline">ID</label>
+<input class="flex-1 bg-surface-container-highest border-0 text-body-sm font-code-sm p-1 focus:ring-1 focus:ring-primary h-6" type="text" value="MainTank"/>
+</div>
+<div class="flex items-center">
+<label class="w-24 font-label-caps text-[9px] text-outline">Z-INDEX</label>
+<input class="flex-1 bg-surface-container-highest border-0 text-body-sm font-code-sm p-1 focus:ring-1 focus:ring-primary h-6" type="number" value="10"/>
+</div>
+</div>
+</div>
+<!-- Accordion: Styles -->
+<div class="border-b border-outline-variant">
+<button class="w-full px-padding-md py-2 flex items-center justify-between hover:bg-surface-variant transition-colors">
+<span class="font-label-caps text-[10px] uppercase">SVG Styling</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<div class="p-padding-md space-y-3">
+<div class="flex items-center">
+<label class="w-24 font-label-caps text-[9px] text-outline">FILL</label>
+<div class="flex-1 flex gap-1">
+<div class="w-6 h-6 bg-primary rounded border border-outline"></div>
+<input class="flex-1 bg-surface-container-highest border-0 text-body-sm font-code-sm p-1 h-6" type="text" value="#adc6ff"/>
+</div>
+</div>
+<div class="flex items-center">
+<label class="w-24 font-label-caps text-[9px] text-outline">STROKE</label>
+<div class="flex-1 flex gap-1">
+<div class="w-6 h-6 bg-outline-variant rounded border border-outline"></div>
+<input class="flex-1 bg-surface-container-highest border-0 text-body-sm font-code-sm p-1 h-6" type="text" value="#424754"/>
+</div>
+</div>
+<div class="flex items-center">
+<label class="w-24 font-label-caps text-[9px] text-outline">OPACITY</label>
+<input class="flex-1 hmi-slider" max="100" min="0" type="range" value="85"/>
+</div>
+</div>
+</div>
+<!-- Accordion: PLC Binding -->
+<div class="border-b border-outline-variant">
+<button class="w-full px-padding-md py-2 flex items-center justify-between hover:bg-surface-variant transition-colors">
+<span class="font-label-caps text-[10px] uppercase text-secondary">PLC Data Binding</span>
+<span class="material-symbols-outlined text-[16px] text-secondary">link</span>
+</button>
+<div class="p-padding-md space-y-3">
+<div class="flex items-center">
+<label class="w-24 font-label-caps text-[9px] text-outline">VARIABLE</label>
+<div class="flex-1 relative">
+<input class="w-full bg-surface-container-highest border-0 text-[11px] font-code-sm p-1 pr-6 focus:ring-1 focus:ring-secondary h-6 text-secondary" type="text" value="STATION_04.TANK_LEVEL"/>
+<span class="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-[14px] text-outline">list</span>
+</div>
+</div>
+<div class="flex items-center">
+<label class="w-24 font-label-caps text-[9px] text-outline">UPDATE RATE</label>
+<select class="flex-1 bg-surface-container-highest border-0 text-[11px] font-code-sm p-1 h-6 focus:ring-1 focus:ring-secondary">
+<option>100ms</option>
+<option selected="">500ms</option>
+<option>1000ms</option>
+</select>
+</div>
+<div class="bg-secondary-container/10 p-2 rounded border border-secondary/20">
+<p class="font-body-sm text-[10px] text-secondary">Scaling: 0-1000 to 0-100%</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Actions -->
+<div class="p-padding-md border-t border-outline-variant bg-surface-container-high">
+<div class="grid grid-cols-2 gap-2">
+<button class="font-label-caps text-[10px] py-2 bg-surface-variant hover:bg-surface-bright border border-outline-variant rounded transition-colors uppercase">Animate</button>
+<button class="font-label-caps text-[10px] py-2 bg-surface-variant hover:bg-surface-bright border border-outline-variant rounded transition-colors uppercase">Script</button>
+</div>
+<button class="w-full mt-2 font-label-caps text-[10px] py-2 bg-error-container text-on-error-container rounded transition-colors uppercase">Delete Component</button>
+</div>
+</aside>
+</div>
+<!-- Bottom Diagnostics Panel -->
+<footer class="h-10 bg-surface-container-low border-t border-outline-variant flex items-center justify-between px-padding-md text-on-surface-variant">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+<span class="font-label-caps text-[10px]">Connected: 192.168.1.50</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span class="font-label-caps text-[10px]">Project: ALPHA_V2.hmi</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1">
+<span class="font-code-sm text-[10px]">Ln 42, Col 15</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="font-code-sm text-[10px]">UTF-8</span>
+</div>
+<span class="material-symbols-outlined text-[16px] hover:text-primary cursor-pointer">notifications</span>
+</div>
+</footer>
+<script>
+        const previewBtn = document.getElementById('previewToggle');
+        const canvas = document.getElementById('hmi-canvas');
+        let isPreview = false;
+
+        previewBtn.addEventListener('click', () => {
+            isPreview = !isPreview;
+            if (isPreview) {
+                previewBtn.classList.add('bg-secondary', 'text-on-secondary-fixed');
+                previewBtn.classList.remove('text-on-surface-variant');
+                canvas.classList.add('ring-2', 'ring-secondary');
+                // Simulate "Live" effects
+                console.log("HMI Live Preview Mode Enabled");
+            } else {
+                previewBtn.classList.remove('bg-secondary', 'text-on-secondary-fixed');
+                previewBtn.classList.add('text-on-surface-variant');
+                canvas.classList.remove('ring-2', 'ring-secondary');
+            }
+        });
+
+        // Basic Micro-interactions for toolbox
+        document.querySelectorAll('.aspect-square').forEach(item => {
+            item.addEventListener('mousedown', () => {
+                item.style.transform = 'scale(0.95)';
+            });
+            item.addEventListener('mouseup', () => {
+                item.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

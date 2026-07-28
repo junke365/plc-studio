@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLC Studio - 运动学配置中心</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#4edea3",
+                        "error-container": "#93000a",
+                        "inverse-surface": "#dae2fd",
+                        "inverse-on-surface": "#283044",
+                        "surface-variant": "#2d3449",
+                        "on-tertiary": "#580065",
+                        "on-tertiary-fixed-variant": "#7c008e",
+                        "on-background": "#dae2fd",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "on-secondary-container": "#00311f",
+                        "surface-container-highest": "#2d3449",
+                        "tertiary-fixed": "#ffd6fd",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-dim": "#0b1326",
+                        "secondary-container": "#00a572",
+                        "on-secondary-fixed-variant": "#005236",
+                        "tertiary-fixed-dim": "#fbabff",
+                        "primary-container": "#4d8eff",
+                        "background": "#0b1326",
+                        "outline": "#8c909f",
+                        "inverse-primary": "#005ac2",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed": "#002113",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-tertiary-container": "#4d0059",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-error": "#690005",
+                        "surface": "#0b1326",
+                        "on-tertiary-fixed": "#36003e",
+                        "surface-container-lowest": "#060e20",
+                        "surface-bright": "#31394d",
+                        "on-primary-fixed": "#001a42",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f33",
+                        "primary-fixed": "#d8e2ff",
+                        "outline-variant": "#424754",
+                        "on-primary": "#002e6a",
+                        "tertiary-container": "#e14ef6",
+                        "surface-container-low": "#131b2e",
+                        "on-secondary": "#003824",
+                        "tertiary": "#fbabff",
+                        "surface-container-high": "#222a3d",
+                        "primary-fixed-dim": "#adc6ff",
+                        "primary": "#adc6ff",
+                        "on-primary-container": "#00285d",
+                        "surface-tint": "#adc6ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "toolbar-height": "40px",
+                        "padding-sm": "8px",
+                        "padding-md": "12px",
+                        "inspector-width": "300px",
+                        "gutter": "1px",
+                        "sidebar-width": "260px",
+                        "padding-xs": "4px"
+                    },
+                    "fontFamily": {
+                        "code-md": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "code-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "code-sm": ["11px", {"lineHeight": "16px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 18px;
+        }
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1326;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #424754;
+            border-radius: 2px;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1px;
+            background-color: #424754;
+        }
+        .kinematic-card {
+            background-color: #171f33;
+            transition: background-color 0.2s ease;
+        }
+        .kinematic-card:hover {
+            background-color: #222a3d;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-padding-md h-toolbar-height bg-surface-container-high border-b border-outline-variant fixed top-0 z-50">
+<div class="flex items-center gap-padding-md">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">Nexus Control Studio</span>
+<nav class="flex h-full ml-4">
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">File</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">Edit</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-primary border-b-2 border-primary bg-surface-bright transition-colors duration-150" href="#">Project</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">Motion</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">CNC</a>
+<a class="px-3 h-toolbar-height flex items-center font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-colors duration-150" href="#">Simulation</a>
+</nav>
+</div>
+<div class="flex items-center gap-padding-sm">
+<div class="flex mr-4 gap-1">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1">bug_report</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1">settings</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-1">help</button>
+</div>
+<button class="px-3 py-1 bg-surface-container-highest text-on-surface font-label-caps text-label-caps rounded-sm hover:bg-surface-bright transition-colors">Build</button>
+<button class="px-3 py-1 bg-primary text-on-primary-container font-label-caps text-label-caps rounded-sm hover:opacity-90 transition-opacity">Run</button>
+</div>
+</header>
+<div class="flex flex-1 pt-toolbar-height overflow-hidden">
+<!-- SideNavBar -->
+<aside class="flex flex-col w-sidebar-width h-full bg-surface-container-low border-r border-outline-variant shrink-0">
+<div class="p-padding-md border-b border-outline-variant bg-surface-container">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">account_tree</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-primary leading-none">Project Alpha</div>
+<div class="text-[10px] text-outline uppercase tracking-wider mt-1">PLC-104-Motion</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 py-padding-xs overflow-y-auto">
+<div class="flex items-center gap-3 px-padding-md py-2 bg-surface-container-highest text-primary border-l-2 border-primary cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-caps text-label-caps">Explorer</span>
+</div>
+<div class="flex items-center gap-3 px-padding-md py-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-caps text-label-caps">Logic</span>
+</div>
+<div class="flex items-center gap-3 px-padding-md py-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-label-caps text-label-caps">Motion</span>
+</div>
+<div class="flex items-center gap-3 px-padding-md py-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="font-label-caps text-label-caps">G-Code</span>
+</div>
+<div class="flex items-center gap-3 px-padding-md py-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">HMI</span>
+</div>
+<div class="flex items-center gap-3 px-padding-md py-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-label-caps text-label-caps">Hardware</span>
+</div>
+<div class="mt-4 px-padding-md">
+<div class="text-[10px] text-outline font-bold uppercase mb-2">项目树</div>
+<ul class="space-y-1">
+<li class="flex items-center gap-2 text-body-sm font-body-sm hover:text-primary cursor-pointer p-1">
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="material-symbols-outlined text-[16px]">folder</span>
+<span>未命名2.project</span>
+</li>
+<li class="flex items-center gap-2 text-body-sm font-body-sm hover:text-primary cursor-pointer p-1 ml-2">
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+<span class="material-symbols-outlined text-[16px]">dns</span>
+<span>Device (AC712)</span>
+</li>
+<li class="flex items-center gap-2 text-body-sm font-body-sm hover:text-primary cursor-pointer p-1 ml-4 bg-surface-variant rounded">
+<span class="material-symbols-outlined text-[16px] text-secondary">precision_manufacturing</span>
+<span>运动学配置中心</span>
+</li>
+</ul>
+</div>
+</nav>
+<div class="p-padding-xs border-t border-outline-variant">
+<div class="flex items-center gap-3 px-padding-md py-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</div>
+<div class="flex items-center gap-3 px-padding-md py-2 text-on-surface-variant hover:bg-surface-variant cursor-pointer transition-all duration-200">
+<img class="w-6 h-6 rounded-full border border-outline" data-alt="A professional profile avatar of a mechanical engineer with a clean, high-tech industrial aesthetic. The lighting is focused and professional, using cool blue and white tones to match the Engineering Studio UI. The individual wears modern workspace attire, and the background is a blurred high-precision manufacturing lab." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo9d70nOi3Iyj8206DO7m-1B9iIrUMifPsYCp0q3J0J4JZb7g8_qDYXpjuRC0xWJhCv7M4gbC9kW0DgBXuma80V2wbf1a9yKHG_qFA3HjSmhezNoarvP6UFKcKELiPLlaiqETe2la39i2Rueirata42wja4JHCq8bjeOk_nsfylcL09jkqUMAhO2Hz5-xSZ6JRCxv56cSm8ssYZdyUpUJe-LrAJx5kw6dR5uOuw0wzMGOvFcG23H1pe2HfFpdOX0xLWea1LtG38aY-"/>
+<span class="font-label-caps text-label-caps">Engineer</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-surface">
+<!-- Tabs Bar -->
+<div class="flex h-9 bg-surface-container-low border-b border-outline-variant px-1 gap-px">
+<div class="flex items-center px-3 bg-surface text-primary border-t-2 border-primary">
+<span class="material-symbols-outlined text-[14px] mr-2">precision_manufacturing</span>
+<span class="text-body-sm font-body-sm">运动学配置中心</span>
+<span class="material-symbols-outlined text-[12px] ml-4 hover:bg-surface-variant rounded">close</span>
+</div>
+<div class="flex items-center px-3 text-on-surface-variant hover:bg-surface-container-highest cursor-pointer">
+<span class="material-symbols-outlined text-[14px] mr-2">memory</span>
+<span class="text-body-sm font-body-sm">PLC 逻辑: Application</span>
+<span class="material-symbols-outlined text-[12px] ml-4">close</span>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex-1 overflow-y-auto p-gutter">
+<div class="bento-grid min-h-full">
+<!-- Gantry Robots -->
+<section class="col-span-12 lg:col-span-8 kinematic-card p-padding-md flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-headline-sm font-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">grid_view</span>
+                                龙门式机器人 (2/3/5 轴)
+                            </h3>
+<span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded text-[10px] font-bold uppercase">Online</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-padding-md flex-1">
+<div class="bg-surface-container-lowest rounded p-padding-md flex flex-col items-center justify-center border border-outline-variant/30">
+<img class="max-h-48 object-contain" data-alt="Technical engineering diagram of a 3-axis Gantry Robot system. The illustration uses clean vector lines in white and cyan over a dark slate background. It clearly displays X, Y, and Z axes with labeled stroke lengths and motor positions. The style is professional and minimalist, mimicking high-end CAD software schematics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzv3KEZuzjtxP1KrnBkXG75qNpibqhJ7CueSs58L75cvz_mMOfKNxknSt3z5qpVRUHIoesqcQqAZV6-roZwO_4cCOqbWJH6EHYiERMVX1PKvNLH2gfeCEnQulMMvMKpUHI5zTNJsC-wW-bMtC77-bFknH0fXTOvaU9fnMuSB1hifIrGA1kebmJnVy1dif0WI-7KuaifqIu0koT7uxaWeXOw-YePAwePmcFuIksUl6Nt9sA3nz2yBMV1r0idyWidc-vQzDYEbHmNcT2"/>
+<div class="w-full mt-4 grid grid-cols-2 gap-2 text-body-sm font-body-sm">
+<div class="text-outline">配置参数:</div>
+<div class="text-on-surface">XYZ Cartesian</div>
+<div class="text-outline">行程范围:</div>
+<div class="text-on-surface">1200 x 800 x 400 mm</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded p-padding-md flex flex-col items-center justify-center border border-outline-variant/30">
+<img class="max-h-48 object-contain" data-alt="Technical engineering diagram showing H-type and T-type Gantry configurations. The drawing features a top-down view with motion vectors and bearing block indicators. The aesthetic is purely technical, using high-contrast lines and subtle shading to emphasize the mechanical structure within a dark UI environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKAq7_9g46wUkOvBHwIWDU-QK56Dcxpu-FVq354Co0D0V3fkJFpaZ-ocBWZ_MZdNQrcrkOYpUOfExhk2q5BS3GwepFDUC834gb_YOvJ3rej0myr9FKi8ZFfVCS7PaWp8LvxMKjN9wnUhnl4eT415mtrTpYJb835F9bcSw-C6RR8OLAfVFkbaJEgcNjQeZNpol0gbYuYMVIpVgJYzYDYKLtfG05QdpPerNjNbmaEGVfMwp-4Y6YK3fBkvHN5walFuKJcQNo8E3wRbNg"/>
+<div class="w-full mt-4 grid grid-cols-2 gap-2 text-body-sm font-body-sm">
+<div class="text-outline">同步模式:</div>
+<div class="text-on-surface">H-Bridge Dual Drive</div>
+<div class="text-outline">误差补偿:</div>
+<div class="text-on-surface">Dynamic Backlash</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Polar / SCARA Robots -->
+<section class="col-span-12 lg:col-span-4 kinematic-card p-padding-md flex flex-col">
+<h3 class="text-headline-sm font-headline-sm text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">architecture</span>
+                            极坐标 &amp; SCARA 机器人
+                        </h3>
+<div class="space-y-padding-md flex-1">
+<div class="bg-surface-container-lowest rounded p-padding-sm border border-outline-variant/30">
+<div class="text-[11px] font-bold text-outline uppercase mb-2">极坐标机器人 (dR, dPhi)</div>
+<img class="w-full h-32 object-contain" data-alt="Highly detailed technical drawing of a Polar Coordinate robot mechanism. The diagram illustrates radial distance dR and angular rotation dPhi using bright primary-colored vectors over a dark slate surface. Engineering annotations and labels are shown in a clean, professional sans-serif font for maximum clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqsvq6RGPYe__DbA1aXC0_CGkQfSUUyLDRq_qXhWDqn107hKv_H1VtE9ZEZxFGtXfspD1j6C5NZbQ2_SDc7DYxhX4HYfTCHFrpiWr4Pnfzb3OYDezXx4wdYIqKo1lg6cuExw4XoPFEwzzMl_WA07lWLkIJpuNXrx0VRD_lvpuNZ7g_d0yJ4XCWXnfdwxpkCO_Y1STvcPbwv3YFBrluU1JtmKKDECOmIzYRCazq0hzTfEXf8shZbAdqRy2a7nHDh8PXhl6cBnw851qd"/>
+</div>
+<div class="bg-surface-container-lowest rounded p-padding-sm border border-outline-variant/30">
+<div class="text-[11px] font-bold text-outline uppercase mb-2">SCARA 机器人</div>
+<img class="w-full h-32 object-contain" data-alt="Technical schematic of a 4-axis SCARA robot displaying the kinematic chain and joint rotations. The visual style uses thin white lines, turquoise accents for active joints, and subtle grey fills for the mechanical arm segments. Set against a dark, industrial UI background for professional motion control software." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdhSA93fTVtCYnmTnOGy-QBRmaQMjF-bWHdFtBgLIxUcKPJ2ysxM-ZQpWLay7-n0Qk0VhI-8y07Qk1J8knotl4qhKahbaeJ_7fzqdMlakBm-wJ0bKbwSQIqYBtuBcq0fTLkxH0Y3y5eBa0y22JiRRHpZnoTHbNnGcHebNydI605tmq7ZYNjKFb-4WzM4x2ssr35V4_45UHX8o1hoyNCstaljbRCWEQmdCEz8FDnNHKLTH8YT816tbMM0hFqo6mDwsl51c8052qrEXh"/>
+</div>
+</div>
+</section>
+<!-- Articulated / Delta Robots -->
+<section class="col-span-12 lg:col-span-7 kinematic-card p-padding-md">
+<h3 class="text-headline-sm font-headline-sm text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">robot_2</span>
+                            关节型 &amp; 并联机器人
+                        </h3>
+<div class="grid grid-cols-3 gap-padding-md">
+<div class="flex flex-col gap-2">
+<div class="aspect-square bg-surface-container-lowest rounded border border-outline-variant/30 p-2">
+<img class="w-full h-full object-contain" data-alt="Engineering diagram of a 4-axis palletizing robot. The illustration shows the arm structure in various positions of its workspace, highlighted by transparent blue shells. Precise joint labels J1 through J4 are clearly marked in a high-tech CAD style for professional software integration." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBbIyGEd7_exBL3oISe8ZifZFGz1echrg_DvuD9V-szc5Emk8fpE8_MoED6bsRELwBtGXgPBbE_BK5GQAnVSfx86HghXVRj9PodJcR83vgeAD0yZQZSaZdW_zMI8y2SsIfn_5zdtjEgrImRxFMoDr3v3UZnkuvBNWI_86ccAgVS3v9zUt1ghoa5pd0Cf1P9CIm56IpjHfz168pBGPSkQxqwiSO48AbADBPNx8aO7uMN_XofY8p-xQp_iwZyohxrcJVKCNMf3tfhg7u"/>
+</div>
+<div class="text-center text-body-sm font-body-sm text-on-surface">4 轴码垛机器人</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="aspect-square bg-surface-container-lowest rounded border border-outline-variant/30 p-2">
+<img class="w-full h-full object-contain" data-alt="Detailed schematic of a 6-axis industrial robot arm showing full range of motion and joint limits. The aesthetic is clean and functional, with technical line art and color-coded axis indicators. Professional engineering style suitable for high-density control software interfaces." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeIwOea7oIBaV6c_S9vAILyWYNCRtBUWBJEghPXL4naOfbo9JFQtv8ItolS8Zb-jscseBORHt7ZvIBJ_z3WKa3ysvcDMUSfkXtNZmMh4X7A2HAGyVPFhUu2n2pqm620HsY9sZRV9TBnWGgjCw2lRe5wqtVIUZtR3I4ojXhgzE0QinQagrx4QUoExXi7n_rKANP-OSeBvq96uX2PK6bUK8jvWUXxfxeSp-Q1b0VWmLWZo1LHi6Vh-Fkwp02I12ZJzlV0LDEVGhjOjiH"/>
+</div>
+<div class="text-center text-body-sm font-body-sm text-on-surface">6 轴机器人</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="aspect-square bg-surface-container-lowest rounded border border-outline-variant/30 p-2">
+<img class="w-full h-full object-contain" data-alt="Technical drawing of a Delta parallel robot showing the three control arms and the central tool platform. The diagram emphasizes the parallel kinematic structure with labeled link lengths and hinge points. Designed in a minimalist, high-tech industrial aesthetic for a dark-mode engineering UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4CWh1YgNFmGZfLfkI5iPnpJKSHnBBCFXL02Ydky5PEDDfA8bnTiuupKgKMJ06H29CMfGVGvzMhGDz23P933GTn4JYs4kydOxS_no8Xb35Nx_4BuxBMDFOKF_50xw7EQNvgUGDrf5P0bM7RMPXf6PXHijzxfGi2yEcKhGbN8xwkgrIUOe2evxezdgCXzRxL_Zr6Qt8i7doU38HuSA9jpnAbKnEoCzIiRDUajJgQ-tYlLwP4h7SYVAyp702T5SRRUA7TVLTC-bDOBuA"/>
+</div>
+<div class="text-center text-body-sm font-body-sm text-on-surface">Delta/并联机器人</div>
+</div>
+</div>
+</section>
+<!-- Specialized Tools -->
+<section class="col-span-12 lg:col-span-5 kinematic-card p-padding-md">
+<h3 class="text-headline-sm font-headline-sm text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">build</span>
+                            工具坐标与特殊运动学
+                        </h3>
+<div class="bg-surface-container-lowest rounded border border-outline-variant/30 p-padding-md">
+<div class="flex gap-4 items-start">
+<img class="w-40 h-40 object-contain shrink-0" data-alt="Technical illustration explaining the Flange and Tool Coordinate Systems (TCS). The diagram shows a robot wrist with a 3D coordinate frame extending from the flange. Colored axes (Red-X, Green-Y, Blue-Z) illustrate the spatial relationship and offset parameters clearly in a technical CAD-like format." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEhobl2yHGqgqi1DN-GrqZ7SayCF0Ig-8Rn01BZD4BGyz71h1Qrs2cHrVh3wfwBxIN7uZib91ywyxQk_eT54uwfizlIgKIFOx9gnimFjMYw0yd_wW0sHJDbWXNOG_dM_tJNudgSQUDioxNIFdeFlVOPf5cFaXBzuMO-WYnwZF3-kJiXnG6y7eJQpydlTEbNFf60yfH9jY-6ctPNiRaIwhDFEFZRxwbSpM_A0JvFSz-L2PViL-2RZvIa2v-tmv8q6jc0adu4_VYrX-n"/>
+<div class="flex-1 space-y-3">
+<div class="text-body-sm font-body-sm text-on-surface">
+<div class="font-bold text-secondary mb-1">Kin_Wrist2 / Kin_Wrist3</div>
+<p class="text-on-surface-variant leading-relaxed">特殊手腕机构配置，支持奇异点处理与轨迹平滑。包含 C 轴偏移参数设置。</p>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-2 bg-surface-variant/50 rounded border border-outline-variant/20">
+<div class="text-[9px] text-outline uppercase">TCP Offset X</div>
+<div class="text-code-sm font-code-sm text-on-surface">45.000 mm</div>
+</div>
+<div class="p-2 bg-surface-variant/50 rounded border border-outline-variant/20">
+<div class="text-[9px] text-outline uppercase">Rotation C</div>
+<div class="text-code-sm font-code-sm text-on-surface">180.00°</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Messages/Status Panel -->
+<footer class="h-40 border-t border-outline-variant bg-surface-container-low flex flex-col shrink-0">
+<div class="flex bg-surface-container h-8 border-b border-outline-variant">
+<button class="px-4 text-primary border-t-2 border-primary bg-surface text-body-sm font-body-sm">消息 (12)</button>
+<button class="px-4 text-on-surface-variant hover:bg-surface-variant text-body-sm font-body-sm">监视 1</button>
+<button class="px-4 text-on-surface-variant hover:bg-surface-variant text-body-sm font-body-sm">诊断</button>
+</div>
+<div class="flex-1 overflow-y-auto p-2 font-code-sm text-code-sm">
+<div class="flex gap-4 py-0.5 hover:bg-surface-variant px-2 rounded cursor-default">
+<span class="text-secondary">[OK]</span>
+<span class="text-outline">14:20:05</span>
+<span class="text-on-surface">运动控制器初始化完成。轴组 A1 已激活。</span>
+</div>
+<div class="flex gap-4 py-0.5 hover:bg-surface-variant px-2 rounded cursor-default">
+<span class="text-primary">[INFO]</span>
+<span class="text-outline">14:20:08</span>
+<span class="text-on-surface">正在加载 Kinematics Configuration: SCARA_4_Axis_v2.1</span>
+</div>
+<div class="flex gap-4 py-0.5 hover:bg-surface-variant px-2 rounded cursor-default bg-error-container/20">
+<span class="text-error">[WARN]</span>
+<span class="text-outline">14:21:12</span>
+<span class="text-on-surface">轴 A3 超出软限位，自动修正逻辑已应用。</span>
+</div>
+<div class="flex gap-4 py-0.5 hover:bg-surface-variant px-2 rounded cursor-default">
+<span class="text-secondary">[OK]</span>
+<span class="text-outline">14:22:30</span>
+<span class="text-on-surface">CNC 解析器成功编译 G-Code 源文件。</span>
+</div>
+</div>
+<!-- Status Bar -->
+<div class="h-6 bg-primary-container text-on-primary-container px-padding-md flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> PLC: RUNNING</span>
+<span>DEVICE: AC712-V3</span>
+<span>MEM: 45.2%</span>
+</div>
+<div class="flex items-center gap-4">
+<span>LN: 125, COL: 4</span>
+<span>UTF-8</span>
+<span class="flex items-center gap-1">INS <span class="material-symbols-outlined text-[12px]">keyboard</span></span>
+</div>
+</div>
+</footer>
+</main>
+<!-- Right Properties Panel (Inspector) -->
+<aside class="w-inspector-width bg-surface-container-low border-l border-outline-variant flex flex-col shrink-0">
+<div class="p-padding-sm bg-surface-container border-b border-outline-variant font-label-caps text-label-caps text-outline uppercase tracking-widest flex items-center justify-between">
+<span>属性检视器</span>
+<span class="material-symbols-outlined text-[16px] cursor-pointer">dock_to_right</span>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Group: Basic Params -->
+<div class="p-padding-sm border-b border-outline-variant bg-surface-variant/30">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-[16px]">settings</span>
+<span class="text-body-sm font-bold text-on-surface">激活功能块实例</span>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between items-center bg-primary text-on-primary-container p-2 rounded-sm cursor-pointer shadow-sm">
+<span class="text-body-sm font-body-sm">SMC_SmoothPath</span>
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex justify-between items-center bg-primary text-on-primary-container p-2 rounded-sm cursor-pointer shadow-sm">
+<span class="text-body-sm font-body-sm">SMC_CheckVelocities</span>
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant p-2 hover:bg-surface-variant rounded-sm cursor-pointer border border-transparent hover:border-outline-variant">
+<span class="text-body-sm font-body-sm">SMC_AvoidLoop</span>
+</div>
+</div>
+</div>
+<!-- Group: Kinematic Detail -->
+<div class="p-padding-sm border-b border-outline-variant">
+<div class="text-[10px] text-outline font-bold uppercase mb-3 px-1">轴映射 (Axis Mapping)</div>
+<table class="w-full text-body-sm font-body-sm border-separate border-spacing-y-1">
+<tbody><tr>
+<td class="text-outline pr-2 w-24">轴 0 (X):</td>
+<td><input class="w-full bg-surface-container-lowest border-outline-variant text-on-surface rounded-sm py-1 px-2 text-code-sm" type="text" value="Axis_1"/></td>
+</tr>
+<tr>
+<td class="text-outline pr-2">轴 1 (Y):</td>
+<td><input class="w-full bg-surface-container-lowest border-outline-variant text-on-surface rounded-sm py-1 px-2 text-code-sm" type="text" value="Axis_2"/></td>
+</tr>
+<tr>
+<td class="text-outline pr-2">轴 2 (Z):</td>
+<td><input class="w-full bg-surface-container-lowest border-outline-variant text-on-surface rounded-sm py-1 px-2 text-code-sm" type="text" value="Axis_3"/></td>
+</tr>
+</tbody></table>
+</div>
+<!-- Group: Physics -->
+<div class="p-padding-sm">
+<div class="text-[10px] text-outline font-bold uppercase mb-3 px-1">动力学限值 (Dynamics)</div>
+<div class="space-y-3">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-body-sm px-1">
+<span class="text-outline">最大速度 (Max Vel)</span>
+<span class="text-secondary">1500 mm/s</span>
+</div>
+<div class="h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[75%]"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-body-sm px-1">
+<span class="text-outline">最大加速度 (Max Acc)</span>
+<span class="text-on-surface">4500 mm/s²</span>
+</div>
+<div class="h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[40%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Visual State -->
+<div class="mt-4 mx-padding-sm p-4 rounded-xl bg-surface-container-highest border border-outline-variant/30 relative overflow-hidden group">
+
+<div class="relative z-10">
+<div class="text-body-sm font-bold text-primary mb-2">三维仿真预览</div>
+<div class="aspect-video bg-black/40 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-primary/40">view_in_ar</span>
+</div>
+<button class="w-full mt-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 rounded-sm text-body-sm font-body-sm transition-colors">
+                            启动实时监控器
+                        </button>
+</div>
+</div>
+</div>
+<div class="p-padding-md bg-surface-container border-t border-outline-variant">
+<button class="w-full bg-secondary text-on-secondary-container font-bold py-2 rounded-sm text-label-caps hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                    应用配置到 PLC
+                </button>
+</div>
+</aside>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('.kinematic-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.border = '1px solid rgba(173, 198, 255, 0.2)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.border = 'none';
+            });
+        });
+        
+        // Simple console log for PLC state simulation
+        setInterval(() => {
+            const now = new Date();
+            const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            const logPanel = document.querySelector('footer .overflow-y-auto');
+            if (logPanel.children.length < 50) {
+                const logs = [
+                    { type: 'OK', color: 'text-secondary', msg: '周期性看门狗检查正常。' },
+                    { type: 'INFO', color: 'text-primary', msg: '正在同步多轴位置数据...' },
+                    { type: 'INFO', color: 'text-on-surface', msg: '总线负载: 12.5%' }
+                ];
+                const selected = logs[Math.floor(Math.random() * logs.length)];
+                const logItem = document.createElement('div');
+                logItem.className = 'flex gap-4 py-0.5 hover:bg-surface-variant px-2 rounded cursor-default opacity-0 transition-opacity duration-500';
+                logItem.innerHTML = `<span class="${selected.color}">[${selected.type}]</span> <span class="text-outline">${time}</span> <span class="text-on-surface">${selected.msg}</span>`;
+                logPanel.appendChild(logItem);
+                setTimeout(() => logItem.classList.remove('opacity-0'), 10);
+                logPanel.scrollTop = logPanel.scrollHeight;
+            }
+        }, 8000);
+    </script>
+</body></html>
