@@ -65,6 +65,8 @@ typedef enum {
 #define PLC_HMI_PROP_FORMAT    "format"
 #define PLC_HMI_PROP_UNIT      "unit"
 #define PLC_HMI_PROP_DECIMALS  "decimals"
+#define PLC_HMI_PROP_BORDER_COLOR "border_color"
+#define PLC_HMI_PROP_BORDER_WIDTH "border_width"
 
 /* ========== 回调类型 ========== */
 

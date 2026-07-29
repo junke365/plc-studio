@@ -529,6 +529,22 @@ int plc_hmi_widget_set_prop(uint16_t id, const char* prop, const char* value)
       case PLC_HMI_WIDGET_BUTTON:       wd->data.button.normal_color = c; break;
       case PLC_HMI_WIDGET_BAR:          wd->data.bar.bg_color = c; break;
       case PLC_HMI_WIDGET_PROGRESS_BAR: wd->data.progress_bar.bg_color = c; break;
+      case PLC_HMI_WIDGET_RECTANGLE:    wd->data.rectangle.fill_color = c; break;
+      case PLC_HMI_WIDGET_CIRCLE:       wd->data.circle.fill_color = c; break;
+      default: break;
+    }
+  } else if (strcmp(prop, PLC_HMI_PROP_BORDER_COLOR) == 0) {
+    uint32_t c = (uint32_t)strtoul(value, NULL, 16);
+    switch (wd->type) {
+      case PLC_HMI_WIDGET_RECTANGLE:    wd->data.rectangle.border_color = c; break;
+      case PLC_HMI_WIDGET_CIRCLE:       wd->data.circle.border_color = c; break;
+      default: break;
+    }
+  } else if (strcmp(prop, PLC_HMI_PROP_BORDER_WIDTH) == 0) {
+    uint8_t bw = (uint8_t)atoi(value);
+    switch (wd->type) {
+      case PLC_HMI_WIDGET_RECTANGLE:    wd->data.rectangle.border_width = bw; break;
+      case PLC_HMI_WIDGET_CIRCLE:       wd->data.circle.border_width = bw; break;
       default: break;
     }
   } else if (strcmp(prop, PLC_HMI_PROP_FONT_SIZE) == 0) {
