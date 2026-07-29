@@ -328,6 +328,139 @@ export async function createHmiRoutes(fastify: FastifyInstance) {
       return { success: false, error: (error as Error).message }
     }
   })
+
+  /**
+   * 生成 Linux LVGL 仿真项目（不编译，生成源码 + CMakeLists.txt）
+   */
+  fastify.post<{
+    Body: { project: HmiProject }
+  }>('/export/linux', async (request, reply) => {
+    const { project } = request.body
+    try {
+      const code = generator.generate(project)
+      const ts = Date.now()
+      const outDir = path.join(HMI_OUTPUT_DIR, `hmi_linux_${ts}`)
+      await fs.mkdir(outDir, { recursive: true })
+      const runtimeDir = RUNTIME_DIR
+
+      // 复制核心 + HMI 源码
+      await cpDir(path.join(runtimeDir, 'core/include'), path.join(outDir, 'core/include'))
+      await cpDir(path.join(runtimeDir, 'core/src'), path.join(outDir, 'core/src'))
+      await cpDir(path.join(runtimeDir, 'hmi/include'), path.join(outDir, 'hmi/include'))
+      await cpDir(path.join(runtimeDir, 'hmi/src'), path.join(outDir, 'hmi/src'))
+
+      // 复制 LVGL 仿真平台入口 + lv_conf.h
+      const lvglSimDir = path.join(outDir, 'hmi/platforms/lvgl-sim')
+      await fs.mkdir(lvglSimDir, { recursive: true })
+      await cpDir(path.join(runtimeDir, 'hmi/platforms/lvgl-sim'), lvglSimDir)
+
+      // 复制 Linux x86 平台层
+      await fs.mkdir(path.join(outDir, 'platform'), { recursive: true })
+      await cpDir(path.join(runtimeDir, 'platform/linux-x86'), path.join(outDir, 'platform/linux-x86'))
+
+      // 写入生成代码
+      const genDir = path.join(outDir, 'hmi/generated')
+      await fs.mkdir(genDir, { recursive: true })
+      await fs.writeFile(path.join(genDir, 'plc_hmi_generated.c'), code, 'utf-8')
+
+      // 生成 Linux CMakeLists.txt
+      const cmake = generateLinuxCMake(project)
+      await fs.writeFile(path.join(outDir, 'CMakeLists.txt'), cmake, 'utf-8')
+
+      return { success: true, outDir, code }
+    } catch (error) {
+      reply.status(400)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 生成 STM32 LVGL 项目（不编译，生成源码 + ARM GCC 工程）
+   */
+  fastify.post<{
+    Body: { project: HmiProject }
+  }>('/export/stm32', async (request, reply) => {
+    const { project } = request.body
+    try {
+      const code = generator.generate(project)
+      const ts = Date.now()
+      const outDir = path.join(HMI_OUTPUT_DIR, `hmi_stm32_${ts}`)
+      await fs.mkdir(outDir, { recursive: true })
+      const runtimeDir = RUNTIME_DIR
+
+      // 复制核心 + HMI 源码
+      await cpDir(path.join(runtimeDir, 'core/include'), path.join(outDir, 'core/include'))
+      await cpDir(path.join(runtimeDir, 'core/src'), path.join(outDir, 'core/src'))
+      await cpDir(path.join(runtimeDir, 'hmi/include'), path.join(outDir, 'hmi/include'))
+      await cpDir(path.join(runtimeDir, 'hmi/src'), path.join(outDir, 'hmi/src'))
+
+      // 复制嵌入式 lv_conf.h 配置
+      const hmiConfigDir = path.join(outDir, 'hmi/config')
+      await fs.mkdir(hmiConfigDir, { recursive: true })
+      await cpDir(path.join(runtimeDir, 'hmi/config'), hmiConfigDir)
+
+      // 复制 STM32 平台层
+      await fs.mkdir(path.join(outDir, 'platform'), { recursive: true })
+      await cpDir(path.join(runtimeDir, 'platform/stm32'), path.join(outDir, 'platform/stm32'))
+
+      // 写入生成代码
+      const genDir = path.join(outDir, 'hmi/generated')
+      await fs.mkdir(genDir, { recursive: true })
+      await fs.writeFile(path.join(genDir, 'plc_hmi_generated.c'), code, 'utf-8')
+
+      // 生成 STM32 CMakeLists.txt
+      const cmake = generateStm32CMake(project)
+      await fs.writeFile(path.join(outDir, 'CMakeLists.txt'), cmake, 'utf-8')
+
+      return { success: true, outDir, code }
+    } catch (error) {
+      reply.status(400)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 生成 Android LVGL 项目（不编译，生成源码 + NDK 工程结构）
+   */
+  fastify.post<{
+    Body: { project: HmiProject }
+  }>('/export/android', async (request, reply) => {
+    const { project } = request.body
+    try {
+      const code = generator.generate(project)
+      const ts = Date.now()
+      const outDir = path.join(HMI_OUTPUT_DIR, `hmi_android_${ts}`)
+
+      // 生成项目结构描述
+      const projectInfo = {
+        type: 'android-ndk',
+        source: 'HMI 生成的 C 代码',
+        ndkRequired: true,
+        steps: [
+          '1. 安装 Android NDK (r25+)',
+          '2. 将 hmi/ 和 core/ 源码添加到 Android 项目的 jni/ 目录',
+          '3. 使用 ndk-build 或 CMake 交叉编译为 arm64-v8a / armeabi-v7a',
+          '4. 通过 JNI 调用 LVGL 渲染到 Android SurfaceView',
+        ],
+        generatedAt: new Date().toISOString(),
+        outDir,
+      }
+      await fs.mkdir(outDir, { recursive: true })
+      await fs.writeFile(path.join(outDir, 'README.md'),
+        `# HMI Android 项目\n\n${projectInfo.steps.join('\n')}\n`, 'utf-8')
+      await fs.writeFile(path.join(outDir, 'project.json'), JSON.stringify(projectInfo, null, 2), 'utf-8')
+
+      return {
+        success: false,
+        code,
+        outDir,
+        error: 'Android 导出需要 NDK 环境，已生成项目骨架，请参考 README.md 手动配置',
+      }
+    } catch (error) {
+      reply.status(400)
+      return { success: false, error: (error as Error).message }
+    }
+  })
 }
 
 // ==================== 辅助函数 ====================
@@ -470,6 +603,159 @@ endif()
 if(WIN32)
   set_target_properties(plc-hmi-lvgl-sim PROPERTIES SUFFIX ".exe")
 endif()
+`
+}
+
+/**
+ * 生成 Linux LVGL 仿真 CMakeLists.txt
+ * Linux GCC + SDL2（通过 pkg-config 或 find_package）
+ */
+function generateLinuxCMake(project: HmiProject): string {
+  const firstForm = project.forms[0] || { width: 800, height: 480 }
+  const sw = firstForm.width
+  const sh = firstForm.height
+
+  return `cmake_minimum_required(VERSION 3.14)
+project(plc-hmi-linux VERSION 1.0.0 LANGUAGES C CXX)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ==================== LVGL ====================
+set(CONFIG_LV_BUILD_EXAMPLES OFF CACHE BOOL "")
+set(CONFIG_LV_BUILD_DEMOS OFF CACHE BOOL "")
+set(CONFIG_LV_USE_THORVG_INTERNAL OFF CACHE BOOL "")
+add_subdirectory(lvgl)
+
+# ==================== SDL2 ====================
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(SDL2 REQUIRED sdl2)
+else()
+  find_package(SDL2 REQUIRED)
+endif()
+
+target_include_directories(lvgl PUBLIC \${SDL2_INCLUDE_DIRS})
+
+# ==================== 核心库 ====================
+file(GLOB PLC_CORE_SOURCES "core/src/*.c")
+add_library(plc-core STATIC \${PLC_CORE_SOURCES})
+target_include_directories(plc-core PUBLIC core/include)
+
+# ==================== HMI 库 ====================
+add_library(plc-hmi STATIC
+  hmi/src/plc_hmi.c
+  hmi/src/plc_hmi_widget.c
+  hmi/src/plc_hmi_driver.c
+  hmi/src/plc_hmi_input.c
+  hmi/src/plc_hmi_lvgl.c
+)
+target_include_directories(plc-hmi PUBLIC hmi/include PRIVATE core/include)
+target_compile_definitions(plc-hmi PRIVATE PLC_USE_LVGL)
+target_link_libraries(plc-hmi PUBLIC lvgl)
+
+# ==================== 可执行文件 ====================
+add_executable(plc-hmi-linux
+  hmi/platforms/lvgl-sim/hmi_lvgl_sim_main.c
+  hmi/generated/plc_hmi_generated.c
+  platform/linux-x86/platform.c
+)
+target_include_directories(plc-hmi-linux
+  PRIVATE
+    hmi/include core/include hmi/generated platform/linux-x86
+    hmi/platforms/lvgl-sim
+)
+target_compile_definitions(plc-hmi-linux PRIVATE
+  PLC_USE_LVGL LV_CONF_INCLUDE_SIMPLE
+  PLC_HMI_SCREEN_WIDTH=${sw} PLC_HMI_SCREEN_HEIGHT=${sh}
+)
+target_link_libraries(plc-hmi-linux PRIVATE plc-core plc-hmi lvgl \${SDL2_LIBRARIES})
+`
+}
+
+/**
+ * 生成 STM32 LVGL CMakeLists.txt
+ * ARM GCC 交叉编译 + STM32Cube HAL
+ */
+function generateStm32CMake(project: HmiProject): string {
+  const firstForm = project.forms[0] || { width: 800, height: 480 }
+  const sw = firstForm.width
+  const sh = firstForm.height
+
+  return `cmake_minimum_required(VERSION 3.14)
+project(plc-hmi-stm32 VERSION 1.0.0 LANGUAGES C CXX)
+
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+
+# ==================== ARM GCC 工具链 ====================
+set(TOOLCHAIN_PREFIX arm-none-eabi-)
+set(CMAKE_C_COMPILER \${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_CXX_COMPILER \${TOOLCHAIN_PREFIX}g++)
+set(CMAKE_ASM_COMPILER \${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_AR \${TOOLCHAIN_PREFIX}ar)
+set(CMAKE_OBJCOPY \${TOOLCHAIN_PREFIX}objcopy)
+set(CMAKE_SIZE \${TOOLCHAIN_PREFIX}size)
+
+set(CMAKE_C_FLAGS "-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+  -DUSE_HAL_DRIVER -DSTM32F407xx -O2 -ffunction-sections -fdata-sections" CACHE STRING "")
+set(CMAKE_CXX_FLAGS "\${CMAKE_C_FLAGS}" CACHE STRING "")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -Wl,-Map=output.map" CACHE STRING "")
+
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+# ==================== LVGL ====================
+set(CONFIG_LV_BUILD_EXAMPLES OFF CACHE BOOL "")
+set(CONFIG_LV_BUILD_DEMOS OFF CACHE BOOL "")
+set(CONFIG_LV_USE_THORVG_INTERNAL OFF CACHE BOOL "")
+# 使用 lv_conf.h 精简配置（不含 SDL）
+set(LV_BUILD_CONF_DIR "\${CMAKE_SOURCE_DIR}/hmi/config" CACHE PATH "")
+add_subdirectory(lvgl)
+
+# ==================== 核心库 ====================
+file(GLOB PLC_CORE_SOURCES "core/src/*.c")
+add_library(plc-core STATIC \${PLC_CORE_SOURCES})
+target_include_directories(plc-core PUBLIC core/include)
+target_compile_definitions(plc-core PRIVATE PLATFORM_STM32)
+
+# ==================== HMI 库 ====================
+add_library(plc-hmi STATIC
+  hmi/src/plc_hmi.c
+  hmi/src/plc_hmi_widget.c
+  hmi/src/plc_hmi_driver.c
+  hmi/src/plc_hmi_input.c
+  hmi/src/plc_hmi_lvgl.c
+)
+target_include_directories(plc-hmi PUBLIC hmi/include PRIVATE core/include)
+target_compile_definitions(plc-hmi PRIVATE PLC_USE_LVGL)
+target_link_libraries(plc-hmi PUBLIC lvgl)
+
+# ==================== 固件 ====================
+# 注意：需要自行添加启动文件和链接脚本
+#   platform/stm32/startup_stm32f4xx.s
+#   platform/stm32/STM32F4xx_FLASH.ld
+add_executable(plc-hmi-stm32.elf
+  hmi/generated/plc_hmi_generated.c
+  platform/stm32/platform.c
+)
+target_include_directories(plc-hmi-stm32.elf
+  PRIVATE hmi/include core/include hmi/generated platform/stm32
+)
+target_compile_definitions(plc-hmi-stm32.elf PRIVATE
+  PLC_USE_LVGL
+  PLC_HMI_SCREEN_WIDTH=${sw} PLC_HMI_SCREEN_HEIGHT=${sh}
+)
+target_link_libraries(plc-hmi-stm32.elf PRIVATE plc-core plc-hmi lvgl)
+
+# 生成 HEX / BIN（需配置 start / ld 后方可生效）
+# add_custom_command(TARGET plc-hmi-stm32.elf POST_BUILD
+#   COMMAND \${CMAKE_OBJCOPY} -O ihex plc-hmi-stm32.elf plc-hmi-stm32.hex
+#   COMMAND \${CMAKE_OBJCOPY} -O binary plc-hmi-stm32.elf plc-hmi-stm32.bin
+#   COMMAND \${CMAKE_SIZE} plc-hmi-stm32.elf
+# )
 `
 }
 

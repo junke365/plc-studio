@@ -885,6 +885,38 @@
                 <span class="radio-label">ESP32 HEX</span>
                 <span class="radio-desc">编译为 ESP32 固件（需 ESP-IDF）</span>
               </label>
+              <label class="export-radio" :class="{ active: exportType === 'lvgl-sim' }">
+                <input type="radio" v-model="exportType" value="lvgl-sim" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">desktop_windows</span>
+                </span>
+                <span class="radio-label">LVGL 仿真器</span>
+                <span class="radio-desc">LVGL v9 PC 仿真（SDL2 窗口）</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'linux' }">
+                <input type="radio" v-model="exportType" value="linux" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">terminal</span>
+                </span>
+                <span class="radio-label">Linux</span>
+                <span class="radio-desc">Linux GCC 可执行文件（SDL2）</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'stm32' }">
+                <input type="radio" v-model="exportType" value="stm32" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">memory</span>
+                </span>
+                <span class="radio-label">STM32</span>
+                <span class="radio-desc">ARM Cortex-M 固件（需 arm-gcc）</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'android' }">
+                <input type="radio" v-model="exportType" value="android" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">smartphone</span>
+                </span>
+                <span class="radio-label">Android</span>
+                <span class="radio-desc">APK 包（需 Android NDK）</span>
+              </label>
             </div>
             <div class="export-preview" v-if="exportType === 'code' || generatedCode">
               <div class="preview-header">
@@ -4767,7 +4799,7 @@ function getRenderer(type: string): Component {
 const API_BASE = 'http://127.0.0.1:3000/api'
 
 const showExportDialog = ref(false)
-const exportType = ref<'code' | 'exe' | 'hex'>('code')
+const exportType = ref<'code' | 'exe' | 'hex' | 'lvgl-sim' | 'linux' | 'stm32' | 'android'>('code')
 const generatedCode = ref('')
 const exporting = ref(false)
 const exportStatus = ref<{ type: string; message: string } | null>(null)
@@ -4827,6 +4859,77 @@ async function doExport() {
           type: 'error',
           message: data.details || data.error || '编译失败',
         }
+      }
+    } else if (exportType.value === 'lvgl-sim') {
+      const res = await fetch(`${API_BASE}/hmi/export/lvgl-sim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `LVGL 仿真 EXE 编译成功: ${data.exePath}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = {
+          type: 'error',
+          message: data.details || data.error || '编译失败',
+        }
+      }
+    } else if (exportType.value === 'linux') {
+      const res = await fetch(`${API_BASE}/hmi/export/linux`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `Linux 项目已生成: ${data.outDir}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
+      }
+    } else if (exportType.value === 'stm32') {
+      const res = await fetch(`${API_BASE}/hmi/export/stm32`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `STM32 项目已生成: ${data.outDir}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
+      }
+    } else if (exportType.value === 'android') {
+      const res = await fetch(`${API_BASE}/hmi/export/android`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `Android 项目已生成: ${data.outDir}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
       }
     } else {
       const res = await fetch(`${API_BASE}/hmi/export/hex`, {
