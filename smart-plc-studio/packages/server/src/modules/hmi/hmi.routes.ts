@@ -71,10 +71,14 @@ export async function createHmiRoutes(fastify: FastifyInstance) {
 
       const runtimeDir = RUNTIME_DIR
 
-      // 1. 复制核心头文件
+      // 1. 复制核心头文件 + 源码
       await cpDir(
         path.join(runtimeDir, 'core/include'),
         path.join(outDir, 'core/include')
+      )
+      await cpDir(
+        path.join(runtimeDir, 'core/src'),
+        path.join(outDir, 'core/src')
       )
 
       // 2. 复制 HMI 头文件
@@ -95,6 +99,14 @@ export async function createHmiRoutes(fastify: FastifyInstance) {
       await cpDir(
         path.join(runtimeDir, 'hmi/platforms/windows'),
         win32Dir
+      )
+
+      // 4b. 复制平台抽象层（plc_platform_* 实现）
+      const platformDir = path.join(outDir, 'platform/win32')
+      await fs.mkdir(path.join(outDir, 'platform'), { recursive: true })
+      await cpDir(
+        path.join(runtimeDir, 'platform/win32'),
+        platformDir
       )
 
       // 5. 写入生成代码
@@ -129,9 +141,16 @@ export async function createHmiRoutes(fastify: FastifyInstance) {
       const buildDir = path.join(outDir, 'build')
       await fs.mkdir(buildDir, { recursive: true })
 
+      // 检测 MinGW 环境，自动切换生成器
+      const isMinGW = process.env.CC?.includes('mingw') ||
+        process.env.CXX?.includes('mingw') ||
+        process.env.PATH?.toLowerCase().includes('mingw') ||
+        process.env.PATH?.toLowerCase().includes('mingw32')
+      const generatorFlag = isMinGW ? '-G "MinGW Makefiles" ' : ''
+
       try {
         execSync(
-          `cmake -B "${buildDir}" -DCMAKE_BUILD_TYPE=Release && cmake --build "${buildDir}" --config Release`,
+          `cmake ${generatorFlag}-B "${buildDir}" -DCMAKE_BUILD_TYPE=Release && cmake --build "${buildDir}"${isMinGW ? '' : ' --config Release'}`,
           {
             cwd: outDir,
             timeout: 180000,
@@ -200,6 +219,12 @@ project(plc-hmi-export VERSION 1.0.0 LANGUAGES C)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# 编译核心库（plc_platform_* 等平台抽象）
+file(GLOB PLC_CORE_SOURCES "core/src/*.c")
+add_library(plc-core STATIC \${PLC_CORE_SOURCES})
+target_include_directories(plc-core PUBLIC core/include)
+target_compile_options(plc-core PRIVATE -Wall -Wextra)
+
 # 编译静态库 plc-hmi
 add_library(plc-hmi STATIC
   hmi/src/plc_hmi.c
@@ -217,6 +242,7 @@ target_include_directories(plc-hmi
 add_executable(plc-hmi-win32 WIN32
   hmi/platforms/windows/hmi_win32.c
   hmi/generated/plc_hmi_generated.c
+  platform/win32/platform.c
 )
 
 target_include_directories(plc-hmi-win32
@@ -224,13 +250,17 @@ target_include_directories(plc-hmi-win32
     hmi/include
     core/include
     hmi/generated
+    platform/win32
 )
 
 target_link_libraries(plc-hmi-win32
   PRIVATE
+    plc-core
     plc-hmi
     user32
     gdi32
+    winmm
+    ws2_32
 )
 
 target_compile_definitions(plc-hmi-win32 PRIVATE
