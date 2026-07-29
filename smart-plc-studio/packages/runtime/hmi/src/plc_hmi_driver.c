@@ -12,6 +12,28 @@ static const PlcHmiDriver* g_drivers[PLC_HMI_DRV_COUNT];
 static PlcHmiDriverType g_active_type = PLC_HMI_DRV_RAW;
 static bool g_initialized[PLC_HMI_DRV_COUNT];
 
+/* ========== 内置 RAW 驱动（纯内存帧缓冲） ========== */
+
+static int raw_init(uint16_t w, uint16_t h, uint8_t bpp) {
+  (void)w; (void)h; (void)bpp;
+  return 0;
+}
+static void raw_deinit(void) {}
+static void raw_flush(const void* fb, uint16_t w, uint16_t h, uint8_t bpp) {
+  (void)fb; (void)w; (void)h; (void)bpp;
+}
+static uint16_t raw_get_width(void) { return 0; }
+static uint16_t raw_get_height(void) { return 0; }
+
+static const PlcHmiDriver g_raw_driver = {
+  "raw-fb",
+  raw_init,
+  raw_deinit,
+  raw_flush,
+  raw_get_width,
+  raw_get_height
+};
+
 /* ========== 注册接口 ========== */
 
 int plc_hmi_driver_register(PlcHmiDriverType type, const PlcHmiDriver* driver)
@@ -27,6 +49,11 @@ int plc_hmi_driver_init(PlcHmiDriverType type, uint16_t w,
                         uint16_t h, uint8_t bpp)
 {
   if (type >= PLC_HMI_DRV_COUNT) return -1;
+
+  /* RAW 驱动未注册时自动注册内置实现 */
+  if (!g_drivers[PLC_HMI_DRV_RAW]) {
+    g_drivers[PLC_HMI_DRV_RAW] = &g_raw_driver;
+  }
 
   const PlcHmiDriver* drv = g_drivers[type];
   if (!drv || !drv->init) {

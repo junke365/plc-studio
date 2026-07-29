@@ -93,12 +93,15 @@ int plc_hmi_start(void)
 {
   if (!g_hmi.initialized) return -1;
 
-  /* 初始化显示驱动 */
-  int ret = plc_hmi_driver_init(PLC_HMI_DRV_RAW,
-                                 g_hmi.screen.width,
-                                 g_hmi.screen.height,
-                                 g_hmi.screen.bpp);
-  if (ret < 0) return ret;
+  /* 如果尚未初始化任何驱动，回退 RAW 纯内存模式 */
+  PlcHmiDriverType active = plc_hmi_driver_get_active();
+  if (active == PLC_HMI_DRV_COUNT || !plc_hmi_driver_get(active)) {
+    int ret = plc_hmi_driver_init(PLC_HMI_DRV_RAW,
+                                   g_hmi.screen.width,
+                                   g_hmi.screen.height,
+                                   g_hmi.screen.bpp);
+    if (ret < 0) return ret;
+  }
 
   g_hmi.running = true;
   g_hmi.last_frame_tick = plc_platform_tick_ms();
