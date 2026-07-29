@@ -9,6 +9,7 @@
 #include "plc_hmi_widget.h"
 #include "plc_hmi_input.h"
 #include "plc_hmi_font.h"
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 

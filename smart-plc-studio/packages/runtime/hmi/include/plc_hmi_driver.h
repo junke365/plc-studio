@@ -9,6 +9,7 @@
 #define PLC_HMI_DRIVER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* ========== 驱动类型枚举 ========== */
 
