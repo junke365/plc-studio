@@ -145,11 +145,15 @@ static void fill_rect(const PlcHmiScreen* scr,
   for (uint16_t row = 0; row < h; row++) {
     int16_t py = y + row;
     if (py < 0 || py >= scr->height) continue;
-    uint32_t offset = (uint32_t)py * scr->stride + (uint32_t)x * 4;
-    uint32_t line_w = w;
-    if (x + line_w > scr->width) line_w = scr->width - x;
-    for (uint32_t col = 0; col < line_w; col++) {
-      *(uint32_t*)(fb + offset + col * 4) = color;
+    int16_t px = x;
+    int16_t pw = (int16_t)w;
+    if (px < 0) { pw += px; px = 0; }
+    if (pw <= 0) continue;
+    if (px + pw > (int16_t)scr->width) pw = (int16_t)scr->width - px;
+    if (pw <= 0) continue;
+    uint32_t offset = (uint32_t)py * scr->stride + (uint32_t)px * 4;
+    for (int16_t col = 0; col < pw; col++) {
+      *(uint32_t*)(fb + offset + (uint32_t)col * 4) = color;
     }
   }
 }

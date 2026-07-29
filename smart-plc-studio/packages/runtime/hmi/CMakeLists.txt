@@ -21,6 +21,7 @@ set(PLC_CORE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../core/include
 option(BUILD_HMI_WIN32    "构建Win32 GDI后端"    OFF)
 option(BUILD_HMI_LINUX_FB "构建Linux帧缓冲后端"  OFF)
 option(BUILD_HMI_LVGL     "构建LVGL集成后端"      OFF)
+option(BUILD_HMI_LVGL_SIM "构建LVGL PC仿真后端"     OFF)
 option(BUILD_HMI_SDL2     "构建SDL2后端"          OFF)
 option(BUILD_HMI_LITEX    "构建LiteX FPGA后端"    OFF)
 
@@ -52,6 +53,10 @@ endif()
 
 if(BUILD_HMI_LVGL)
   add_subdirectory(platforms/lvgl)
+endif()
+
+if(BUILD_HMI_LVGL_SIM)
+  add_subdirectory(platforms/lvgl-sim)
 endif()
 
 if(BUILD_HMI_SDL2)
