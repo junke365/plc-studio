@@ -127,12 +127,15 @@ export const useDebugStore = defineStore("debug", () => {
   }
 
   // 连接到运行时
-  async function connect(hostAddr: string, portNum: number) {
+  async function connect(hostAddr: string, portNum: number, uartConfig?: { port: string; baudRate: number }) {
     host.value = hostAddr;
     port.value = portNum;
 
     try {
-      const url = `ws://${hostAddr}:${portNum}/ws/debug`;
+      let url = `ws://${hostAddr}:${portNum}/ws/debug`;
+      if (uartConfig) {
+        url += `?port=${encodeURIComponent(uartConfig.port)}&baud=${uartConfig.baudRate}`;
+      }
       ws = new WebSocket(url);
 
       ws.onopen = () => {

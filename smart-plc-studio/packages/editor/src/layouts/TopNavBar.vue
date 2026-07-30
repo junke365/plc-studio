@@ -645,7 +645,7 @@ function handleConnect() {
     const uartCfg = settingsStore.uart
     const chipName = target === "stm32" ? "STM32" : "ESP32"
     debugStore.addLog("info", `通过 ${uartCfg.port} (${uartCfg.baudRate}) 连接 ${chipName}...`)
-    debugStore.runtimeStatus = "connected" as any
+    debugStore.connect("127.0.0.1", 3000, { port: uartCfg.port, baudRate: uartCfg.baudRate })
   } else {
     const host = prompt("请输入PLC设备地址:", debugStore.host || "127.0.0.1");
     if (host) {

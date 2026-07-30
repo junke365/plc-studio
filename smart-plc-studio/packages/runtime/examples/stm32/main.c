@@ -27,7 +27,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "plc_runtime.h"
+#include "plc_debug_protocol.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -545,6 +547,214 @@ static void led_task(void* pvParameters)
   }
 }
 
+/* ========== 调试通信任务 ========== */
+
+static void debug_comm_task(void* pvParameters)
+{
+  PlcRuntime* rt = (PlcRuntime*)pvParameters;
+  uint8_t rx_buf[DBG_FRAME_MAX_LEN];
+  uint32_t rx_pos = 0;
+  uint8_t tx_buf[DBG_FRAME_MAX_LEN];
+
+  printf("[DBG] 调试通信任务已启动 (USART6, 115200)\n");
+
+  for (;;) {
+    /* 轮询接收一个字节 */
+    uint8_t b;
+    HAL_StatusTypeDef hal_ret = HAL_UART_Receive(&huart2, &b, 1, 10);
+    if (hal_ret == HAL_OK) {
+      if (rx_pos < sizeof(rx_buf))
+        rx_buf[rx_pos++] = b;
+
+      /* 尝试解析帧 */
+      while (rx_pos >= 4) {
+        /* 找帧头 */
+        uint32_t i;
+        for (i = 0; i < rx_pos - 1; i++) {
+          if (rx_buf[i] == DBG_FRAME_HEADER0 && rx_buf[i + 1] == DBG_FRAME_HEADER1)
+            break;
+        }
+        if (i > 0) {
+          /* 丢弃帧头前的垃圾字节 */
+          rx_pos -= i;
+          memmove(rx_buf, rx_buf + i, rx_pos);
+          continue;
+        }
+        uint32_t pay_len = rx_buf[2];
+        uint32_t frame_len = 4 + pay_len;
+        if (rx_pos < frame_len) break; /* 等待更多数据 */
+
+        uint8_t cmd = rx_buf[3];
+        const uint8_t* payload = rx_buf + 4;
+        uint32_t sent_len = 0;
+
+        switch (cmd) {
+          case DBG_CMD_PING: {
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf), DBG_RSP_PONG, NULL, 0);
+            break;
+          }
+          case DBG_CMD_GET_STATUS: {
+            PlcStats stats;
+            plc_runtime_get_stats(rt, &stats);
+            char status_str[64];
+            int n = snprintf(status_str, sizeof(status_str),
+              "{\"status\":%d,\"uptime\":%lu,\"cycles\":%lu}",
+              (int)rt->state, (unsigned long)stats.uptime_ms,
+              (unsigned long)stats.cycle_count);
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf),
+              DBG_RSP_STATUS, (const uint8_t*)status_str, (uint32_t)n);
+            break;
+          }
+          case DBG_CMD_READ_VAR: {
+            char var_name[64];
+            uint32_t name_len = pay_len < sizeof(var_name) - 1 ? pay_len : sizeof(var_name) - 1;
+            memcpy(var_name, payload, name_len);
+            var_name[name_len] = '\0';
+            PlcVariable* var = plc_var_find(&rt->var_table, var_name);
+            if (var != NULL) {
+              char val_str[32];
+              switch (var->type) {
+                case VAR_TYPE_BOOL:
+                  snprintf(val_str, sizeof(val_str), "%d", *(plc_bool*)var->data);
+                  break;
+                case VAR_TYPE_INT:
+                  snprintf(val_str, sizeof(val_str), "%d", *(plc_int*)var->data);
+                  break;
+                case VAR_TYPE_UINT:
+                  snprintf(val_str, sizeof(val_str), "%u", *(plc_uint*)var->data);
+                  break;
+                case VAR_TYPE_REAL:
+                  snprintf(val_str, sizeof(val_str), "%f", *(plc_real*)var->data);
+                  break;
+                default:
+                  snprintf(val_str, sizeof(val_str), "?");
+                  break;
+              }
+              uint8_t resp_pay[128];
+              uint32_t vn_len = (uint32_t)strlen(var_name);
+              uint32_t vv_len = (uint32_t)strlen(val_str);
+              resp_pay[0] = (uint8_t)(vn_len & 0xFF);
+              resp_pay[1] = (uint8_t)((vn_len >> 8) & 0xFF);
+              memcpy(resp_pay + 2, var_name, vn_len);
+              memcpy(resp_pay + 2 + vn_len, val_str, vv_len);
+              sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf),
+                DBG_RSP_VAR_VALUE, resp_pay, 2 + vn_len + vv_len);
+            } else {
+              char err_msg[64];
+              int n = snprintf(err_msg, sizeof(err_msg), "变量 %s 不存在", var_name);
+              sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf),
+                DBG_RSP_ERROR, (const uint8_t*)err_msg, (uint32_t)n);
+            }
+            break;
+          }
+          case DBG_CMD_WRITE_VAR: {
+            if (pay_len >= 2) {
+              uint32_t name_len = (uint32_t)payload[0] | ((uint32_t)payload[1] << 8);
+              if (2 + name_len <= pay_len) {
+                char var_name[64];
+                uint32_t cn = name_len < sizeof(var_name) - 1 ? name_len : sizeof(var_name) - 1;
+                memcpy(var_name, payload + 2, cn);
+                var_name[cn] = '\0';
+                uint32_t val_len = pay_len - 2 - name_len;
+                char val_str[32];
+                cn = val_len < sizeof(val_str) - 1 ? val_len : sizeof(val_str) - 1;
+                memcpy(val_str, payload + 2 + name_len, cn);
+                val_str[cn] = '\0';
+                PlcVariable* var = plc_var_find(&rt->var_table, var_name);
+                if (var != NULL) {
+                  if (var->type == VAR_TYPE_BOOL) {
+                    *(plc_bool*)var->data = (val_str[0] == '1' || val_str[0] == 't') ? 1 : 0;
+                  } else if (var->type == VAR_TYPE_INT) {
+                    *(plc_int*)var->data = (plc_int)atoi(val_str);
+                  } else if (var->type == VAR_TYPE_UINT) {
+                    *(plc_uint*)var->data = (plc_uint)atoi(val_str);
+                  } else if (var->type == VAR_TYPE_REAL) {
+                    *(plc_real*)var->data = (plc_real)atof(val_str);
+                  }
+                  /* 应答：变量名 + 成功标志 */
+                  uint8_t resp_pay[128];
+                  resp_pay[0] = (uint8_t)(name_len & 0xFF);
+                  resp_pay[1] = (uint8_t)((name_len >> 8) & 0xFF);
+                  memcpy(resp_pay + 2, var_name, name_len);
+                  resp_pay[2 + name_len] = 1;
+                  sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf),
+                    DBG_RSP_VAR_WRITTEN, resp_pay, 3 + name_len);
+                }
+              }
+            }
+            if (sent_len == 0) {
+              sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf),
+                DBG_RSP_ERROR, (const uint8_t*)"写入变量失败", 13);
+            }
+            break;
+          }
+          case DBG_CMD_SET_BP: {
+            /* payload: id_len(2) + id + path_len(2) + path + line(2) */
+            if (pay_len >= 4) {
+              uint32_t id_len = (uint32_t)payload[0] | ((uint32_t)payload[1] << 8);
+              uint32_t path_len = (uint32_t)payload[2 + id_len] | ((uint32_t)payload[3 + id_len] << 8);
+              uint32_t off = 4 + id_len;
+              if (off + path_len + 2 <= pay_len) {
+                uint32_t line = (uint32_t)payload[off + path_len] | ((uint32_t)payload[off + path_len + 1] << 8);
+                int idx = plc_debug_add_breakpoint(&rt->debugger, 0, line);
+                if (idx >= 0) {
+                  printf("[DBG] 断点已设置: line=%lu\n", (unsigned long)line);
+                }
+              }
+            }
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf), DBG_RSP_PONG, NULL, 0);
+            break;
+          }
+          case DBG_CMD_REMOVE_BP: {
+            if (pay_len > 0) {
+              char bp_id[32];
+              uint32_t cn = pay_len < sizeof(bp_id) - 1 ? pay_len : sizeof(bp_id) - 1;
+              memcpy(bp_id, payload, cn);
+              bp_id[cn] = '\0';
+              /* 简单实现：删除所有断点 */
+              for (int i = 0; i < rt->debugger.breakpoint_count; i++) {
+                plc_debug_enable_breakpoint(&rt->debugger, i, false);
+              }
+              printf("[DBG] 断点已删除: %s\n", bp_id);
+            }
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf), DBG_RSP_PONG, NULL, 0);
+            break;
+          }
+          case DBG_CMD_STEP:
+            plc_debug_step(&rt->debugger);
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf), DBG_RSP_STEPPED, NULL, 0);
+            break;
+          case DBG_CMD_RUN:
+            plc_runtime_start(rt);
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf), DBG_RSP_PONG, NULL, 0);
+            break;
+          case DBG_CMD_PAUSE:
+            plc_runtime_stop(rt);
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf), DBG_RSP_PONG, NULL, 0);
+            break;
+          default: {
+            char err_msg[32];
+            int n = snprintf(err_msg, sizeof(err_msg), "未知命令: 0x%02X", cmd);
+            sent_len = dbg_build_frame(tx_buf, sizeof(tx_buf),
+              DBG_RSP_ERROR, (const uint8_t*)err_msg, (uint32_t)n);
+            break;
+          }
+        }
+
+        if (sent_len > 0) {
+          HAL_UART_Transmit(&huart2, tx_buf, sent_len, 100);
+        }
+
+        /* 移除已处理的帧 */
+        rx_pos -= frame_len;
+        memmove(rx_buf, rx_buf + frame_len, rx_pos);
+      }
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(5));
+  }
+}
+
 /* ========== main ========== */
 
 int main(void)
@@ -622,9 +832,11 @@ int main(void)
               configMAX_PRIORITIES - 1, NULL);
   xTaskCreate(comm_task, "Comm", 256, &g_runtime,
               configMAX_PRIORITIES - 2, NULL);
+  xTaskCreate(debug_comm_task, "DbgComm", 512, &g_runtime,
+              configMAX_PRIORITIES - 2, NULL);
   xTaskCreate(led_task, "LED", 128, NULL, 1, NULL);
 
-  printf("[STM32] FreeRTOS 任务已创建, 启动调度器...\n");
+  printf("[STM32] FreeRTOS 任务已创建 (4 tasks), 启动调度器...\n");
 
   /* 启动 FreeRTOS 调度器（永不返回） */
   vTaskStartScheduler();
