@@ -1,0 +1,71 @@
+{
+  "name": "定时器/计数器示例",
+  "path": "samples/02_timer_counter",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "TimerCounter",
+      "pouType": 0,
+      "variables": {
+        "inputVars": [],
+        "outputVars": [],
+        "inOutVars": [],
+        "localVars": [
+          {
+            "name": "nCount",
+            "type": "INT",
+            "className": "Local",
+            "initialValue": 0,
+            "comment": "计数"
+          },
+          {
+            "name": "bTick",
+            "type": "BOOL",
+            "className": "Local",
+            "initialValue": false,
+            "comment": "脉冲"
+          },
+          {
+            "name": "tOn",
+            "type": "TIME",
+            "className": "Local",
+            "initialValue": 0,
+            "comment": "计时"
+          }
+        ],
+        "tempVars": [],
+        "globalVars": [],
+        "externalVars": [],
+        "accessVars": []
+      },
+      "body": "PROGRAM TimerCounter\nIF bTick THEN\n  nCount := nCount + 1;\nEND_IF\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "定时器与计数器示例"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Config",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            {
+              "name": "Task1",
+              "interval": "T#10ms",
+              "priority": 1
+            }
+          ],
+          "programs": [
+            {
+              "name": "TimerCounter",
+              "typeName": "TimerCounter",
+              "taskName": "Task1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

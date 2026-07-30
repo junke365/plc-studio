@@ -1,0 +1,71 @@
+{
+  "name": "模拟量处理示例",
+  "path": "samples/03_analog_processing",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "AnalogProc",
+      "pouType": 0,
+      "variables": {
+        "inputVars": [],
+        "outputVars": [],
+        "inOutVars": [],
+        "localVars": [
+          {
+            "name": "fRaw",
+            "type": "REAL",
+            "className": "Local",
+            "initialValue": 0,
+            "comment": "原始值"
+          },
+          {
+            "name": "fScaled",
+            "type": "REAL",
+            "className": "Local",
+            "initialValue": 0,
+            "comment": "标定值"
+          },
+          {
+            "name": "fFiltered",
+            "type": "REAL",
+            "className": "Local",
+            "initialValue": 0,
+            "comment": "滤波值"
+          }
+        ],
+        "tempVars": [],
+        "globalVars": [],
+        "externalVars": [],
+        "accessVars": []
+      },
+      "body": "PROGRAM AnalogProc\nfScaled := fRaw * 100.0 / 27648.0;\nfFiltered := fFiltered * 0.9 + fScaled * 0.1;\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "模拟量采集与标定示例"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Config",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            {
+              "name": "Task1",
+              "interval": "T#10ms",
+              "priority": 1
+            }
+          ],
+          "programs": [
+            {
+              "name": "AnalogProc",
+              "typeName": "AnalogProc",
+              "taskName": "Task1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

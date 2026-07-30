@@ -1,0 +1,71 @@
+{
+  "name": "位逻辑示例",
+  "path": "samples/01_basic_logic",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "BasicLogic",
+      "pouType": 0,
+      "variables": {
+        "inputVars": [],
+        "outputVars": [],
+        "inOutVars": [],
+        "localVars": [
+          {
+            "name": "bStart",
+            "type": "BOOL",
+            "className": "Local",
+            "initialValue": false,
+            "comment": "启动"
+          },
+          {
+            "name": "bStop",
+            "type": "BOOL",
+            "className": "Local",
+            "initialValue": false,
+            "comment": "停止"
+          },
+          {
+            "name": "bRun",
+            "type": "BOOL",
+            "className": "Local",
+            "initialValue": false,
+            "comment": "运行中"
+          }
+        ],
+        "tempVars": [],
+        "globalVars": [],
+        "externalVars": [],
+        "accessVars": []
+      },
+      "body": "PROGRAM BasicLogic\nbRun := bStart AND NOT bStop;\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "基本位逻辑示例：启停控制"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Config",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            {
+              "name": "Task1",
+              "interval": "T#10ms",
+              "priority": 1
+            }
+          ],
+          "programs": [
+            {
+              "name": "BasicLogic",
+              "typeName": "BasicLogic",
+              "taskName": "Task1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

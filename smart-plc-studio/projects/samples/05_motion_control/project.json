@@ -1,0 +1,71 @@
+{
+  "name": "运动控制示例",
+  "path": "samples/05_motion_control",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "MotionCtrl",
+      "pouType": 0,
+      "variables": {
+        "inputVars": [],
+        "outputVars": [],
+        "inOutVars": [],
+        "localVars": [
+          {
+            "name": "fSpeed",
+            "type": "REAL",
+            "className": "Local",
+            "initialValue": 100,
+            "comment": "速度"
+          },
+          {
+            "name": "fPosition",
+            "type": "REAL",
+            "className": "Local",
+            "initialValue": 0,
+            "comment": "位置"
+          },
+          {
+            "name": "fAccel",
+            "type": "REAL",
+            "className": "Local",
+            "initialValue": 50,
+            "comment": "加速度"
+          }
+        ],
+        "tempVars": [],
+        "globalVars": [],
+        "externalVars": [],
+        "accessVars": []
+      },
+      "body": "PROGRAM MotionCtrl\nfPosition := fPosition + fSpeed * 0.001;\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "运动控制示例：速度与位置"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Config",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            {
+              "name": "Task1",
+              "interval": "T#10ms",
+              "priority": 1
+            }
+          ],
+          "programs": [
+            {
+              "name": "MotionCtrl",
+              "typeName": "MotionCtrl",
+              "taskName": "Task1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

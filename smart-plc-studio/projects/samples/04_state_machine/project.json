@@ -1,0 +1,71 @@
+{
+  "name": "状态机示例",
+  "path": "samples/04_state_machine",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "StateMachine",
+      "pouType": 0,
+      "variables": {
+        "inputVars": [],
+        "outputVars": [],
+        "inOutVars": [],
+        "localVars": [
+          {
+            "name": "nState",
+            "type": "INT",
+            "className": "Local",
+            "initialValue": 0,
+            "comment": "当前状态"
+          },
+          {
+            "name": "bInit",
+            "type": "BOOL",
+            "className": "Local",
+            "initialValue": false,
+            "comment": "初始化"
+          },
+          {
+            "name": "bDone",
+            "type": "BOOL",
+            "className": "Local",
+            "initialValue": false,
+            "comment": "完成"
+          }
+        ],
+        "tempVars": [],
+        "globalVars": [],
+        "externalVars": [],
+        "accessVars": []
+      },
+      "body": "PROGRAM StateMachine\nCASE nState OF\n  0: IF bInit THEN nState := 1; END_IF\n  1: nState := 2;\n  2: bDone := TRUE; nState := 0;\nEND_CASE\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "简单状态机示例"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Config",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            {
+              "name": "Task1",
+              "interval": "T#10ms",
+              "priority": 1
+            }
+          ],
+          "programs": [
+            {
+              "name": "StateMachine",
+              "typeName": "StateMachine",
+              "taskName": "Task1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -236,9 +236,9 @@ const submenuItems = computed<Record<string, MenuItem[]>>(() => ({
       : [{ label: "(无最近项目)", disabled: true }],
   // 导入子菜单
   import: [
-    { label: "导入PLC程序...", action: () => logAction("导入PLC程序") },
-    { label: "导入XML文件...", action: () => logAction("导入XML") },
-    { label: "导入硬件配置...", action: () => logAction("导入硬件配置") },
+    { label: "导入 PLC 程序...", action: () => importFile(".st", "ST 程序文件") },
+    { label: "导入 XML 文件...", action: () => importFile(".xml", "XML 文件") },
+    { label: "导入硬件配置...", action: () => importFile(".xml", "硬件配置 XML") },
   ],
 
   // 示例项目子菜单
@@ -365,7 +365,7 @@ const viewMenuEntries: MenuItem[] = [
 
 // ==================== 工程菜单 ====================
 const projectMenuEntries: MenuItem[] = [
-  { label: "新建工程", action: handleNewProject },
+  { label: "新建工程", action: () => router.push('/welcome') },
   { divider: true, label: "" },
   { label: "工程设置...", action: () => logAction("工程设置") },
   { divider: true, label: "" },
@@ -544,11 +544,7 @@ function logAction(actionName: string) {
 
 // 文件操作
 function handleNewProject() {
-  const name = prompt("请输入新项目名称:", "新项目");
-  if (name) {
-    projectStore.newProject(name);
-    debugStore.addLog("info", `已创建新项目: ${name}`);
-  }
+  router.push('/welcome')
 }
 
 function handleOpenProject() {
@@ -572,6 +568,24 @@ function onFileSelected(e: Event) {
   }
   reader.readAsText(file)
   target.value = ""
+}
+
+function importFile(accept: string, label: string) {
+  const input = document.createElement("input")
+  input.type = "file"
+  input.accept = accept
+  input.onchange = (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      debugStore.addLog("info", `已导入 ${label}: ${file.name}`)
+      // TODO: 解析并集成到当前项目
+    }
+    reader.readAsText(file)
+  }
+  input.click()
+  closeMenu()
 }
 
 function handleSaveProject() {
@@ -611,18 +625,100 @@ function handleExit() {
 }
 
 async function handleOpenSampleProject(dirName: string) {
-  try {
-    const resp = await fetch(`http://127.0.0.1:3000/api/project/samples/${dirName}`)
-    const data = await resp.json()
-    if (data.success && data.project) {
-      const samplePath = `projects/samples/${dirName}`
-      projectStore.openProject(samplePath, data.project)
-      debugStore.addLog("info", `已打开示例项目: ${data.project.name}`)
-    } else {
-      debugStore.addLog("error", `打开示例项目失败: ${data.error}`)
-    }
-  } catch (e) {
-    debugStore.addLog("error", "无法连接服务器，请确保后端已启动")
+  const samples: Record<string, { name: string; pous: any[] }> = {
+    '01_basic_logic': {
+      name: '位逻辑示例',
+      pous: [{
+        name: 'BasicLogic',
+        pouType: 0,
+        variables: { inputVars: [], outputVars: [], inOutVars: [], localVars: [
+          { name: 'bStart', type: 'BOOL', className: 'Local', initialValue: false, comment: '启动' },
+          { name: 'bStop', type: 'BOOL', className: 'Local', initialValue: false, comment: '停止' },
+          { name: 'bRun', type: 'BOOL', className: 'Local', initialValue: false, comment: '运行中' },
+        ], tempVars: [], globalVars: [], externalVars: [], accessVars: [] },
+        body: 'PROGRAM BasicLogic\nbRun := bStart AND NOT bStop;\nEND_PROGRAM',
+        bodyLanguage: 'ST',
+        comment: '基本位逻辑示例：启停控制',
+      }],
+      dataTypes: [],
+      configurations: [{ name: 'Config', resources: [{ name: 'Main', tasks: [{ name: 'Task1', interval: 'T#10ms', priority: 1 }], programs: [{ name: 'BasicLogic', typeName: 'BasicLogic', taskName: 'Task1' }] }] }],
+    },
+    '02_timer_counter': {
+      name: '定时器/计数器示例',
+      pous: [{
+        name: 'TimerCounter',
+        pouType: 0,
+        variables: { inputVars: [], outputVars: [], inOutVars: [], localVars: [
+          { name: 'nCount', type: 'INT', className: 'Local', initialValue: 0, comment: '计数' },
+          { name: 'bTick', type: 'BOOL', className: 'Local', initialValue: false, comment: '脉冲' },
+          { name: 'tOn', type: 'TIME', className: 'Local', initialValue: 0, comment: '计时' },
+        ], tempVars: [], globalVars: [], externalVars: [], accessVars: [] },
+        body: 'PROGRAM TimerCounter\nIF bTick THEN\n  nCount := nCount + 1;\nEND_IF\nEND_PROGRAM',
+        bodyLanguage: 'ST',
+        comment: '定时器与计数器示例',
+      }],
+      dataTypes: [],
+      configurations: [{ name: 'Config', resources: [{ name: 'Main', tasks: [{ name: 'Task1', interval: 'T#10ms', priority: 1 }], programs: [{ name: 'TimerCounter', typeName: 'TimerCounter', taskName: 'Task1' }] }] }],
+    },
+    '03_analog_processing': {
+      name: '模拟量处理示例',
+      pous: [{
+        name: 'AnalogProc',
+        pouType: 0,
+        variables: { inputVars: [], outputVars: [], inOutVars: [], localVars: [
+          { name: 'fRaw', type: 'REAL', className: 'Local', initialValue: 0.0, comment: '原始值' },
+          { name: 'fScaled', type: 'REAL', className: 'Local', initialValue: 0.0, comment: '标定值' },
+          { name: 'fFiltered', type: 'REAL', className: 'Local', initialValue: 0.0, comment: '滤波值' },
+        ], tempVars: [], globalVars: [], externalVars: [], accessVars: [] },
+        body: 'PROGRAM AnalogProc\nfScaled := fRaw * 100.0 / 27648.0;\nfFiltered := fFiltered * 0.9 + fScaled * 0.1;\nEND_PROGRAM',
+        bodyLanguage: 'ST',
+        comment: '模拟量采集与标定示例',
+      }],
+      dataTypes: [],
+      configurations: [{ name: 'Config', resources: [{ name: 'Main', tasks: [{ name: 'Task1', interval: 'T#10ms', priority: 1 }], programs: [{ name: 'AnalogProc', typeName: 'AnalogProc', taskName: 'Task1' }] }] }],
+    },
+    '04_state_machine': {
+      name: '状态机示例',
+      pous: [{
+        name: 'StateMachine',
+        pouType: 0,
+        variables: { inputVars: [], outputVars: [], inOutVars: [], localVars: [
+          { name: 'nState', type: 'INT', className: 'Local', initialValue: 0, comment: '当前状态' },
+          { name: 'bInit', type: 'BOOL', className: 'Local', initialValue: false, comment: '初始化' },
+          { name: 'bDone', type: 'BOOL', className: 'Local', initialValue: false, comment: '完成' },
+        ], tempVars: [], globalVars: [], externalVars: [], accessVars: [] },
+        body: 'PROGRAM StateMachine\nCASE nState OF\n  0: IF bInit THEN nState := 1; END_IF\n  1: nState := 2;\n  2: bDone := TRUE; nState := 0;\nEND_CASE\nEND_PROGRAM',
+        bodyLanguage: 'ST',
+        comment: '简单状态机示例',
+      }],
+      dataTypes: [],
+      configurations: [{ name: 'Config', resources: [{ name: 'Main', tasks: [{ name: 'Task1', interval: 'T#10ms', priority: 1 }], programs: [{ name: 'StateMachine', typeName: 'StateMachine', taskName: 'Task1' }] }] }],
+    },
+    '05_motion_control': {
+      name: '运动控制示例',
+      pous: [{
+        name: 'MotionCtrl',
+        pouType: 0,
+        variables: { inputVars: [], outputVars: [], inOutVars: [], localVars: [
+          { name: 'fSpeed', type: 'REAL', className: 'Local', initialValue: 100.0, comment: '速度' },
+          { name: 'fPosition', type: 'REAL', className: 'Local', initialValue: 0.0, comment: '位置' },
+          { name: 'fAccel', type: 'REAL', className: 'Local', initialValue: 50.0, comment: '加速度' },
+        ], tempVars: [], globalVars: [], externalVars: [], accessVars: [] },
+        body: 'PROGRAM MotionCtrl\nfPosition := fPosition + fSpeed * 0.001;\nEND_PROGRAM',
+        bodyLanguage: 'ST',
+        comment: '运动控制示例：速度与位置',
+      }],
+      dataTypes: [],
+      configurations: [{ name: 'Config', resources: [{ name: 'Main', tasks: [{ name: 'Task1', interval: 'T#10ms', priority: 1 }], programs: [{ name: 'MotionCtrl', typeName: 'MotionCtrl', taskName: 'Task1' }] }] }],
+    },
+  }
+
+  const data = samples[dirName]
+  if (data) {
+    projectStore.openProject(`samples/${dirName}`, { ...data, path: `samples/${dirName}`, category: 'standard' } as any)
+    debugStore.addLog("info", `已打开示例项目: ${data.name}`)
+  } else {
+    debugStore.addLog("error", `示例项目不存在: ${dirName}`)
   }
 }
 
