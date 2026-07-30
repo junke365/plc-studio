@@ -107,6 +107,7 @@
       </button>
     </div>
     <SettingsDialog v-model:visible="settingsVisible" />
+    <input ref="fileInput" type="file" accept=".plcproj,.json" style="display:none" @change="onFileSelected" />
   </header>
 </template>
 
@@ -118,9 +119,11 @@ import { useProjectStore } from "../stores/project";
 import { useEditorStore } from "../stores/editor";
 import { useDebugStore } from "../stores/debug";
 import { useSettingsStore, type RuntimeTarget } from "../stores/settings";
+import type { PlcProject } from "@smart-plc/shared";
 import SettingsDialog from "../components/dialogs/SettingsDialog.vue";
 
 const settingsVisible = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -215,7 +218,13 @@ const submenuItems = computed<Record<string, MenuItem[]>>(() => ({
           ...projectStore.recentProjects.map((p) => ({
             label: p.name,
             action: () => {
-              debugStore.addLog("info", `打开最近项目: ${p.path}`);
+              const saved = JSON.parse(localStorage.getItem("plc-projects") || "{}")
+              if (saved[p.path]) {
+                projectStore.openProject(p.path, saved[p.path])
+                debugStore.addLog("info", `已打开最近项目: ${p.name}`)
+              } else {
+                debugStore.addLog("warning", `最近项目不存在: ${p.path}`)
+              }
             },
           })),
           { divider: true, label: "" },
@@ -543,7 +552,26 @@ function handleNewProject() {
 }
 
 function handleOpenProject() {
-  logAction("打开项目");
+  fileInput.value?.click()
+}
+
+function onFileSelected(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    try {
+      const project = JSON.parse(reader.result as string) as PlcProject
+      projectStore.openProject(file.name, project)
+      debugStore.addLog("info", `已打开项目: ${project.name}`)
+    } catch {
+      debugStore.addLog("error", "无法解析项目文件")
+    }
+  }
+  reader.readAsText(file)
+  target.value = ""
 }
 
 function handleSaveProject() {
@@ -552,7 +580,26 @@ function handleSaveProject() {
 }
 
 function handleSaveProjectAs() {
-  logAction("另存为");
+  if (!projectStore.projectName) {
+    debugStore.addLog("warning", "没有打开的项目")
+    return
+  }
+  const project: PlcProject = {
+    name: projectStore.projectName,
+    path: projectStore.projectPath,
+    category: projectStore.projectCategory as any,
+    pous: projectStore.pous,
+    dataTypes: projectStore.dataTypes,
+    configurations: projectStore.configurations,
+  }
+  const blob = new Blob([JSON.stringify(project, null, 2)], { type: "application/json" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `${projectStore.projectName}.plcproj`
+  a.click()
+  URL.revokeObjectURL(url)
+  debugStore.addLog("info", `项目已导出: ${projectStore.projectName}.plcproj`)
 }
 
 function handleExit() {
