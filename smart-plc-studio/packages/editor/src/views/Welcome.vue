@@ -176,12 +176,22 @@
         <div class="modal-body">
           <div class="form-row">
             <label class="form-label">项目路径</label>
+            <div class="input-with-browse">
+              <input
+                class="form-input"
+                v-model="openProjectPathInput"
+                placeholder="输入 .plcproj 文件路径"
+                @keydown.enter="handleOpen"
+                autofocus
+              />
+              <button class="browse-btn" @click="browseFile">浏览</button>
+            </div>
             <input
-              class="form-input"
-              v-model="openProjectPathInput"
-              placeholder="输入 .plcproj 文件路径"
-              @keydown.enter="handleOpen"
-              autofocus
+              ref="fileInput"
+              type="file"
+              accept=".plcproj,.json"
+              style="display:none"
+              @change="onFileSelected"
             />
           </div>
           <div v-if="openError" class="form-error">{{ openError }}</div>
@@ -253,6 +263,7 @@ const createError = ref("");
 const showOpenDialog = ref(false);
 const openProjectPathInput = ref("");
 const openError = ref("");
+const fileInput = ref<HTMLInputElement | null>(null);
 
 // 空的变量表
 const emptyVarTable: PouVarTable = {
@@ -395,6 +406,45 @@ function createDefaultPous(name: string, category: string): PlcProject["pous"] {
   }
 
   return pous;
+}
+
+function browseFile() {
+  fileInput.value?.click()
+}
+
+function onFileSelected(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  openProjectPathInput.value = file.name
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    try {
+      const project = JSON.parse(reader.result as string) as PlcProject
+      projectStore.openProject(file.name, project)
+      showOpenDialog.value = false
+
+      const mainPou = project.pous.find((p) => p.pouType === 0)
+      if (mainPou) {
+        editorStore.openTab({
+          id: mainPou.name,
+          title: mainPou.name,
+          language: 0,
+          path: `pou/${mainPou.name}`,
+          modified: false,
+          content: mainPou.body,
+          pouName: mainPou.name,
+        })
+      }
+    } catch {
+      openError.value = "无法解析项目文件，请确保为有效的 .plcproj JSON 格式"
+    }
+  }
+  reader.readAsText(file)
+  // 重置 input 以允许重复选择同一文件
+  target.value = ""
 }
 
 function handleOpen() {
@@ -720,6 +770,32 @@ function openKinematics() {
 
 .form-input:focus {
   border-color: var(--primary);
+}
+
+.input-with-browse {
+  display: flex;
+  gap: 6px;
+}
+
+.input-with-browse .form-input {
+  flex: 1;
+}
+
+.browse-btn {
+  padding: 6px 12px;
+  background: var(--surface-variant);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  color: var(--on-surface);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+
+.browse-btn:hover {
+  background: var(--surface-container-high);
 }
 
 .form-error {
