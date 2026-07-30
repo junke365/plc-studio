@@ -33,9 +33,46 @@ make -j$(nproc)
 | 选项 | 默认值 | 说明 |
 |------|--------|------|
 | CMAKE_BUILD_TYPE | Debug | 构建类型 |
-| PLC_ENABLE_HMI | ON | 启用 HMI 支持 |
-| PLC_ENABLE_PROTOCOL | ON | 启用通信协议 |
-| PLC_PLATFORM | linux-x86 | 目标平台 |
+| PLATFORM | linux-x86 | 目标平台 (linux-x86, stm32, esp32, win32) |
+| BUILD_HAL | ON | 启用 HAL 模块 |
+| BUILD_PROTOCOL | ON | 启用通信协议 |
+| BUILD_HMI | ON | 启用 HMI 支持 |
+| BUILD_MOTION | ON | 启用运动控制 |
+| BUILD_SIMULATION | ON | 启用仿真引擎 |
+| BUILD_DEVICE | ON | 启用设备拓扑 |
+| STM32_HAL_DIR | (空) | STM32 HAL 存根路径 |
+| FREERTOS_DIR | (空) | FreeRTOS 存根路径 |
+
+### 交叉编译 (STM32)
+
+```bash
+cd smart-plc-studio/packages/runtime
+cmake -B build-stm32 -G "MinGW Makefiles" \
+  -DPLATFORM=stm32 \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/stm32_gcc.cmake \
+  -DSTM32_HAL_DIR=stm32-stubs \
+  -DBUILD_HAL=OFF -DBUILD_PROTOCOL=OFF -DBUILD_HMI=OFF
+cmake --build build-stm32
+```
+
+需要 `arm-none-eabi-gcc`。HAL/FreeRTOS 头文件由 `stm32-stubs/` 目录提供存根（无需真实 STM32Cube_FW_F4 库）。
+
+### Docker/QEMU 测试
+
+```bash
+cd smart-plc-studio/packages/runtime
+
+# 全部平台
+./scripts/docker-test.sh all
+
+# 仅 x86
+./scripts/docker-test.sh x86
+
+# 仅 ARM（交叉编译 + QEMU user-mode 仿真）
+./scripts/docker-test.sh arm
+```
+
+参见 `docker/README.md` 获取详细说明。
 
 ## 模块开发
 

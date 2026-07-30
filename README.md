@@ -206,6 +206,31 @@ make -j$(nproc)
 
 # 交叉编译 (ESP32)
 cmake .. -DCMAKE_TOOLCHAIN_FILE=../platform/esp32/toolchain.cmake
+
+# 交叉编译 (STM32) — 需要 arm-none-eabi-gcc
+cmake -B build-stm32 -G "MinGW Makefiles" \
+  -DPLATFORM=stm32 \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/stm32_gcc.cmake \
+  -DSTM32_HAL_DIR=stm32-stubs \
+  -DBUILD_HAL=OFF -DBUILD_PROTOCOL=OFF -DBUILD_HMI=OFF
+cmake --build build-stm32
+
+# 快捷脚本
+./build_stm32.bat    # Windows
+./build_stm32.sh     # Linux
+```
+
+### Docker/QEMU 集成测试
+
+```bash
+# 全部平台
+./scripts/docker-test.sh all
+
+# 仅 x86
+./scripts/docker-test.sh x86
+
+# 仅 ARM（交叉编译 + QEMU 仿真）
+./scripts/docker-test.sh arm
 ```
 
 ## 界面预览
@@ -255,6 +280,11 @@ cmake .. -DCMAKE_TOOLCHAIN_FILE=../platform/esp32/toolchain.cmake
 - [x] PX4 飞控集成（6-DOF 动力学仿真 + uORB 订阅回调）
 - [x] OpenCV5 视觉集成（C++ 包装层 + DNN/aruco/光流）
 - [x] SOFA 独立仿真器（TCP 服务器 + SimulationSystem 包装）
+- [x] STM32 交叉编译（HAL/FreeRTOS 存根、工具链、syscall stubs）
+- [x] Docker/QEMU 容器化集成测试（x86 + ARM）
+- [x] 后端构建服务模块（GUI 触发 STM32 编译烧录）
+- [x] ST 语言编译器（词法/语法解析、代码生成、验证）
+- [x] plc-core 核心包（独立于运行时的 ST 语言工具链）
 
 ### 🚧 进行中 / 计划中
 
