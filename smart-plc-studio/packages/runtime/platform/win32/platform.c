@@ -666,3 +666,34 @@ int plc_hal_serial_recv(int fd, uint8_t* data, uint32_t max_len, uint32_t timeou
   if (!ReadFile(hCom, data, max_len, &read, NULL)) return -1;
   return (int)read;
 }
+
+/* ========== GPIO HAL 模拟（Win32 使用内存模拟 GPIO） ========== */
+
+static uint8_t g_gpio_sim[256]; /* 虚拟 GPIO 寄存器 */
+
+int32_t plc_hal_gpio_read(uint32_t addr)
+{
+  if (addr < 256) return (g_gpio_sim[addr] != 0) ? 1 : 0;
+  return 0;
+}
+
+void plc_hal_gpio_write(uint32_t addr, int32_t value)
+{
+  if (addr < 256) g_gpio_sim[addr] = (uint8_t)(value ? 1 : 0);
+}
+
+void plc_hal_gpio_toggle(uint32_t addr)
+{
+  if (addr < 256) g_gpio_sim[addr] = g_gpio_sim[addr] ? 0 : 1;
+}
+
+void plc_hal_step_pulse(uint32_t step_addr, uint32_t dir_addr, int32_t dir)
+{
+  /* Win32 模拟：设置方向 + 翻转 STEP 引脚 */
+  if (step_addr < 256 && dir_addr < 256) {
+    g_gpio_sim[dir_addr] = (uint8_t)(dir ? 1 : 0);
+    g_gpio_sim[step_addr] = 1;
+    /* 模拟 2μs 脉冲宽度 */
+    g_gpio_sim[step_addr] = 0;
+  }
+}

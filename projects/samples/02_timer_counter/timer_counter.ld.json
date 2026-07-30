@@ -1,0 +1,200 @@
+{
+  "rungs": [
+    {
+      "id": "rung-0",
+      "nodes": [
+        {
+          "id": "n-start",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "StartBtn", "negated": false }
+        },
+        {
+          "id": "n-stop",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "StopBtn", "negated": true }
+        },
+        {
+          "id": "n-conv-timer-on",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "ConveyorOnTimer", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e0-left-start", "source": "rail-left", "target": "n-start", "sourceHandle": "p-0", "type": "smoothstep" },
+        { "id": "e0-start-stop", "source": "n-start", "target": "n-stop", "type": "smoothstep" },
+        { "id": "e0-stop-timer", "source": "n-stop", "target": "n-conv-timer-on", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-1",
+      "nodes": [
+        {
+          "id": "n-ton-block",
+          "type": "block",
+          "position": { "x": 120, "y": 0 },
+          "data": { "label": "TON", "libType": "functionBlock", "inputs": ["IN", "PT"], "outputs": ["Q", "ET"] }
+        },
+        {
+          "id": "n-conv-elapsed",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "ConveyorOnElapsed", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e1-ton-conv", "source": "n-ton-block", "target": "n-conv-elapsed", "sourceHandle": "out-0", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-2",
+      "nodes": [
+        {
+          "id": "n-elapsed-contact",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ConveyorOnElapsed", "negated": false }
+        },
+        {
+          "id": "n-conveyor-coil",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "ConveyorMotor", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e2-left-elapsed", "source": "rail-left", "target": "n-elapsed-contact", "sourceHandle": "p-2", "type": "smoothstep" },
+        { "id": "e2-elapsed-motor", "source": "n-elapsed-contact", "target": "n-conveyor-coil", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-3",
+      "nodes": [
+        {
+          "id": "n-tof-block",
+          "type": "block",
+          "position": { "x": 120, "y": 0 },
+          "data": { "label": "TOF", "libType": "functionBlock", "inputs": ["IN", "PT"], "outputs": ["Q", "ET"] }
+        },
+        {
+          "id": "n-stop-elapsed",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "StopOffElapsed", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e3-tof-elapsed", "source": "n-tof-block", "target": "n-stop-elapsed", "sourceHandle": "out-0", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-4",
+      "nodes": [
+        {
+          "id": "n-blink-ton",
+          "type": "block",
+          "position": { "x": 120, "y": 0 },
+          "data": { "label": "TON", "libType": "functionBlock", "inputs": ["IN", "PT"], "outputs": ["Q", "ET"] }
+        },
+        {
+          "id": "n-blink-state",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "BlinkState", "negated": false, "coilType": "set" }
+        }
+      ],
+      "edges": [
+        { "id": "e4-blink", "source": "n-blink-ton", "target": "n-blink-state", "sourceHandle": "out-0", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-5",
+      "nodes": [
+        {
+          "id": "n-conv-running",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ConveyorMotor", "negated": false }
+        },
+        {
+          "id": "n-green-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "GreenLamp", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e5-left-conv", "source": "rail-left", "target": "n-conv-running", "sourceHandle": "p-5", "type": "smoothstep" },
+        { "id": "e5-conv-lamp", "source": "n-conv-running", "target": "n-green-lamp", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-6",
+      "nodes": [
+        {
+          "id": "n-ctu-block",
+          "type": "block",
+          "position": { "x": 120, "y": 0 },
+          "data": { "label": "CTU", "libType": "functionBlock", "inputs": ["CU", "R", "PV"], "outputs": ["Q", "CV"] }
+        },
+        {
+          "id": "n-count-done",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "CountDone", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e6-ctu-done", "source": "n-ctu-block", "target": "n-count-done", "sourceHandle": "out-0", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-7",
+      "nodes": [
+        {
+          "id": "n-count-done-c",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "CountDone", "negated": false }
+        },
+        {
+          "id": "n-yellow-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "YellowLamp", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e7-left-done", "source": "rail-left", "target": "n-count-done-c", "sourceHandle": "p-7", "type": "smoothstep" },
+        { "id": "e7-done-lamp", "source": "n-count-done-c", "target": "n-yellow-lamp", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-8",
+      "nodes": [
+        {
+          "id": "n-sensorb",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "SensorB", "negated": false }
+        },
+        {
+          "id": "n-red-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "RedLamp", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e8-left-sensorb", "source": "rail-left", "target": "n-sensorb", "sourceHandle": "p-8", "type": "smoothstep" },
+        { "id": "e8-sensorb-lamp", "source": "n-sensorb", "target": "n-red-lamp", "type": "smoothstep" }
+      ]
+    }
+  ],
+  "railPortCount": 16,
+  "railLeftX": 0,
+  "railRightX": 500,
+  "railsLocked": true
+}

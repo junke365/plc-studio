@@ -9,6 +9,25 @@ export async function createProjectRoutes(fastify: FastifyInstance) {
     return { projects: [] }
   })
 
+  // 列出示例项目
+  fastify.get('/samples', async () => {
+    const samples = await projectService.listSamples()
+    return { samples }
+  })
+
+  // 打开示例项目
+  fastify.get<{
+    Params: { name: string }
+  }>('/samples/:name', async (request, reply) => {
+    try {
+      const project = await projectService.openSample(request.params.name)
+      return { success: true, project }
+    } catch (error) {
+      reply.status(400)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
   // 打开项目
   fastify.post<{
     Body: { path: string }

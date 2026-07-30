@@ -1,4 +1,5 @@
 #include "plc_motorhal.h"
+#include "plc_platform.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -191,21 +192,26 @@ static int stepdir_update(MotorHal *motor)
     priv->stepPeriod = (freq > 0) ? (1.0f / freq) : 0;
   }
 
-  /* 模拟步进脉冲输出 (在真实硬件上这里操作 GPIO) */
+  /* 步进脉冲输出 */
   if (priv->stepPeriod > 0) {
     priv->stepTimer += 0.001f;  /* dt=1ms */
     if (priv->stepTimer >= priv->stepPeriod) {
-      priv->stepTimer = 0;
+      priv->stepTimer -= priv->stepPeriod; /* 保持精度 */
 
-      /* 产生脉冲 (硬件: GPIO 写入) */
+      /* 方向 */
+      int dir = (priv->velocityMmS >= 0 || motor->commandPos >= priv->positionMm) ? 1 : -1;
+
+#ifdef PLATFORM_STM32
+      /* 真实硬件：调用平台 GPIO 产生脉冲 */
+      plc_hal_step_pulse(priv->stepPin, priv->dirPin, dir);
+#else
+      /* 仿真：软件模拟脉冲 */
       priv->lastStepState = !priv->lastStepState;
       if (priv->lastStepState) {
         priv->stepCounter++;
-
-        /* 方向 */
-        int dir = (priv->velocityMmS >= 0 || motor->commandPos >= priv->positionMm) ? 1 : -1;
-        priv->positionMm += dir / priv->pulsePerMm;
+        priv->positionMm += (float)dir / priv->pulsePerMm;
       }
+#endif
     }
   }
 

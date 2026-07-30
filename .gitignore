@@ -12,3 +12,7 @@ smart-plc-studio/packages/server/nul
 smart-plc-studio/hmi-output/
 smart-plc-studio/packages/runtime/build-*/
 plc-studio.wiki/
+CMakeFiles/
+G:temp*.txt
+smart-plc-studio/packages/runtime/platform/SDL2-*-mingw.zip
+smart-plc-studio/third_party/

@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  plc-runtime-x86:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.x86
+    image: plc-runtime:x86
+    container_name: plc-x86-test
+    environment:
+      - TIMEOUT_SEC=5
+      - PLC_BIN=/usr/local/bin/plc-runtime
+    command: []
+
+  plc-runtime-arm:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.arm
+    image: plc-runtime:arm
+    container_name: plc-arm-test
+    privileged: true
+    environment:
+      - TIMEOUT_SEC=10
+      - PLC_BIN=/usr/local/bin/plc-runtime
+    command: []

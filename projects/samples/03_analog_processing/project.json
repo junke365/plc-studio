@@ -1,0 +1,66 @@
+{
+  "name": "AnalogProcessing",
+  "path": "projects/samples/03_analog_processing",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "AnalogProcessing",
+      "pouType": "program",
+      "variables": {
+        "inputVars": [
+          { "name": "AiChannel1", "type": "INT", "className": "Input", "comment": "模拟量通道1（温度）" },
+          { "name": "AiChannel2", "type": "INT", "className": "Input", "comment": "模拟量通道2（压力）" },
+          { "name": "AiChannel3", "type": "INT", "className": "Input", "comment": "模拟量通道3（流量）" },
+          { "name": "EnableScaling", "type": "BOOL", "className": "Input", "comment": "使能缩放" },
+          { "name": "ResetAlarm", "type": "BOOL", "className": "Input", "comment": "报警复位" }
+        ],
+        "outputVars": [
+          { "name": "Temperature", "type": "REAL", "className": "Output", "comment": "温度工程值（℃）" },
+          { "name": "Pressure", "type": "REAL", "className": "Output", "comment": "压力工程值（MPa）" },
+          { "name": "FlowRate", "type": "REAL", "className": "Output", "comment": "流量工程值（L/min）" },
+          { "name": "TempHighAlarm", "type": "BOOL", "className": "Output", "comment": "温度高报警" },
+          { "name": "TempLowAlarm", "type": "BOOL", "className": "Output", "comment": "温度低报警" },
+          { "name": "PressHighAlarm", "type": "BOOL", "className": "Output", "comment": "压力高报警" },
+          { "name": "PressLowAlarm", "type": "BOOL", "className": "Output", "comment": "压力低报警" },
+          { "name": "FlowLowAlarm", "type": "BOOL", "className": "Output", "comment": "流量低报警" },
+          { "name": "SystemFault", "type": "BOOL", "className": "Output", "comment": "系统故障" },
+          { "name": "AoChannel1", "type": "INT", "className": "Output", "comment": "模拟量输出通道" }
+        ],
+        "localVars": [
+          { "name": "TempFiltered", "type": "REAL", "className": "Local", "comment": "温度滤波值" },
+          { "name": "TempPrev", "type": "REAL", "className": "Local", "comment": "上次温度值" },
+          { "name": "PressFiltered", "type": "REAL", "className": "Local", "comment": "压力滤波值" },
+          { "name": "PressPrev", "type": "REAL", "className": "Local", "comment": "上次压力值" },
+          { "name": "FilterAlpha", "type": "REAL", "className": "Local", "initialValue": 0.3, "comment": "滤波系数" },
+          { "name": "TempHighLatch", "type": "BOOL", "className": "Local", "comment": "温度高报警锁存" },
+          { "name": "TempLowLatch", "type": "BOOL", "className": "Local", "comment": "温度低报警锁存" },
+          { "name": "PressHighLatch", "type": "BOOL", "className": "Local", "comment": "压力高报警锁存" },
+          { "name": "PressLowLatch", "type": "BOOL", "className": "Local", "comment": "压力低报警锁存" },
+          { "name": "FlowLowLatch", "type": "BOOL", "className": "Local", "comment": "流量低报警锁存" },
+          { "name": "AoOutputRaw", "type": "INT", "className": "Local", "comment": "模拟量输出原始值" }
+        ],
+        "inOutVars": [], "tempVars": [], "globalVars": [], "externalVars": [], "accessVars": []
+      },
+      "body": "PROGRAM AnalogProcessing\nVAR_INPUT\n  AiChannel1 : INT;\n  AiChannel2 : INT;\n  AiChannel3 : INT;\n  EnableScaling : BOOL;\n  ResetAlarm : BOOL;\nEND_VAR\n...",
+      "bodyLanguage": "ST",
+      "comment": "模拟量处理示例：AI缩放/工程值转换、一阶滤波、超限报警、AO输出"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Default",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            { "name": "MainTask", "interval": "T#50ms", "priority": 1 }
+          ],
+          "programs": [
+            { "name": "MainProgram", "typeName": "AnalogProcessing", "taskName": "MainTask" }
+          ]
+        }
+      ]
+    }
+  ]
+}

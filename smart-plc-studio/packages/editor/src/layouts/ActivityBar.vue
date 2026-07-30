@@ -18,18 +18,22 @@
     <button class="activity-btn" title="设置" @click="handleSettings">
       <span class="material-symbols-outlined">settings</span>
     </button>
+    <SettingsDialog v-model:visible="settingsVisible" />
   </aside>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue"
 import { useUiStore } from "../stores/ui";
 import { useEditorStore } from "../stores/editor";
 import { EditorLanguage } from "@smart-plc/shared";
 import { useRouter } from "vue-router";
+import SettingsDialog from "../components/dialogs/SettingsDialog.vue";
 
 const uiStore = useUiStore();
 const editorStore = useEditorStore();
 const router = useRouter();
+const settingsVisible = ref(false)
 
 const activityItems = [
   { id: "project", icon: "folder", label: "项目资源管理器" },
@@ -89,7 +93,7 @@ function handleActivityClick(id: string) {
 }
 
 function handleSettings() {
-  // TODO: 打开设置
+  settingsVisible.value = true
 }
 </script>
 

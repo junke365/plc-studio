@@ -152,4 +152,33 @@ void plc_platform_log(uint8_t level, const char* fmt, ...);
 #define PLC_LOG_DEBUG   3
 #define PLC_LOG_TRACE   4
 
+/* ========== 通用 GPIO HAL（各平台实现，供 motion 层调用） ========== */
+
+/**
+ * 读取 GPIO 引脚值
+ * @param addr 物理地址编码 (端口索引<<4 | 引脚号)
+ * @return 0=低电平, 1=高电平
+ */
+int32_t plc_hal_gpio_read(uint32_t addr);
+
+/**
+ * 写入 GPIO 引脚值
+ * @param addr 物理地址编码
+ * @param value 0=低电平, 非0=高电平
+ */
+void plc_hal_gpio_write(uint32_t addr, int32_t value);
+
+/**
+ * 翻转 GPIO 引脚
+ */
+void plc_hal_gpio_toggle(uint32_t addr);
+
+/**
+ * 步进电机脉冲生成（一个完整脉冲: 拉高→2μs→拉低）
+ * @param step_addr STEP 引脚物理地址
+ * @param dir_addr  DIR 引脚物理地址
+ * @param dir       方向 (0=负, 非0=正)
+ */
+void plc_hal_step_pulse(uint32_t step_addr, uint32_t dir_addr, int32_t dir);
+
 #endif /* PLC_PLATFORM_H */

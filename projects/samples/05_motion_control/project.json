@@ -1,0 +1,75 @@
+{
+  "name": "MotionControl",
+  "path": "projects/samples/05_motion_control",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "MotionControl",
+      "pouType": "program",
+      "variables": {
+        "inputVars": [
+          { "name": "StartBtn", "type": "BOOL", "className": "Input", "comment": "启动按钮" },
+          { "name": "StopBtn", "type": "BOOL", "className": "Input", "comment": "停止按钮" },
+          { "name": "HomeBtn", "type": "BOOL", "className": "Input", "comment": "回原点按钮" },
+          { "name": "JogForward", "type": "BOOL", "className": "Input", "comment": "点动正转" },
+          { "name": "JogReverse", "type": "BOOL", "className": "Input", "comment": "点动反转" },
+          { "name": "LimitPositive", "type": "BOOL", "className": "Input", "comment": "正限位" },
+          { "name": "LimitNegative", "type": "BOOL", "className": "Input", "comment": "负限位" },
+          { "name": "HomeSensor", "type": "BOOL", "className": "Input", "comment": "原点传感器" },
+          { "name": "TargetPosition", "type": "INT", "className": "Input", "initialValue": 5000, "comment": "目标位置" },
+          { "name": "MoveVelocity", "type": "INT", "className": "Input", "initialValue": 1000, "comment": "移动速度" },
+          { "name": "Acceleration", "type": "INT", "className": "Input", "initialValue": 500, "comment": "加速度" },
+          { "name": "Deceleration", "type": "INT", "className": "Input", "initialValue": 500, "comment": "减速度" },
+          { "name": "EmergencyStop", "type": "BOOL", "className": "Input", "comment": "急停" }
+        ],
+        "outputVars": [
+          { "name": "PulseOut", "type": "BOOL", "className": "Output", "comment": "脉冲输出" },
+          { "name": "DirectionOut", "type": "BOOL", "className": "Output", "comment": "方向输出" },
+          { "name": "IsRunning", "type": "BOOL", "className": "Output", "comment": "轴运行中" },
+          { "name": "IsHomed", "type": "BOOL", "className": "Output", "comment": "已回原点" },
+          { "name": "IsMoving", "type": "BOOL", "className": "Output", "comment": "移动中" },
+          { "name": "IsAtTarget", "type": "BOOL", "className": "Output", "comment": "已到达目标" },
+          { "name": "FaultAlarm", "type": "BOOL", "className": "Output", "comment": "故障报警" },
+          { "name": "CurrentPosition", "type": "INT", "className": "Output", "comment": "当前位置" }
+        ],
+        "localVars": [
+          { "name": "AxisFault", "type": "BOOL", "className": "Local", "comment": "轴故障" },
+          { "name": "AxisEnabled", "type": "BOOL", "className": "Local", "comment": "轴使能" },
+          { "name": "AxisBusy", "type": "BOOL", "className": "Local", "comment": "轴忙" },
+          { "name": "AxisHomed", "type": "BOOL", "className": "Local", "comment": "已回零" },
+          { "name": "MoveMode", "type": "INT", "className": "Local", "comment": "运动模式" },
+          { "name": "SetpointPosition", "type": "INT", "className": "Local", "comment": "设定位置" },
+          { "name": "ActualPosition", "type": "INT", "className": "Local", "comment": "实际位置" },
+          { "name": "PositionError", "type": "INT", "className": "Local", "comment": "位置误差" },
+          { "name": "VelocityCmd", "type": "INT", "className": "Local", "comment": "速度指令" },
+          { "name": "LimitFaultLatch", "type": "BOOL", "className": "Local", "comment": "限位故障锁存" },
+          { "name": "PulseActive", "type": "BOOL", "className": "Local", "comment": "脉冲激活" },
+          { "name": "PulseDir", "type": "BOOL", "className": "Local", "comment": "脉冲方向" },
+          { "name": "PulseAccum", "type": "INT", "className": "Local", "comment": "脉冲累加" },
+          { "name": "PulseTarget", "type": "INT", "className": "Local", "comment": "脉冲目标" }
+        ],
+        "inOutVars": [], "tempVars": [], "globalVars": [], "externalVars": [], "accessVars": []
+      },
+      "body": "PROGRAM MotionControl\nVAR_INPUT\n  StartBtn : BOOL; StopBtn : BOOL; HomeBtn : BOOL;\n  JogForward : BOOL; JogReverse : BOOL;\n  LimitPositive : BOOL; LimitNegative : BOOL; HomeSensor : BOOL;\n  TargetPosition : INT := 5000; MoveVelocity : INT := 1000;\n  Acceleration : INT := 500; Deceleration : INT := 500;\n  EmergencyStop : BOOL;\nEND_VAR\nVAR_OUTPUT\n  PulseOut : BOOL; DirectionOut : BOOL;\n  IsRunning : BOOL; IsHomed : BOOL; IsMoving : BOOL; IsAtTarget : BOOL;\n  FaultAlarm : BOOL; CurrentPosition : INT;\nEND_VAR\nVAR\n  AxisFault : BOOL := FALSE; AxisEnabled : BOOL := FALSE;\n  AxisBusy : BOOL := FALSE; AxisHomed : BOOL := FALSE;\n  MoveMode : INT := 0; SetpointPosition : INT := 0;\n  ActualPosition : INT := 0; PositionError : INT := 0;\n  VelocityCmd : INT := 0; LimitFaultLatch : BOOL := FALSE;\n  PulseActive : BOOL := FALSE; PulseDir : BOOL := FALSE;\n  PulseAccum : INT := 0; PulseTarget : INT := 0;\nEND_VAR\n\nIF StartBtn AND NOT StopBtn AND NOT AxisFault THEN\n  AxisEnabled := TRUE;\nELSIF StopBtn OR AxisFault THEN\n  AxisEnabled := FALSE;\nEND_IF\nIsRunning := AxisEnabled;\n\nIF LimitPositive OR LimitNegative THEN LimitFaultLatch := TRUE; END_IF\nIF HomeBtn AND NOT LimitPositive AND NOT LimitNegative THEN\n  LimitFaultLatch := FALSE;\nEND_IF\nAxisFault := LimitFaultLatch; FaultAlarm := AxisFault;\n\nIF NOT AxisEnabled THEN MoveMode := 0;\nELSIF HomeBtn AND AxisEnabled THEN MoveMode := 1;\nELSIF LimitFaultLatch OR EmergencyStop THEN MoveMode := 4;\nELSIF JogForward OR JogReverse THEN MoveMode := 2;\nELSIF StartBtn AND AxisEnabled AND AxisHomed THEN MoveMode := 3;\nELSE MoveMode := 0;\nEND_IF\n\nIF MoveMode = 0 THEN\n  VelocityCmd := 0; PulseActive := FALSE; AxisBusy := FALSE;\nELSIF MoveMode = 1 THEN\n  PulseDir := FALSE; PulseActive := TRUE; VelocityCmd := 200;\n  IF HomeSensor THEN\n    PulseActive := FALSE; AxisHomed := TRUE; ActualPosition := 0; MoveMode := 0;\n  END_IF\n  IF LimitNegative THEN PulseDir := TRUE; END_IF\nELSIF MoveMode = 2 THEN\n  IF JogForward AND NOT LimitPositive THEN\n    PulseDir := TRUE; PulseActive := TRUE; VelocityCmd := 500;\n  ELSIF JogReverse AND NOT LimitNegative THEN\n    PulseDir := FALSE; PulseActive := TRUE; VelocityCmd := 500;\n  ELSE PulseActive := FALSE; VelocityCmd := 0; END_IF\nELSIF MoveMode = 3 THEN\n  PulseDir := TargetPosition > ActualPosition;\n  PulseTarget := TargetPosition; PulseActive := TRUE;\n  VelocityCmd := MoveVelocity; AxisBusy := TRUE;\n  IF ActualPosition >= TargetPosition - 10 AND ActualPosition <= TargetPosition + 10 THEN\n    PulseActive := FALSE; AxisBusy := FALSE;\n  END_IF\nELSIF MoveMode = 4 THEN\n  PulseActive := FALSE; VelocityCmd := 0; AxisBusy := FALSE;\nELSE MoveMode := 0; END_IF\n\nPulseOut := PulseActive;\nIF PulseDir THEN DirectionOut := TRUE; ELSE DirectionOut := FALSE; END_IF\n\nIF PulseActive AND PulseDir THEN ActualPosition := ActualPosition + 1;\nELSIF PulseActive AND NOT PulseDir THEN ActualPosition := ActualPosition - 1; END_IF\nCurrentPosition := ActualPosition;\nIsHomed := AxisHomed; IsMoving := PulseActive;\nIsAtTarget := NOT PulseActive AND AxisHomed AND MoveMode = 0;\nPositionError := TargetPosition - ActualPosition;\n\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "运动控制示例：脉冲/方向控制、回原点、点动、绝对定位、限位保护"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Default",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            { "name": "MainTask", "interval": "T#5ms", "priority": 1 }
+          ],
+          "programs": [
+            { "name": "MainProgram", "typeName": "MotionControl", "taskName": "MainTask" }
+          ]
+        }
+      ]
+    }
+  ]
+}

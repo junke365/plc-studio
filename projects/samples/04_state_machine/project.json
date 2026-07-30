@@ -1,0 +1,67 @@
+{
+  "name": "StateMachine",
+  "path": "projects/samples/04_state_machine",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "StateMachine",
+      "pouType": "program",
+      "variables": {
+        "inputVars": [
+          { "name": "StartBtn", "type": "BOOL", "className": "Input", "comment": "启动按钮" },
+          { "name": "StopBtn", "type": "BOOL", "className": "Input", "comment": "停止按钮" },
+          { "name": "SensorA", "type": "BOOL", "className": "Input", "comment": "液位传感器A" },
+          { "name": "SensorB", "type": "BOOL", "className": "Input", "comment": "温度传感器B" },
+          { "name": "SensorC", "type": "BOOL", "className": "Input", "comment": "排空传感器C" },
+          { "name": "EmergencyStop", "type": "BOOL", "className": "Input", "comment": "急停按钮" }
+        ],
+        "outputVars": [
+          { "name": "ValveA", "type": "BOOL", "className": "Output", "comment": "进料阀" },
+          { "name": "ValveB", "type": "BOOL", "className": "Output", "comment": "加热阀" },
+          { "name": "ValveC", "type": "BOOL", "className": "Output", "comment": "排放阀" },
+          { "name": "ConveyorFwd", "type": "BOOL", "className": "Output", "comment": "传送带正转" },
+          { "name": "ConveyorRev", "type": "BOOL", "className": "Output", "comment": "传送带反转" },
+          { "name": "ProcessBusy", "type": "BOOL", "className": "Output", "comment": "处理中" },
+          { "name": "ProcessDone", "type": "BOOL", "className": "Output", "comment": "处理完成" },
+          { "name": "FaultLamp", "type": "BOOL", "className": "Output", "comment": "故障灯" }
+        ],
+        "localVars": [
+          { "name": "Step", "type": "INT", "className": "Local", "initialValue": 0, "comment": "当前步号" },
+          { "name": "FillTimerAcc", "type": "INT", "className": "Local", "comment": "填充计时累加器" },
+          { "name": "FillTimerPreset", "type": "INT", "className": "Local", "initialValue": 500, "comment": "填充计时预设" },
+          { "name": "FillTimerDone", "type": "BOOL", "className": "Local", "comment": "填充计时完成" },
+          { "name": "HeatTimerAcc", "type": "INT", "className": "Local", "comment": "加热计时累加器" },
+          { "name": "HeatTimerPreset", "type": "INT", "className": "Local", "initialValue": 1000, "comment": "加热计时预设" },
+          { "name": "HeatTimerDone", "type": "BOOL", "className": "Local", "comment": "加热计时完成" },
+          { "name": "ProcessTimerAcc", "type": "INT", "className": "Local", "comment": "处理计时累加器" },
+          { "name": "ProcessTimerPreset", "type": "INT", "className": "Local", "initialValue": 800, "comment": "处理计时预设" },
+          { "name": "ProcessTimerDone", "type": "BOOL", "className": "Local", "comment": "处理计时完成" },
+          { "name": "DischargeTimerAcc", "type": "INT", "className": "Local", "comment": "排放计时累加器" },
+          { "name": "DischargeTimerPreset", "type": "INT", "className": "Local", "initialValue": 400, "comment": "排放计时预设" },
+          { "name": "DischargeTimerDone", "type": "BOOL", "className": "Local", "comment": "排放计时完成" }
+        ],
+        "inOutVars": [], "tempVars": [], "globalVars": [], "externalVars": [], "accessVars": []
+      },
+      "body": "PROGRAM StateMachine\nVAR_INPUT\n  StartBtn : BOOL;\n  StopBtn : BOOL;\n  SensorA : BOOL;\n  SensorB : BOOL;\n  SensorC : BOOL;\n  EmergencyStop : BOOL;\nEND_VAR\nVAR_OUTPUT\n  ValveA : BOOL;\n  ValveB : BOOL;\n  ValveC : BOOL;\n  ConveyorFwd : BOOL;\n  ConveyorRev : BOOL;\n  ProcessBusy : BOOL;\n  ProcessDone : BOOL;\n  FaultLamp : BOOL;\nEND_VAR\nVAR\n  Step : INT := 0;\n  FillTimerAcc : INT := 0;\n  FillTimerPreset : INT := 500;\n  FillTimerDone : BOOL := FALSE;\n  HeatTimerAcc : INT := 0;\n  HeatTimerPreset : INT := 1000;\n  HeatTimerDone : BOOL := FALSE;\n  ProcessTimerAcc : INT := 0;\n  ProcessTimerPreset : INT := 800;\n  ProcessTimerDone : BOOL := FALSE;\n  DischargeTimerAcc : INT := 0;\n  DischargeTimerPreset : INT := 400;\n  DischargeTimerDone : BOOL := FALSE;\nEND_VAR\n\nIF Step = 0 THEN\n  ValveA := FALSE; ValveB := FALSE; ValveC := FALSE;\n  ConveyorFwd := FALSE; ConveyorRev := FALSE;\n  ProcessBusy := FALSE; ProcessDone := FALSE;\n  IF StartBtn AND NOT EmergencyStop THEN Step := 10; END_IF\nELSIF Step = 10 THEN\n  ValveA := TRUE;\n  FillTimerAcc := FillTimerAcc + 1;\n  FillTimerDone := FillTimerAcc >= FillTimerPreset;\n  IF SensorA OR FillTimerDone THEN\n    ValveA := FALSE; FillTimerAcc := 0; Step := 20;\n  END_IF\nELSIF Step = 20 THEN\n  ValveB := TRUE;\n  HeatTimerAcc := HeatTimerAcc + 1;\n  HeatTimerDone := HeatTimerAcc >= HeatTimerPreset;\n  IF SensorB OR HeatTimerDone THEN\n    ValveB := FALSE; HeatTimerAcc := 0; Step := 30;\n  END_IF\nELSIF Step = 30 THEN\n  ConveyorFwd := TRUE;\n  ProcessTimerAcc := ProcessTimerAcc + 1;\n  ProcessTimerDone := ProcessTimerAcc >= ProcessTimerPreset;\n  IF ProcessTimerDone THEN\n    ConveyorFwd := FALSE; ProcessTimerAcc := 0; Step := 40;\n  END_IF\nELSIF Step = 40 THEN\n  ValveC := TRUE; ConveyorRev := TRUE;\n  DischargeTimerAcc := DischargeTimerAcc + 1;\n  DischargeTimerDone := DischargeTimerAcc >= DischargeTimerPreset;\n  IF SensorC OR DischargeTimerDone THEN\n    ValveC := FALSE; ConveyorRev := FALSE; DischargeTimerAcc := 0; Step := 50;\n  END_IF\nELSIF Step = 50 THEN\n  ProcessDone := TRUE; ProcessBusy := FALSE;\n  IF StartBtn THEN Step := 0; END_IF\nELSIF Step = 99 THEN\n  FaultLamp := TRUE;\n  ValveA := FALSE; ValveB := FALSE; ValveC := FALSE;\n  ConveyorFwd := FALSE; ConveyorRev := FALSE; ProcessBusy := FALSE;\n  IF NOT EmergencyStop AND StartBtn THEN\n    FaultLamp := FALSE; Step := 0;\n  END_IF\nELSE\n  Step := 0;\nEND_IF\n\nIF EmergencyStop THEN Step := 99; END_IF\nIF Step >= 10 AND Step <= 50 THEN ProcessBusy := TRUE; END_IF\nIF Step = 99 THEN\n  ValveA := FALSE; ValveB := FALSE; ValveC := FALSE;\n  ConveyorFwd := FALSE; ConveyorRev := FALSE;\nEND_IF\n\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "状态机示例：6步顺序控制（填充→加热→处理→排放→完成→空闲），含超时保护"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Default",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            { "name": "MainTask", "interval": "T#20ms", "priority": 1 }
+          ],
+          "programs": [
+            { "name": "MainProgram", "typeName": "StateMachine", "taskName": "MainTask" }
+          ]
+        }
+      ]
+    }
+  ]
+}

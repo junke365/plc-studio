@@ -1,8 +1,35 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 
+const SAMPLES_DIR = path.resolve(process.cwd(), '../../../projects/samples')
+
 export class ProjectService {
   private projects: Map<string, string> = new Map()
+
+  async listSamples(): Promise<{ name: string; path: string; description: string }[]> {
+    const entries = await fs.readdir(SAMPLES_DIR, { withFileTypes: true })
+    const samples: { name: string; path: string; description: string }[] = []
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const projectFile = path.join(SAMPLES_DIR, entry.name, 'project.json')
+      try {
+        const content = await fs.readFile(projectFile, 'utf-8')
+        const project = JSON.parse(content)
+        samples.push({
+          name: project.name || entry.name,
+          path: entry.name,
+          description: project.pous?.[0]?.comment || '',
+        })
+      } catch { /* skip */ }
+    }
+    return samples
+  }
+
+  async openSample(name: string): Promise<unknown> {
+    const projectFile = path.join(SAMPLES_DIR, name, 'project.json')
+    const content = await fs.readFile(projectFile, 'utf-8')
+    return JSON.parse(content)
+  }
 
   async openProject(projectPath: string): Promise<unknown> {
     const projectFile = path.join(projectPath, 'project.plcproj')

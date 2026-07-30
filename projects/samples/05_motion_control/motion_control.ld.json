@@ -1,0 +1,211 @@
+{
+  "rungs": [
+    {
+      "id": "rung-0",
+      "nodes": [
+        {
+          "id": "n-start-mc",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "StartBtn", "negated": false }
+        },
+        {
+          "id": "n-stop-mc",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "StopBtn", "negated": true }
+        },
+        {
+          "id": "n-axis-fault-nc",
+          "type": "contact",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "AxisFault", "negated": true }
+        },
+        {
+          "id": "n-axis-enabled-set",
+          "type": "coil",
+          "position": { "x": 460, "y": 0 },
+          "data": { "variable": "AxisEnabled", "coilType": "set" }
+        }
+      ],
+      "edges": [
+        { "id": "e0-left-start", "source": "rail-left", "target": "n-start-mc", "sourceHandle": "p-0", "type": "smoothstep" },
+        { "id": "e0-start-stop", "source": "n-start-mc", "target": "n-stop-mc", "type": "smoothstep" },
+        { "id": "e0-stop-fault", "source": "n-stop-mc", "target": "n-axis-fault-nc", "type": "smoothstep" },
+        { "id": "e0-fault-enabled", "source": "n-axis-fault-nc", "target": "n-axis-enabled-set", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-1",
+      "nodes": [
+        {
+          "id": "n-stop-mc-2",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "StopBtn", "negated": false }
+        },
+        {
+          "id": "n-axis-fault-2",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "AxisFault", "negated": false }
+        },
+        {
+          "id": "n-axis-enabled-reset",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "AxisEnabled", "coilType": "reset" }
+        }
+      ],
+      "edges": [
+        { "id": "e1-left-stop", "source": "rail-left", "target": "n-stop-mc-2", "sourceHandle": "p-1", "type": "smoothstep" },
+        { "id": "e1-stop-fault2", "source": "n-stop-mc-2", "target": "n-axis-fault-2", "type": "smoothstep" },
+        { "id": "e1-fault2-reset", "source": "n-axis-fault-2", "target": "n-axis-enabled-reset", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-2",
+      "nodes": [
+        {
+          "id": "n-limit-pos",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "LimitPositive", "negated": false }
+        },
+        {
+          "id": "n-limit-neg",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "LimitNegative", "negated": false }
+        },
+        {
+          "id": "n-limit-fault-set",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "LimitFaultLatch", "coilType": "set" }
+        }
+      ],
+      "edges": [
+        { "id": "e2-left-pos", "source": "rail-left", "target": "n-limit-pos", "sourceHandle": "p-2", "type": "smoothstep" },
+        { "id": "e2-pos-neg", "source": "n-limit-pos", "target": "n-limit-neg", "type": "smoothstep" },
+        { "id": "e2-neg-fault", "source": "n-limit-neg", "target": "n-limit-fault-set", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-3",
+      "nodes": [
+        {
+          "id": "n-home-btn",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "HomeBtn", "negated": false }
+        },
+        {
+          "id": "n-limit-fault-nc",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "LimitFault", "negated": true }
+        },
+        {
+          "id": "n-limit-fault-reset",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "LimitFaultLatch", "coilType": "reset" }
+        }
+      ],
+      "edges": [
+        { "id": "e3-left-home", "source": "rail-left", "target": "n-home-btn", "sourceHandle": "p-3", "type": "smoothstep" },
+        { "id": "e3-home-faultnc", "source": "n-home-btn", "target": "n-limit-fault-nc", "type": "smoothstep" },
+        { "id": "e3-faultnc-reset", "source": "n-limit-fault-nc", "target": "n-limit-fault-reset", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-4",
+      "nodes": [
+        {
+          "id": "n-pulse-active",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "PulseActive", "negated": false }
+        },
+        {
+          "id": "n-pulse-out-coil",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "PulseOut", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e4-left-pulse", "source": "rail-left", "target": "n-pulse-active", "sourceHandle": "p-4", "type": "smoothstep" },
+        { "id": "e4-pulse-out", "source": "n-pulse-active", "target": "n-pulse-out-coil", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-5",
+      "nodes": [
+        {
+          "id": "n-pulse-dir",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "PulseDir", "negated": false }
+        },
+        {
+          "id": "n-dir-out-coil",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "DirectionOut", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e5-left-dir", "source": "rail-left", "target": "n-pulse-dir", "sourceHandle": "p-5", "type": "smoothstep" },
+        { "id": "e5-dir-out", "source": "n-pulse-dir", "target": "n-dir-out-coil", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-6",
+      "nodes": [
+        {
+          "id": "n-axis-homed",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "AxisHomed", "negated": false }
+        },
+        {
+          "id": "n-homed-out",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "IsHomed", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e6-left-homed", "source": "rail-left", "target": "n-axis-homed", "sourceHandle": "p-6", "type": "smoothstep" },
+        { "id": "e6-homed-out", "source": "n-axis-homed", "target": "n-homed-out", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-7",
+      "nodes": [
+        {
+          "id": "n-fault-alarm",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "AxisFault", "negated": false }
+        },
+        {
+          "id": "n-fault-lamp-mc",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "FaultAlarm", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e7-left-fault", "source": "rail-left", "target": "n-fault-alarm", "sourceHandle": "p-7", "type": "smoothstep" },
+        { "id": "e7-fault-lamp", "source": "n-fault-alarm", "target": "n-fault-lamp-mc", "type": "smoothstep" }
+      ]
+    }
+  ],
+  "railPortCount": 16,
+  "railLeftX": 0,
+  "railRightX": 550,
+  "railsLocked": true
+}

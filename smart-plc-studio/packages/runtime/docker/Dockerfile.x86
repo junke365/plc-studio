@@ -1,0 +1,50 @@
+# Smart PLC Runtime - Linux x86 Docker 测试镜像
+# 构建:  docker build -f docker/Dockerfile.x86 -t plc-runtime:x86 .
+# 运行:  docker run --rm plc-runtime:x86
+# 交互:  docker run --rm -it plc-runtime:x86 /bin/bash
+
+FROM ubuntu:22.04 AS builder
+
+LABEL description="Smart PLC Runtime - Linux x86 构建与测试"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  cmake \
+  git \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY . .
+
+RUN mkdir -p build-x86 && cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DPLATFORM=linux-x86 \
+  -DBUILD_HAL=OFF \
+  -DBUILD_PROTOCOL=OFF \
+  -DBUILD_HMI=OFF \
+  -DBUILD_MOTION=ON \
+  -DBUILD_MOTION_EXAMPLE=ON \
+  -DBUILD_SIMULATION=OFF \
+  -DBUILD_DEVICE=OFF \
+  -S . -B build-x86 && \
+  cmake --build build-x86 -- -j$(nproc)
+
+FROM ubuntu:22.04 AS testrunner
+
+LABEL description="Smart PLC Runtime - Linux x86 测试运行器"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /src/build-x86/plc-runtime /usr/local/bin/plc-runtime
+COPY docker/build-and-test.sh /usr/local/bin/build-and-test.sh
+
+RUN chmod +x /usr/local/bin/build-and-test.sh
+
+ENTRYPOINT ["/usr/local/bin/build-and-test.sh"]

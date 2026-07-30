@@ -245,7 +245,7 @@ int plc_tcp_connect(const char* host, uint16_t port)
   if (fd < 0) return -4;
 
   /* 带超时的连接 */
-  if (plc_platform_tcp_connect(fd, host, port, s_config.timeout_ms) < 0) {
+  if (plc_platform_tcp_connect(fd, host, port, s_config.keepalive_ms) < 0) {
     plc_platform_tcp_close(fd);
     return -5;
   }

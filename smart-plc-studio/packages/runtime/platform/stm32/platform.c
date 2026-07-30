@@ -24,7 +24,7 @@
 /* FreeRTOS 头文件 */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphora.h"
+#include "semphr.h"
 #include "queue.h"
 
 #include <stdio.h>
@@ -219,13 +219,62 @@ int32_t plc_hal_read_input(uint32_t physical_addr, IoType type)
 
       return (int32_t)raw;
     }
-    case IO_TYPE_ENCODER:
-    case IO_TYPE_COUNTER:
-      /* 编码器/计数器暂返回 0 */
+    case IO_TYPE_ENCODER: {
+      /* 编码器输入：使用 TIM 编码器模式 */
+      /* physical_addr 低 4 位选择 TIM: 0=TIM1, 1=TIM2, 2=TIM3, 3=TIM4, 4=TIM5, 5=TIM8 */
+      static TIM_HandleTypeDef* const tim_encoders[] = { NULL, NULL, NULL, NULL, NULL, NULL };
+      uint32_t tim_idx = physical_addr & 0x0F;
+      if (tim_idx < 6 && tim_encoders[tim_idx]) {
+        return (int32_t)__HAL_TIM_GET_COUNTER(tim_encoders[tim_idx]);
+      }
       return 0;
+    }
+    case IO_TYPE_COUNTER: {
+      /* 高速计数器：使用 TIM 外部时钟模式 */
+      /* physical_addr 低 4 位选择 TIM */
+      static TIM_HandleTypeDef* const tim_counters[] = { NULL, NULL, NULL, NULL, NULL, NULL };
+      uint32_t tim_idx = physical_addr & 0x0F;
+      if (tim_idx < 6 && tim_counters[tim_idx]) {
+        return (int32_t)__HAL_TIM_GET_COUNTER(tim_counters[tim_idx]);
+      }
+      return 0;
+    }
     default:
       return 0;
   }
+}
+
+/* ========== 通用 GPIO 操作（供 motion 层调用） ========== */
+
+int32_t plc_hal_gpio_read(uint32_t addr)
+{
+  return (int32_t)HAL_GPIO_ReadPin(di_port(addr), di_pin(addr));
+}
+
+void plc_hal_gpio_write(uint32_t addr, int32_t value)
+{
+  HAL_GPIO_WritePin(di_port(addr), di_pin(addr),
+    value ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+void plc_hal_gpio_toggle(uint32_t addr)
+{
+  HAL_GPIO_TogglePin(di_port(addr), di_pin(addr));
+}
+
+/* ========== 步进电机脉冲生成（供 motion Step/Dir 驱动调用） ========== */
+
+void plc_hal_step_pulse(uint32_t step_addr, uint32_t dir_addr, int32_t dir)
+{
+  /* 设置方向 */
+  HAL_GPIO_WritePin(di_port(dir_addr), di_pin(dir_addr),
+    dir ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  /* 产生步进脉冲：拉高 → 延迟 → 拉低 */
+  HAL_GPIO_WritePin(di_port(step_addr), di_pin(step_addr), GPIO_PIN_SET);
+  /* 使用 DWT 精确延时（约 1μs 脉冲宽度） */
+  uint64_t start = plc_platform_tick_us();
+  while (plc_platform_tick_us() - start < 2) { __NOP(); }
+  HAL_GPIO_WritePin(di_port(step_addr), di_pin(step_addr), GPIO_PIN_RESET);
 }
 
 void plc_hal_write_output(uint32_t physical_addr, IoType type, int32_t value)
@@ -382,7 +431,7 @@ int plc_hal_tcp_recv(int fd, uint8_t* data, uint32_t max_len, uint32_t timeout_m
 
 /* ========== 串口通信 ========== */
 
-static UART_HandleTypeDef* g_serial_handles[4] = { &huart1, &huart2, NULL, NULL };
+__attribute__((unused)) static UART_HandleTypeDef* g_serial_handles[4] = { &huart1, &huart2, NULL, NULL };
 
 int plc_hal_serial_open(const char* port_name, uint32_t baud_rate,
                         uint8_t data_bits, uint8_t stop_bits, uint8_t parity)

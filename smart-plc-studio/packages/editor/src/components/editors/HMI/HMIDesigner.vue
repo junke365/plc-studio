@@ -917,6 +917,38 @@
                 <span class="radio-label">Android</span>
                 <span class="radio-desc">APK 包（需 Android NDK）</span>
               </label>
+              <label class="export-radio" :class="{ active: exportType === 'esp32-runtime' }">
+                <input type="radio" v-model="exportType" value="esp32-runtime" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">memory</span>
+                </span>
+                <span class="radio-label">ESP32 运行时</span>
+                <span class="radio-desc">PLC + HMI LVGL 完整 ESP-IDF 项目</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'stm32-runtime' }">
+                <input type="radio" v-model="exportType" value="stm32-runtime" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">developer_board</span>
+                </span>
+                <span class="radio-label">STM32 运行时</span>
+                <span class="radio-desc">PLC + HMI LVGL 完整 ARM GCC 项目</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'linux-arm-runtime' }">
+                <input type="radio" v-model="exportType" value="linux-arm-runtime" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">terminal</span>
+                </span>
+                <span class="radio-label">Linux ARM 运行时</span>
+                <span class="radio-desc">PLC + HMI LVGL 完整 Linux GCC 项目</span>
+              </label>
+              <label class="export-radio" :class="{ active: exportType === 'arduino' }">
+                <input type="radio" v-model="exportType" value="arduino" />
+                <span class="radio-icon">
+                  <span class="material-symbols-outlined">usb</span>
+                </span>
+                <span class="radio-label">Arduino 运行时</span>
+                <span class="radio-desc">PLC + HMI 完整 Arduino 项目</span>
+              </label>
             </div>
             <div class="export-preview" v-if="exportType === 'code' || generatedCode">
               <div class="preview-header">
@@ -4799,7 +4831,7 @@ function getRenderer(type: string): Component {
 const API_BASE = 'http://127.0.0.1:3000/api'
 
 const showExportDialog = ref(false)
-const exportType = ref<'code' | 'exe' | 'hex' | 'lvgl-sim' | 'linux' | 'stm32' | 'android'>('code')
+const exportType = ref<'code' | 'exe' | 'hex' | 'lvgl-sim' | 'linux' | 'stm32' | 'android' | 'esp32-runtime' | 'stm32-runtime' | 'linux-arm-runtime' | 'arduino'>('code')
 const generatedCode = ref('')
 const exporting = ref(false)
 const exportStatus = ref<{ type: string; message: string } | null>(null)
@@ -4926,6 +4958,74 @@ async function doExport() {
         exportStatus.value = {
           type: 'success',
           message: `Android 项目已生成: ${data.outDir}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
+      }
+    } else if (exportType.value === 'esp32-runtime') {
+      const res = await fetch(`${API_BASE}/hmi/export/esp32-runtime`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `ESP32 运行时项目已生成: ${data.outDir}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
+      }
+    } else if (exportType.value === 'stm32-runtime') {
+      const res = await fetch(`${API_BASE}/hmi/export/stm32-runtime`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `STM32 运行时项目已生成: ${data.outDir}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
+      }
+    } else if (exportType.value === 'linux-arm-runtime') {
+      const res = await fetch(`${API_BASE}/hmi/export/linux-arm-runtime`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `Linux ARM 运行时项目已生成: ${data.outDir}`,
+        }
+      } else {
+        generatedCode.value = data.code || ''
+        exportStatus.value = { type: 'error', message: data.error || '生成失败' }
+      }
+    } else if (exportType.value === 'arduino') {
+      const res = await fetch(`${API_BASE}/hmi/export/arduino`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        generatedCode.value = data.code
+        exportStatus.value = {
+          type: 'success',
+          message: `Arduino 运行时项目已生成: ${data.outDir}`,
         }
       } else {
         generatedCode.value = data.code || ''

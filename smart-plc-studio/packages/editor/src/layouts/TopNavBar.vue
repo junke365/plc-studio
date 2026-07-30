@@ -92,7 +92,7 @@
         <span class="material-symbols-outlined">search</span>
         <input placeholder="搜索资源..." />
       </div>
-      <button class="btn-icon" title="设置">
+      <button class="btn-icon" title="设置" @click="settingsVisible = true">
         <span class="material-symbols-outlined">settings</span>
       </button>
       <button class="btn-icon" title="窗口布局">
@@ -106,6 +106,7 @@
         >
       </button>
     </div>
+    <SettingsDialog v-model:visible="settingsVisible" />
   </header>
 </template>
 
@@ -116,12 +117,17 @@ import { useUiStore } from "../stores/ui";
 import { useProjectStore } from "../stores/project";
 import { useEditorStore } from "../stores/editor";
 import { useDebugStore } from "../stores/debug";
+import { useSettingsStore, type RuntimeTarget } from "../stores/settings";
+import SettingsDialog from "../components/dialogs/SettingsDialog.vue";
+
+const settingsVisible = ref(false)
 
 const router = useRouter();
 const uiStore = useUiStore();
 const projectStore = useProjectStore();
 const editorStore = useEditorStore();
 const debugStore = useDebugStore();
+const settingsStore = useSettingsStore();
 
 const activeMenu = ref<string | null>(null);
 const activeSubmenu = ref<string | null>(null);
@@ -168,7 +174,7 @@ function getMenuEntries(menuId: string): MenuItem[] {
     case "compile":
       return compileMenuEntries;
     case "online":
-      return onlineMenuEntries;
+      return onlineMenuEntries.value;
     case "debug":
       return debugMenuEntries;
     case "simulator":
@@ -192,6 +198,8 @@ const fileMenuEntries: MenuItem[] = [
   { label: "另存为...", shortcut: "Ctrl+Shift+S", action: handleSaveProjectAs },
   { divider: true, label: "" },
   { label: "最近项目", arrow: true, submenu: "recentProjects" },
+  { divider: true, label: "" },
+  { label: "示例项目", arrow: true, submenu: "sampleProjects" },
   { divider: true, label: "" },
   { label: "导入", arrow: true, submenu: "import" },
   { divider: true, label: "" },
@@ -222,6 +230,15 @@ const submenuItems = computed<Record<string, MenuItem[]>>(() => ({
     { label: "导入PLC程序...", action: () => logAction("导入PLC程序") },
     { label: "导入XML文件...", action: () => logAction("导入XML") },
     { label: "导入硬件配置...", action: () => logAction("导入硬件配置") },
+  ],
+
+  // 示例项目子菜单
+  sampleProjects: [
+    { label: "01 位逻辑", action: () => handleOpenSampleProject("01_basic_logic") },
+    { label: "02 定时器/计数器", action: () => handleOpenSampleProject("02_timer_counter") },
+    { label: "03 模拟量处理", action: () => handleOpenSampleProject("03_analog_processing") },
+    { label: "04 状态机", action: () => handleOpenSampleProject("04_state_machine") },
+    { label: "05 运动控制", action: () => handleOpenSampleProject("05_motion_control") },
   ],
 
   // UART 调试子菜单
@@ -372,17 +389,50 @@ const compileMenuEntries: MenuItem[] = [
 ];
 
 // ==================== 在线菜单 ====================
-const onlineMenuEntries: MenuItem[] = [
-  { label: "连接设备...", action: handleConnect },
-  { label: "断开连接", action: handleDisconnect },
-  { divider: true, label: "" },
-  { label: "下载到设备", action: handleDownload },
-  { label: "从设备上载", action: handleUpload },
-  { divider: true, label: "" },
-  { label: "运行PLC", action: handleRunPlc },
-  { label: "停止PLC", action: handleStopPlc },
-  { label: "复位PLC", action: handleResetPlc },
-];
+const targetLabels: Record<RuntimeTarget, string> = {
+  "stm32": "STM32",
+  "esp32": "ESP32",
+  "linux-arm": "Linux ARM",
+  "linux-x86": "Linux x86",
+}
+
+const onlineMenuEntries = computed<MenuItem[]>(() => {
+  const items: MenuItem[] = [
+    { label: "连接设备...", action: handleConnect },
+    { label: "断开连接", action: handleDisconnect },
+    { divider: true, label: "" },
+    { label: `目标: ${targetLabels[settingsStore.runtimeTarget]}`, disabled: true },
+  ]
+
+  switch (settingsStore.runtimeTarget) {
+    case "stm32":
+      items.push(
+        { label: "ST-Link 下载", action: handleStlinkFlash },
+        { label: "J-Link 下载", action: handleJlinkFlash },
+      )
+      break
+    case "esp32":
+      items.push(
+        { label: "UART 下载固件", action: handleUartFlash },
+      )
+      break
+    case "linux-arm":
+    case "linux-x86":
+      items.push(
+        { label: "SSH 上传文件", action: handleSshTransfer },
+      )
+      break
+  }
+
+  items.push(
+    { divider: true, label: "" },
+    { label: "运行PLC", action: handleRunPlc },
+    { label: "停止PLC", action: handleStopPlc },
+    { label: "复位PLC", action: handleResetPlc },
+  )
+
+  return items
+})
 
 // ==================== 调试菜单 ====================
 const debugMenuEntries: MenuItem[] = [
@@ -443,7 +493,7 @@ const toolsMenuEntries: MenuItem[] = [
     action: () => logAction("代码格式化"),
   },
   { divider: true, label: "" },
-  { label: "选项设置...", action: () => logAction("选项设置") },
+  { label: "选项设置...", action: () => { settingsVisible.value = true; closeMenu() } },
 ];
 
 // ==================== 窗口菜单 ====================
@@ -513,6 +563,22 @@ function handleExit() {
   window.close();
 }
 
+async function handleOpenSampleProject(dirName: string) {
+  try {
+    const resp = await fetch(`http://127.0.0.1:3000/api/project/samples/${dirName}`)
+    const data = await resp.json()
+    if (data.success && data.project) {
+      const samplePath = `projects/samples/${dirName}`
+      projectStore.openProject(samplePath, data.project)
+      debugStore.addLog("info", `已打开示例项目: ${data.project.name}`)
+    } else {
+      debugStore.addLog("error", `打开示例项目失败: ${data.error}`)
+    }
+  } catch (e) {
+    debugStore.addLog("error", "无法连接服务器，请确保后端已启动")
+  }
+}
+
 // 编辑操作
 function handleUndo() {
   editorStore.undo();
@@ -574,14 +640,22 @@ function resetLayout() {
 
 // 在线操作
 function handleConnect() {
-  const host = prompt("请输入PLC设备地址:", debugStore.host || "127.0.0.1");
-  if (host) {
-    const portStr = prompt("请输入端口号:", String(debugStore.port || 3000));
-    if (portStr) {
-      const port = parseInt(portStr, 10);
-      if (!isNaN(port)) {
-        debugStore.connect(host, port);
-        debugStore.addLog("info", `已连接到设备: ${host}:${port}`);
+  const target = settingsStore.runtimeTarget
+  if (target === "stm32" || target === "esp32") {
+    const uartCfg = settingsStore.uart
+    const chipName = target === "stm32" ? "STM32" : "ESP32"
+    debugStore.addLog("info", `通过 ${uartCfg.port} (${uartCfg.baudRate}) 连接 ${chipName}...`)
+    debugStore.runtimeStatus = "connected" as any
+  } else {
+    const host = prompt("请输入PLC设备地址:", debugStore.host || "127.0.0.1");
+    if (host) {
+      const portStr = prompt("请输入端口号:", String(debugStore.port || 3000));
+      if (portStr) {
+        const port = parseInt(portStr, 10);
+        if (!isNaN(port)) {
+          debugStore.connect(host, port);
+          debugStore.addLog("info", `已连接到设备: ${host}:${port}`);
+        }
       }
     }
   }
@@ -592,20 +666,77 @@ function handleDisconnect() {
   debugStore.addLog("info", "已断开设备连接");
 }
 
-function handleDownload() {
-  if (debugStore.runtimeStatus === "disconnected") {
-    debugStore.addLog("warning", "请先连接设备");
-    return;
+async function handleStlinkFlash() {
+  logAction("ST-Link 下载")
+  try {
+    debugStore.addLog("info", "[1/2] 编译固件中...")
+    const resp = await fetch('http://127.0.0.1:3000/api/build/flash/stlink', { method: 'POST' })
+    const data = await resp.json()
+    if (data.success) {
+      debugStore.addLog("info", "下载成功！")
+    } else {
+      debugStore.addLog("error", `下载失败[${data.step}]: ${data.error || '未知错误'}`)
+    }
+  } catch {
+    debugStore.addLog("error", "无法连接服务器，请确保后端已启动")
   }
-  logAction("下载到设备");
 }
 
-function handleUpload() {
-  if (debugStore.runtimeStatus === "disconnected") {
-    debugStore.addLog("warning", "请先连接设备");
-    return;
+async function handleJlinkFlash() {
+  logAction("J-Link 下载")
+  try {
+    debugStore.addLog("info", "[1/2] 编译固件中...")
+    const resp = await fetch('http://127.0.0.1:3000/api/build/flash/jlink', { method: 'POST' })
+    const data = await resp.json()
+    if (data.success) {
+      debugStore.addLog("info", "下载成功！")
+    } else {
+      debugStore.addLog("error", `下载失败[${data.step}]: ${data.error || '未知错误'}`)
+    }
+  } catch {
+    debugStore.addLog("error", "无法连接服务器，请确保后端已启动")
   }
-  logAction("从设备上载");
+}
+
+async function handleUartFlash() {
+  logAction("UART 下载固件")
+  try {
+    debugStore.addLog("info", "[1/2] 编译固件中...")
+    const port = settingsStore.uart.port
+    const resp = await fetch('http://127.0.0.1:3000/api/build/flash/esp32', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ port }),
+    })
+    const data = await resp.json()
+    if (data.success) {
+      debugStore.addLog("info", "下载成功！")
+    } else {
+      debugStore.addLog("error", `下载失败[${data.step}]: ${data.error || '未知错误'}`)
+    }
+  } catch {
+    debugStore.addLog("error", "无法连接服务器，请确保后端已启动")
+  }
+}
+
+async function handleSshTransfer() {
+  logAction("SSH 上传文件")
+  try {
+    debugStore.addLog("info", "[1/2] 编译固件中...")
+    const resp = await fetch('http://127.0.0.1:3000/api/build/flash/ssh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host: '192.168.1.100', port: 22 }),
+    })
+    const data = await resp.json()
+    if (data.success) {
+      debugStore.addLog("info", "上传成功！")
+    } else {
+      debugStore.addLog("error", `上传失败[${data.step}]: ${data.error || '未知错误'}`)
+    }
+  } catch {
+    debugStore.addLog("error", "无法连接服务器，请确保后端已启动")
+  }
 }
 
 function handleRunPlc() {

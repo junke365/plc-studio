@@ -1,0 +1,133 @@
+{
+  "rungs": [
+    {
+      "id": "rung-0",
+      "nodes": [
+        {
+          "id": "n-start-sm",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "StartBtn", "negated": false }
+        },
+        {
+          "id": "n-emerg-sm",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "EmergencyStop", "negated": true }
+        },
+        {
+          "id": "n-valve-a-coil",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "ValveA", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e0-left-start-sm", "source": "rail-left", "target": "n-start-sm", "sourceHandle": "p-0", "type": "smoothstep" },
+        { "id": "e0-start-sm-emerg", "source": "n-start-sm", "target": "n-emerg-sm", "type": "smoothstep" },
+        { "id": "e0-emerg-valvea", "source": "n-emerg-sm", "target": "n-valve-a-coil", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-1",
+      "nodes": [
+        {
+          "id": "n-valve-b-coil",
+          "type": "coil",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ValveB", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e1-left-valveb", "source": "rail-left", "target": "n-valve-b-coil", "sourceHandle": "p-1", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-2",
+      "nodes": [
+        {
+          "id": "n-valve-c-coil",
+          "type": "coil",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ValveC", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e2-left-valvec", "source": "rail-left", "target": "n-valve-c-coil", "sourceHandle": "p-2", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-3",
+      "nodes": [
+        {
+          "id": "n-conv-fwd-coil",
+          "type": "coil",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ConveyorFwd", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e3-left-convfwd", "source": "rail-left", "target": "n-conv-fwd-coil", "sourceHandle": "p-3", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-4",
+      "nodes": [
+        {
+          "id": "n-conv-rev-coil",
+          "type": "coil",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ConveyorRev", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e4-left-convrev", "source": "rail-left", "target": "n-conv-rev-coil", "sourceHandle": "p-4", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-5",
+      "nodes": [
+        {
+          "id": "n-busy-indicator",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ProcessBusy", "negated": false }
+        },
+        {
+          "id": "n-done-indicator",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "ProcessDone", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e5-left-busy", "source": "rail-left", "target": "n-busy-indicator", "sourceHandle": "p-5", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-6",
+      "nodes": [
+        {
+          "id": "n-emerg-stop-sm",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "EmergencyStop", "negated": false }
+        },
+        {
+          "id": "n-fault-lamp-coil",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "FaultLamp", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e6-left-emergsm", "source": "rail-left", "target": "n-emerg-stop-sm", "sourceHandle": "p-6", "type": "smoothstep" },
+        { "id": "e6-emergsm-fault", "source": "n-emerg-stop-sm", "target": "n-fault-lamp-coil", "type": "smoothstep" }
+      ]
+    }
+  ],
+  "railPortCount": 16,
+  "railLeftX": 0,
+  "railRightX": 450,
+  "railsLocked": true
+}

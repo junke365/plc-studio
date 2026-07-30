@@ -6,8 +6,6 @@
  * 适用于 ESP32/ESP32-S2/ESP32-S3 系列芯片
  */
 
-#define PLATFORM_ESP32
-
 #include "plc_platform.h"
 #include "plc_io.h"
 #include "plc_comm.h"
@@ -41,6 +39,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
+#include "esp_system.h"
 
 static const char* TAG = "PLC_HAL";
 

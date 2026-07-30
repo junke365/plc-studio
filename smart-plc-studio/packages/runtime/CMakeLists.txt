@@ -211,28 +211,8 @@ elseif(PLATFORM STREQUAL "stm32")
     message(WARNING "platform/stm32/ 尚无 CMakeLists.txt，跳过平台库")
   endif()
 
-  add_executable(plc-runtime
-    examples/stm32/main.c
-  )
-
-  target_link_libraries(plc-runtime
-    PRIVATE plc-core
-    PRIVATE plc-platform
-  )
-
-  if(BUILD_HAL)
-    target_link_libraries(plc-runtime PRIVATE plc-hal)
-  endif()
-  if(BUILD_PROTOCOL)
-    target_link_libraries(plc-runtime PRIVATE plc-protocol)
-  endif()
-  if(BUILD_HMI)
-    target_link_libraries(plc-runtime PRIVATE plc-hmi)
-  endif()
-  if(BUILD_MOTION)
-    target_link_libraries(plc-runtime PRIVATE plc-motion)
-    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
-  endif()
+  # platform/stm32/CMakeLists.txt 已创建 plc-runtime + plc-platform
+  # 可选模块链接在 platform/stm32/CMakeLists.txt 中处理
 
 elseif(PLATFORM STREQUAL "litex")
 
@@ -262,35 +242,13 @@ elseif(PLATFORM STREQUAL "litex")
 
 elseif(PLATFORM STREQUAL "esp32")
 
-  # ESP32 + ESP-IDF
+  # ESP32 + ESP-IDF（交叉编译）
+  # platform/esp32/CMakeLists.txt 已创建 plc-runtime + plc-platform
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/platform/esp32/CMakeLists.txt)
     add_subdirectory(platform/esp32)
   else()
     add_library(plc-platform STATIC IMPORTED)
     message(WARNING "platform/esp32/ 尚无 CMakeLists.txt，跳过平台库")
-  endif()
-
-  add_executable(plc-runtime
-    examples/esp32/main.c
-  )
-
-  target_link_libraries(plc-runtime
-    PRIVATE plc-core
-    PRIVATE plc-platform
-  )
-
-  if(BUILD_HAL)
-    target_link_libraries(plc-runtime PRIVATE plc-hal)
-  endif()
-  if(BUILD_PROTOCOL)
-    target_link_libraries(plc-runtime PRIVATE plc-protocol)
-  endif()
-  if(BUILD_HMI)
-    target_link_libraries(plc-runtime PRIVATE plc-hmi)
-  endif()
-  if(BUILD_MOTION)
-    target_link_libraries(plc-runtime PRIVATE plc-motion)
-    target_compile_definitions(plc-runtime PRIVATE BUILD_MOTION=1)
   endif()
 
 elseif(PLATFORM STREQUAL "win32")
@@ -346,6 +304,32 @@ elseif(PLATFORM STREQUAL "win32")
     set_target_properties(plc-runtime PROPERTIES
       LINK_FLAGS "/SUBSYSTEM:CONSOLE"
     )
+  endif()
+
+  # --- 平台 HAL 测试 ---
+  option(BUILD_PLATFORM_TESTS "Build platform HAL unit tests" ON)
+
+  if(BUILD_PLATFORM_TESTS)
+    enable_testing()
+
+    add_executable(test-platform-hal
+      tests/test_platform_hal.c
+      platform/win32/platform.c
+    )
+
+    target_include_directories(test-platform-hal PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/core/include
+    )
+
+    target_link_libraries(test-platform-hal PRIVATE
+      winmm ws2_32
+    )
+
+    target_compile_definitions(test-platform-hal PRIVATE
+      PLATFORM_GENERIC
+    )
+
+    add_test(NAME platform-hal COMMAND test-platform-hal)
   endif()
 
 else()

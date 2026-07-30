@@ -1,0 +1,11 @@
+build-*/
+build-stm32*
+build-mingw*
+build-esp32*
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+.git
+node_modules

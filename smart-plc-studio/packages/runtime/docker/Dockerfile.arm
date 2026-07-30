@@ -1,0 +1,59 @@
+# Smart PLC Runtime - Linux ARM Docker + QEMU 测试镜像
+# 构建:  docker build -f docker/Dockerfile.arm -t plc-runtime:arm .
+# 运行:  docker run --rm --privileged plc-runtime:arm
+# 交互:  docker run --rm -it --privileged plc-runtime:arm /bin/bash
+#
+# --privileged 需要用于 QEMU binfmt 注册
+# 也可先手动注册: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+FROM ubuntu:22.04 AS builder
+
+LABEL description="Smart PLC Runtime - Linux ARM 交叉编译"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  cmake \
+  git \
+  ca-certificates \
+  gcc-arm-linux-gnueabihf \
+  binutils-arm-linux-gnueabihf \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY . .
+
+RUN mkdir -p build-arm && cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DPLATFORM=linux-arm \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/linux-arm-gcc.cmake \
+  -DBUILD_HAL=OFF \
+  -DBUILD_PROTOCOL=OFF \
+  -DBUILD_HMI=OFF \
+  -DBUILD_MOTION=ON \
+  -DBUILD_MOTION_EXAMPLE=ON \
+  -DBUILD_SIMULATION=OFF \
+  -DBUILD_DEVICE=OFF \
+  -S . -B build-arm && \
+  cmake --build build-arm -- -j$(nproc) && \
+  file build-arm/plc-runtime
+
+FROM ubuntu:22.04 AS testrunner
+
+LABEL description="Smart PLC Runtime - Linux ARM QEMU 测试运行器"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  qemu-user \
+  binfmt-support \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /src/build-arm/plc-runtime /usr/local/bin/plc-runtime
+COPY docker/build-and-test.sh /usr/local/bin/build-and-test.sh
+
+RUN chmod +x /usr/local/bin/build-and-test.sh
+
+ENTRYPOINT ["/usr/local/bin/build-and-test.sh"]

@@ -1,0 +1,204 @@
+{
+  "rungs": [
+    {
+      "id": "rung-0",
+      "nodes": [
+        {
+          "id": "n-start-btn",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "StartBtn", "negated": false }
+        },
+        {
+          "id": "n-stop-btn",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "StopBtn", "negated": true }
+        },
+        {
+          "id": "n-emergency",
+          "type": "contact",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "EmergencyStop", "negated": true }
+        },
+        {
+          "id": "n-fault-latch",
+          "type": "contact",
+          "position": { "x": 460, "y": 0 },
+          "data": { "variable": "FaultLatch", "negated": true }
+        },
+        {
+          "id": "n-runlatch-set",
+          "type": "coil",
+          "position": { "x": 580, "y": 0 },
+          "data": { "variable": "RunLatch", "coilType": "set" }
+        }
+      ],
+      "edges": [
+        { "id": "e-left-n-start-btn", "source": "rail-left", "target": "n-start-btn", "sourceHandle": "p-0", "type": "smoothstep" },
+        { "id": "e-start-stop", "source": "n-start-btn", "target": "n-stop-btn", "type": "smoothstep" },
+        { "id": "e-stop-emergency", "source": "n-stop-btn", "target": "n-emergency", "type": "smoothstep" },
+        { "id": "e-emergency-fault", "source": "n-emergency", "target": "n-fault-latch", "type": "smoothstep" },
+        { "id": "e-fault-runlatch", "source": "n-fault-latch", "target": "n-runlatch-set", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-1",
+      "nodes": [
+        {
+          "id": "n-stop-btn-2",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "StopBtn", "negated": false }
+        },
+        {
+          "id": "n-emergency-2",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "EmergencyStop", "negated": false }
+        },
+        {
+          "id": "n-runlatch-reset",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "RunLatch", "coilType": "reset" }
+        }
+      ],
+      "edges": [
+        { "id": "e1-left-stop", "source": "rail-left", "target": "n-stop-btn-2", "sourceHandle": "p-1", "type": "smoothstep" },
+        { "id": "e1-stop-emergency", "source": "n-stop-btn-2", "target": "n-emergency-2", "type": "smoothstep" },
+        { "id": "e1-emergency-reset", "source": "n-emergency-2", "target": "n-runlatch-reset", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-2",
+      "nodes": [
+        {
+          "id": "n-runlatch",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "RunLatch", "negated": false }
+        },
+        {
+          "id": "n-emergency-3",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "EmergencyStop", "negated": true }
+        },
+        {
+          "id": "n-running-coil",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "Running", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e2-left-runlatch", "source": "rail-left", "target": "n-runlatch", "sourceHandle": "p-2", "type": "smoothstep" },
+        { "id": "e2-runlatch-emerg", "source": "n-runlatch", "target": "n-emergency-3", "type": "smoothstep" },
+        { "id": "e2-emerg-running", "source": "n-emergency-3", "target": "n-running-coil", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-3",
+      "nodes": [
+        {
+          "id": "n-running-fwd",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "Running", "negated": false }
+        },
+        {
+          "id": "n-motorfwd-interlock",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "MotorReverse", "negated": true }
+        },
+        {
+          "id": "n-fwd-limit",
+          "type": "contact",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "ForwardLimit", "negated": true }
+        },
+        {
+          "id": "n-motorfwd-coil",
+          "type": "coil",
+          "position": { "x": 460, "y": 0 },
+          "data": { "variable": "MotorForward", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e3-left-running", "source": "rail-left", "target": "n-running-fwd", "sourceHandle": "p-3", "type": "smoothstep" },
+        { "id": "e3-running-interlock", "source": "n-running-fwd", "target": "n-motorfwd-interlock", "type": "smoothstep" },
+        { "id": "e3-interlock-limit", "source": "n-motorfwd-interlock", "target": "n-fwd-limit", "type": "smoothstep" },
+        { "id": "e3-limit-coil", "source": "n-fwd-limit", "target": "n-motorfwd-coil", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-4",
+      "nodes": [
+        {
+          "id": "n-running-rev",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "Running", "negated": false }
+        },
+        {
+          "id": "n-motorrev-interlock",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "MotorForward", "negated": true }
+        },
+        {
+          "id": "n-rev-limit",
+          "type": "contact",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "ReverseLimit", "negated": true }
+        },
+        {
+          "id": "n-motorrev-coil",
+          "type": "coil",
+          "position": { "x": 460, "y": 0 },
+          "data": { "variable": "MotorReverse", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e4-left-running", "source": "rail-left", "target": "n-running-rev", "sourceHandle": "p-4", "type": "smoothstep" },
+        { "id": "e4-running-interlock", "source": "n-running-rev", "target": "n-motorrev-interlock", "type": "smoothstep" },
+        { "id": "e4-interlock-limit", "source": "n-motorrev-interlock", "target": "n-rev-limit", "type": "smoothstep" },
+        { "id": "e4-limit-coil", "source": "n-rev-limit", "target": "n-motorrev-coil", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-5",
+      "nodes": [
+        {
+          "id": "n-overload",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "Overload", "negated": false }
+        },
+        {
+          "id": "n-emergency-4",
+          "type": "contact",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "EmergencyStop", "negated": false }
+        },
+        {
+          "id": "n-faultlamp-coil",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "AlarmLamp", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e5-left-overload", "source": "rail-left", "target": "n-overload", "sourceHandle": "p-5", "type": "smoothstep" },
+        { "id": "e5-overload-emerg", "source": "n-overload", "target": "n-emergency-4", "type": "smoothstep" },
+        { "id": "e5-emerg-lamp", "source": "n-emergency-4", "target": "n-faultlamp-coil", "type": "smoothstep" }
+      ]
+    }
+  ],
+  "railPortCount": 16,
+  "railLeftX": 0,
+  "railRightX": 700,
+  "railsLocked": true
+}

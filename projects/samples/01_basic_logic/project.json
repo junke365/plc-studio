@@ -1,0 +1,56 @@
+{
+  "name": "BasicLogic",
+  "path": "projects/samples/01_basic_logic",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "BasicLogic",
+      "pouType": "program",
+      "variables": {
+        "inputVars": [
+          { "name": "StartBtn", "type": "BOOL", "className": "Input", "comment": "启动按钮" },
+          { "name": "StopBtn", "type": "BOOL", "className": "Input", "comment": "停止按钮" },
+          { "name": "ForwardLimit", "type": "BOOL", "className": "Input", "comment": "正转限位" },
+          { "name": "ReverseLimit", "type": "BOOL", "className": "Input", "comment": "反转限位" },
+          { "name": "EmergencyStop", "type": "BOOL", "className": "Input", "comment": "急停按钮" },
+          { "name": "Overload", "type": "BOOL", "className": "Input", "comment": "过载信号" }
+        ],
+        "outputVars": [
+          { "name": "MotorForward", "type": "BOOL", "className": "Output", "comment": "电机正转" },
+          { "name": "MotorReverse", "type": "BOOL", "className": "Output", "comment": "电机反转" },
+          { "name": "Running", "type": "BOOL", "className": "Output", "comment": "运行状态" },
+          { "name": "AlarmLamp", "type": "BOOL", "className": "Output", "comment": "报警指示灯" }
+        ],
+        "localVars": [
+          { "name": "RunLatch", "type": "BOOL", "className": "Local", "initialValue": false, "comment": "运行自锁位" },
+          { "name": "FaultLatch", "type": "BOOL", "className": "Local", "initialValue": false, "comment": "故障锁存" },
+          { "name": "StartRise", "type": "BOOL", "className": "Local", "comment": "启动上升沿" },
+          { "name": "StopRise", "type": "BOOL", "className": "Local", "comment": "停止上升沿" },
+          { "name": "LastStart", "type": "BOOL", "className": "Local", "comment": "上次启动状态" },
+          { "name": "LastStop", "type": "BOOL", "className": "Local", "comment": "上次停止状态" }
+        ],
+        "inOutVars": [], "tempVars": [], "globalVars": [], "externalVars": [], "accessVars": []
+      },
+      "body": "PROGRAM BasicLogic\nVAR_INPUT\n  StartBtn : BOOL;\n  StopBtn : BOOL;\n  ForwardLimit : BOOL;\n  ReverseLimit : BOOL;\n  EmergencyStop : BOOL;\n  Overload : BOOL;\nEND_VAR\nVAR_OUTPUT\n  MotorForward : BOOL;\n  MotorReverse : BOOL;\n  Running : BOOL;\n  AlarmLamp : BOOL;\nEND_VAR\nVAR\n  RunLatch : BOOL := FALSE;\n  FaultLatch : BOOL := FALSE;\n  StartRise : BOOL := FALSE;\n  StopRise : BOOL := FALSE;\n  LastStart : BOOL := FALSE;\n  LastStop : BOOL := FALSE;\nEND_VAR\n\nIF StartBtn AND NOT StopBtn AND NOT FaultLatch THEN\n  RunLatch := TRUE;\nELSIF StopBtn OR FaultLatch THEN\n  RunLatch := FALSE;\nEND_IF\n\nRunning := RunLatch AND NOT EmergencyStop;\n\nIF Running AND NOT MotorReverse AND NOT ForwardLimit THEN\n  MotorForward := TRUE;\nELSE\n  MotorForward := FALSE;\nEND_IF\n\nIF Running AND NOT MotorForward AND NOT ReverseLimit THEN\n  MotorReverse := TRUE;\nELSE\n  MotorReverse := FALSE;\nEND_IF\n\nIF Overload OR EmergencyStop THEN\n  FaultLatch := TRUE;\nEND_IF\n\nIF NOT Overload AND NOT EmergencyStop AND StartBtn THEN\n  FaultLatch := FALSE;\nEND_IF\n\nAlarmLamp := FaultLatch OR EmergencyStop;\n\nStartRise := StartBtn AND NOT LastStart;\nStopRise := StopBtn AND NOT LastStop;\nLastStart := StartBtn;\nLastStop := StopBtn;\n\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "基本位逻辑示例：电机正反转控制，含互锁、自锁、边沿检测"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Default",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            { "name": "MainTask", "interval": "T#10ms", "priority": 1 }
+          ],
+          "programs": [
+            { "name": "MainProgram", "typeName": "BasicLogic", "taskName": "MainTask" }
+          ]
+        }
+      ]
+    }
+  ]
+}

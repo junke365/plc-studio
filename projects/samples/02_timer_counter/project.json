@@ -1,0 +1,68 @@
+{
+  "name": "TimerCounter",
+  "path": "projects/samples/02_timer_counter",
+  "category": "standard",
+  "pous": [
+    {
+      "name": "TimerCounter",
+      "pouType": "program",
+      "variables": {
+        "inputVars": [
+          { "name": "StartBtn", "type": "BOOL", "className": "Input", "comment": "启动按钮" },
+          { "name": "StopBtn", "type": "BOOL", "className": "Input", "comment": "停止按钮" },
+          { "name": "SensorA", "type": "BOOL", "className": "Input", "comment": "传感器A（计数）" },
+          { "name": "SensorB", "type": "BOOL", "className": "Input", "comment": "传感器B（报警）" },
+          { "name": "ResetBtn", "type": "BOOL", "className": "Input", "comment": "复位按钮" }
+        ],
+        "outputVars": [
+          { "name": "ConveyorMotor", "type": "BOOL", "className": "Output", "comment": "传送带电机" },
+          { "name": "GreenLamp", "type": "BOOL", "className": "Output", "comment": "绿色指示灯" },
+          { "name": "YellowLamp", "type": "BOOL", "className": "Output", "comment": "黄色指示灯" },
+          { "name": "RedLamp", "type": "BOOL", "className": "Output", "comment": "红色指示灯" },
+          { "name": "Buzzer", "type": "BOOL", "className": "Output", "comment": "蜂鸣器" }
+        ],
+        "localVars": [
+          { "name": "ConveyorTimerEn", "type": "BOOL", "className": "Local", "comment": "延时启动定时器使能" },
+          { "name": "ConveyorTimerAcc", "type": "INT", "className": "Local", "comment": "延时启动累加器" },
+          { "name": "ConveyorTimerPreset", "type": "INT", "className": "Local", "initialValue": 200, "comment": "延时启动预设值" },
+          { "name": "ConveyorTimerDone", "type": "BOOL", "className": "Local", "comment": "延时启动完成" },
+          { "name": "StopTimerEn", "type": "BOOL", "className": "Local", "comment": "延时停止定时器使能" },
+          { "name": "StopTimerAcc", "type": "INT", "className": "Local", "comment": "延时停止累加器" },
+          { "name": "StopTimerPreset", "type": "INT", "className": "Local", "initialValue": 300, "comment": "延时停止预设值" },
+          { "name": "StopTimerDone", "type": "BOOL", "className": "Local", "comment": "延时停止完成" },
+          { "name": "BlinkTimerEn", "type": "BOOL", "className": "Local", "comment": "闪烁定时器使能" },
+          { "name": "BlinkTimerAcc", "type": "INT", "className": "Local", "comment": "闪烁累加器" },
+          { "name": "BlinkTimerPreset", "type": "INT", "className": "Local", "initialValue": 50, "comment": "闪烁预设值" },
+          { "name": "BlinkOut", "type": "BOOL", "className": "Local", "comment": "闪烁输出" },
+          { "name": "BlinkState", "type": "BOOL", "className": "Local", "comment": "闪烁状态" },
+          { "name": "ProductCount", "type": "INT", "className": "Local", "comment": "产品计数" },
+          { "name": "CountPreset", "type": "INT", "className": "Local", "initialValue": 100, "comment": "计数预设值" },
+          { "name": "CountDone", "type": "BOOL", "className": "Local", "comment": "计数完成" },
+          { "name": "PrevSensorA", "type": "BOOL", "className": "Local", "comment": "上次 SensorA 状态" },
+          { "name": "SensorARise", "type": "BOOL", "className": "Local", "comment": "SensorA 上升沿" }
+        ],
+        "inOutVars": [], "tempVars": [], "globalVars": [], "externalVars": [], "accessVars": []
+      },
+      "body": "PROGRAM TimerCounter\nVAR_INPUT\n  StartBtn : BOOL;\n  StopBtn : BOOL;\n  SensorA : BOOL;\n  SensorB : BOOL;\n  ResetBtn : BOOL;\nEND_VAR\nVAR_OUTPUT\n  ConveyorMotor : BOOL;\n  GreenLamp : BOOL;\n  YellowLamp : BOOL;\n  RedLamp : BOOL;\n  Buzzer : BOOL;\nEND_VAR\nVAR\n  ConveyorTimerEn : BOOL := FALSE;\n  ConveyorTimerAcc : INT := 0;\n  ConveyorTimerPreset : INT := 200;\n  ConveyorTimerDone : BOOL := FALSE;\n  StopTimerEn : BOOL := FALSE;\n  StopTimerAcc : INT := 0;\n  StopTimerPreset : INT := 300;\n  StopTimerDone : BOOL := FALSE;\n  BlinkTimerEn : BOOL := FALSE;\n  BlinkTimerAcc : INT := 0;\n  BlinkTimerPreset : INT := 50;\n  BlinkOut : BOOL := FALSE;\n  ProductCount : INT := 0;\n  CountPreset : INT := 100;\n  CountDone : BOOL := FALSE;\n  PrevSensorA : BOOL := FALSE;\n  SensorARise : BOOL := FALSE;\n  BlinkState : BOOL := FALSE;\nEND_VAR\n\nConveyorTimerEn := StartBtn AND NOT StopBtn;\nIF ConveyorTimerEn THEN\n  ConveyorTimerAcc := ConveyorTimerAcc + 1;\n  IF ConveyorTimerAcc >= ConveyorTimerPreset THEN\n    ConveyorTimerDone := TRUE;\n  END_IF\nELSE\n  ConveyorTimerAcc := 0;\n  ConveyorTimerDone := FALSE;\nEND_IF\n\nIF ConveyorTimerDone AND NOT StopBtn THEN\n  ConveyorMotor := TRUE;\nELSE\n  ConveyorMotor := FALSE;\nEND_IF\n\nStopTimerEn := NOT StopBtn AND ConveyorTimerDone;\nIF StopTimerEn THEN\n  StopTimerAcc := StopTimerAcc + 1;\n  IF StopTimerAcc >= StopTimerPreset THEN\n    StopTimerDone := TRUE;\n  END_IF\nELSE\n  StopTimerAcc := 0;\n  StopTimerDone := FALSE;\nEND_IF\n\nBlinkTimerEn := ConveyorMotor;\nIF BlinkTimerEn THEN\n  BlinkTimerAcc := BlinkTimerAcc + 1;\n  IF BlinkTimerAcc >= BlinkTimerPreset THEN\n    BlinkState := NOT BlinkState;\n    BlinkTimerAcc := 0;\n  END_IF\nELSE\n  BlinkTimerAcc := 0;\n  BlinkState := FALSE;\nEND_IF\n\nGreenLamp := ConveyorMotor AND BlinkState;\n\nSensorARise := SensorA AND NOT PrevSensorA;\nPrevSensorA := SensorA;\n\nIF SensorARise AND NOT ResetBtn THEN\n  ProductCount := ProductCount + 1;\nEND_IF\n\nIF ResetBtn THEN\n  ProductCount := 0;\nEND_IF\n\nCountDone := ProductCount >= CountPreset;\n\nIF CountDone THEN\n  YellowLamp := TRUE;\n  Buzzer := TRUE;\nELSE\n  YellowLamp := FALSE;\n  Buzzer := FALSE;\nEND_IF\n\nRedLamp := SensorB;\n\nEND_PROGRAM",
+      "bodyLanguage": "ST",
+      "comment": "定时器/计数器示例：传送带延时控制、闪烁指示、产品计数"
+    }
+  ],
+  "dataTypes": [],
+  "configurations": [
+    {
+      "name": "Default",
+      "resources": [
+        {
+          "name": "Main",
+          "tasks": [
+            { "name": "MainTask", "interval": "T#10ms", "priority": 1 }
+          ],
+          "programs": [
+            { "name": "MainProgram", "typeName": "TimerCounter", "taskName": "MainTask" }
+          ]
+        }
+      ]
+    }
+  ]
+}

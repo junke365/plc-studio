@@ -2,7 +2,9 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import websocket from '@fastify/websocket'
 import { createProjectRoutes } from './modules/project/project.routes.js'
+import { createBuildRoutes } from './modules/build/build.routes.js'
 import { createRuntimeRoutes } from './modules/runtime/runtime.routes.js'
+import { RuntimeService } from './modules/runtime/runtime.service.js'
 import { createDebugGateway } from './modules/debug/debug.gateway.js'
 import { createToolsRoutes } from './modules/tools/tools.routes.js'
 import { createToolsGateway } from './modules/tools/tools.gateway.js'
@@ -21,12 +23,14 @@ await server.register(websocket)
 
 // 注册路由
 await server.register(createProjectRoutes, { prefix: '/api/project' })
+await server.register(createBuildRoutes, { prefix: '/api/build' })
 await server.register(createRuntimeRoutes, { prefix: '/api/runtime' })
 await server.register(createToolsRoutes)
 await server.register(createHmiRoutes, { prefix: '/api/hmi' })
 
-// 注册 WebSocket
-createDebugGateway(server)
+// 注册 WebSocket（共享 RuntimeService 实例）
+const runtime = RuntimeService.getInstance()
+createDebugGateway(server, runtime)
 createToolsGateway(server)
 
 // 健康检查

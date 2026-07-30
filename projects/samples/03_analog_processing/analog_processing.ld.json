@@ -1,0 +1,176 @@
+{
+  "rungs": [
+    {
+      "id": "rung-0",
+      "nodes": [
+        {
+          "id": "n-enable-scaling",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "EnableScaling", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e0-left-enable", "source": "rail-left", "target": "n-enable-scaling", "sourceHandle": "p-0", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-1",
+      "nodes": [
+        {
+          "id": "n-temp-high",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "TempHighLatch", "negated": false }
+        },
+        {
+          "id": "n-temp-high-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "TempHighAlarm", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e1-left-temp-h", "source": "rail-left", "target": "n-temp-high", "sourceHandle": "p-1", "type": "smoothstep" },
+        { "id": "e1-temp-h-lamp", "source": "n-temp-high", "target": "n-temp-high-lamp", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-2",
+      "nodes": [
+        {
+          "id": "n-temp-low",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "TempLowLatch", "negated": false }
+        },
+        {
+          "id": "n-temp-low-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "TempLowAlarm", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e2-left-temp-l", "source": "rail-left", "target": "n-temp-low", "sourceHandle": "p-2", "type": "smoothstep" },
+        { "id": "e2-temp-l-lamp", "source": "n-temp-low", "target": "n-temp-low-lamp", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-3",
+      "nodes": [
+        {
+          "id": "n-press-high",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "PressHighLatch", "negated": false }
+        },
+        {
+          "id": "n-press-high-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "PressHighAlarm", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e3-left-press-h", "source": "rail-left", "target": "n-press-high", "sourceHandle": "p-3", "type": "smoothstep" },
+        { "id": "e3-press-h-lamp", "source": "n-press-high", "target": "n-press-high-lamp", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-4",
+      "nodes": [
+        {
+          "id": "n-press-low",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "PressLowLatch", "negated": false }
+        },
+        {
+          "id": "n-press-low-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "PressLowAlarm", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e4-left-press-l", "source": "rail-left", "target": "n-press-low", "sourceHandle": "p-4", "type": "smoothstep" },
+        { "id": "e4-press-l-lamp", "source": "n-press-low", "target": "n-press-low-lamp", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-5",
+      "nodes": [
+        {
+          "id": "n-flow-low",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "FlowLowLatch", "negated": false }
+        },
+        {
+          "id": "n-flow-low-lamp",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "FlowLowAlarm", "negated": false }
+        }
+      ],
+      "edges": [
+        { "id": "e5-left-flow-l", "source": "rail-left", "target": "n-flow-low", "sourceHandle": "p-5", "type": "smoothstep" },
+        { "id": "e5-flow-l-lamp", "source": "n-flow-low", "target": "n-flow-low-lamp", "type": "smoothstep" }
+      ]
+    },
+    {
+      "id": "rung-6",
+      "nodes": [
+        {
+          "id": "n-reset-alarm",
+          "type": "contact",
+          "position": { "x": 100, "y": 0 },
+          "data": { "variable": "ResetAlarm", "negated": false }
+        },
+        {
+          "id": "n-temp-h-reset",
+          "type": "coil",
+          "position": { "x": 220, "y": 0 },
+          "data": { "variable": "TempHighLatch", "coilType": "reset" }
+        },
+        {
+          "id": "n-temp-l-reset",
+          "type": "coil",
+          "position": { "x": 340, "y": 0 },
+          "data": { "variable": "TempLowLatch", "coilType": "reset" }
+        },
+        {
+          "id": "n-press-h-reset",
+          "type": "coil",
+          "position": { "x": 460, "y": 0 },
+          "data": { "variable": "PressHighLatch", "coilType": "reset" }
+        },
+        {
+          "id": "n-press-l-reset",
+          "type": "coil",
+          "position": { "x": 580, "y": 0 },
+          "data": { "variable": "PressLowLatch", "coilType": "reset" }
+        },
+        {
+          "id": "n-flow-l-reset",
+          "type": "coil",
+          "position": { "x": 700, "y": 0 },
+          "data": { "variable": "FlowLowLatch", "coilType": "reset" }
+        }
+      ],
+      "edges": [
+        { "id": "e6-left-reset", "source": "rail-left", "target": "n-reset-alarm", "sourceHandle": "p-6", "type": "smoothstep" },
+        { "id": "e6-reset-temph", "source": "n-reset-alarm", "target": "n-temp-h-reset", "type": "smoothstep" },
+        { "id": "e6-temph-templ", "source": "n-temp-h-reset", "target": "n-temp-l-reset", "type": "smoothstep" },
+        { "id": "e6-templ-pressh", "source": "n-temp-l-reset", "target": "n-press-h-reset", "type": "smoothstep" },
+        { "id": "e6-pressh-pressl", "source": "n-press-h-reset", "target": "n-press-l-reset", "type": "smoothstep" },
+        { "id": "e6-pressl-flowl", "source": "n-press-l-reset", "target": "n-flow-l-reset", "type": "smoothstep" }
+      ]
+    }
+  ],
+  "railPortCount": 16,
+  "railLeftX": 0,
+  "railRightX": 800,
+  "railsLocked": true
+}

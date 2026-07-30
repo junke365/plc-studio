@@ -21,6 +21,7 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "esp_heap_caps.h"
+#include "driver/adc.h"
 
 static const char* TAG = "PLC";
 
@@ -30,7 +31,6 @@ static const char* TAG = "PLC";
 #define GPIO_INPUT_1     5    /* 数字量输入 1 */
 #define GPIO_OUTPUT_0    18   /* 数字量输出 0 */
 #define GPIO_OUTPUT_1    19   /* 数字量输出 1 */
-#define ADC_CHANNEL_0    ADC_CHANNEL_0  /* 模拟量输入 0 (GPIO36) */
 #define PWM_OUTPUT_0     21   /* PWM 输出 0 */
 
 /* UART 配置（Modbus RTU） */
@@ -145,6 +145,13 @@ static void print_heap_stats(void)
 }
 
 /* ========== app_main ========== */
+
+void app_main(void);
+
+int main(void) {
+  app_main();
+  return 0;
+}
 
 void app_main(void)
 {

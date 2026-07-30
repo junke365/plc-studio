@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { RuntimeService } from './runtime.service.js'
 
-const runtimeService = new RuntimeService()
+const runtimeService = RuntimeService.getInstance()
 
 export async function createRuntimeRoutes(fastify: FastifyInstance) {
   // 获取运行时状态
