@@ -23,8 +23,42 @@ void NMI_Handler(void)
 {
 }
 
-void HardFault_Handler(void)
+/* 故障诊断: 现场保存到固定地址 0x2001C000 (SRAM2, 当前未使用) */
+#define FAULT_DUMP_BASE 0x2001C000u
+
+void HardFault_Dump(void);
+
+__attribute__((naked)) void HardFault_Handler(void)
 {
+  /* naked: 在函数入口处立即保存现场，避免编译器 push 干扰帧定位
+   * 布局: [0]=MSP, [1]=PSP, [2]=CFSR, [3]=BFAR, [4..11]=异常帧
+   * (R0,R1,R2,R3,R12,LR,PC,xPSR), [7] 覆写为魔法数 */
+  __asm volatile(
+    "ldr r0, =0x2001C000\n"
+    "mrs r1, MSP\n"
+    "str r1, [r0, #0]\n"
+    "mrs r1, PSP\n"
+    "str r1, [r0, #4]\n"
+    "ldr r1, =0xE000ED28\n" /* SCB->CFSR */
+    "ldr r2, [r1]\n"
+    "str r2, [r0, #8]\n"
+    "ldr r1, =0xE000ED38\n" /* SCB->BFAR */
+    "ldr r2, [r1]\n"
+    "str r2, [r0, #12]\n"
+    "b HardFault_Dump\n"
+  );
+}
+
+void HardFault_Dump(void)
+{
+  uint32_t* dump = (uint32_t*)FAULT_DUMP_BASE;
+  uint32_t msp = dump[0];
+  uint32_t* frame = (uint32_t*)msp;
+  /* 复制异常压栈帧 (R0-R3, R12, LR, PC, xPSR) 到 dump[8..15] */
+  for (int i = 0; i < 8; i++)
+    dump[8 + i] = frame[i];
+  /* 标记现场有效 */
+  dump[7] = 0xFA57A71Fu;
   taskDISABLE_INTERRUPTS();
   for (;;);
 }

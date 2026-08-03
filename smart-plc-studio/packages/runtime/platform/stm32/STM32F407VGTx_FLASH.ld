@@ -26,8 +26,10 @@ MEMORY
 }
 
 /* 栈和堆大小 */
-__stack_size  = 4K;
-__heap_size   = 32K;
+/* 栈: 完整版 printf (newlib) 单次调用栈占用可达 4.5KB，8K 必须保留给 handler 栈 */
+__stack_size  = 8K;
+/* 堆: 任务栈从堆分配。4 个任务栈共约 26KB + IDLE/Timer/TCB，40K 才够 */
+__heap_size   = 40K;
 
 SECTIONS
 {
@@ -182,9 +184,12 @@ SECTIONS
     libgcc.a (*)
   }
 
-  /* ========== 栈顶符号 ========== */
-  PROVIDE(__initial_sp = _stack_top);
-  PROVIDE(_estack = _stack_top);
+  /* ========== 栈顶符号 ==========
+   * 注意: ARM 满递减栈, 初始 SP 必须指向栈段【最高地址】(_stack_end),
+   * 向下增长。若指向 _stack_top(最低地址), 则第一个 push 即越界,
+   * 破坏 heap/bss, 运行后表现为随机 HardFault。 */
+  PROVIDE(__initial_sp = _stack_end);
+  PROVIDE(_estack = _stack_end);
   PROVIDE(__heap_start__ = _heap_start);
   PROVIDE(__heap_end__ = _heap_end);
 }

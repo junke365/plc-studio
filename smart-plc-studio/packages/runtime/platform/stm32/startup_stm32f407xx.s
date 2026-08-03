@@ -193,10 +193,14 @@ weak_handler HardFault_Handler
 weak_handler MemManage_Handler
 weak_handler BusFault_Handler
 weak_handler UsageFault_Handler
-weak_handler SVC_Handler
 weak_handler DebugMon_Handler
-weak_handler PendSV_Handler
-weak_handler SysTick_Handler
+/* SVC/PendSV/SysTick 由 FreeRTOS port.c 提供
+ * (vPortSVCHandler/xPortPendSVHandler/xPortSysTickHandler)。
+ * 必须用 .thumb_set 映射到向量表，否则调度器启动时的 SVC 异常
+ * 会进入 Default_Handler 死循环，第一个任务永远无法启动。 */
+.thumb_set SVC_Handler, vPortSVCHandler
+.thumb_set PendSV_Handler, xPortPendSVHandler
+.thumb_set SysTick_Handler, xPortSysTickHandler
 
 /* 外部中断默认处理 */
 weak_handler WWDG_IRQHandler

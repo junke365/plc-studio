@@ -769,13 +769,31 @@ static void debug_comm_task(void* pvParameters)
 
 /* ========== main ========== */
 
+/* 诊断用: main 执行进度标记 (0=未启动, 9=调度器返回异常) */
+volatile uint32_t g_stage = 0;
+/* xTaskCreate 返回值: 0=成功, 1=无法分配内存 */
+volatile uint32_t g_tc_res[4] = {0};
+/* 启动调度器前 FreeRTOS 堆剩余字节 */
+volatile uint32_t g_heap_free = 0;
+
 int main(void)
 {
+  g_stage = 1;
+
   /* HAL 库初始化 */
   HAL_Init();
+  g_stage = 2;
 
   /* 系统时钟 168MHz */
   SystemClock_Config();
+
+  /* 关键: SystemClock_Config 内部的 HAL_RCC_ClockConfig() 会调用
+   * HAL_InitTick() (stm32f4xx_hal_rcc.c:722) 重新使能 SysTick 中断。
+   * 此时 FreeRTOS 尚未启动，若 SysTick 中断触发会进入向量表中已改向
+   * FreeRTOS 的 xPortSysTickHandler → xTaskIncrementTick 访问未初始化
+   * 的任务列表 → HardFault。必须立即关闭，直到 vTaskStartScheduler。 */
+  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+  g_stage = 3;
 
   /* 外设初始化 */
   MX_GPIO_Init();
@@ -786,9 +804,11 @@ int main(void)
   MX_TIM3_PWM_Init();
   MX_TIM6_Init();
   MX_SPI1_Init();
+  g_stage = 4;
 
   /* 启动 TIM6（μs 基准） */
   HAL_TIM_Base_Start(&htim6);
+  g_stage = 5;
 
   printf("\n========================================\n");
   printf(" Smart PLC Runtime — STM32F407\n");
@@ -840,20 +860,41 @@ int main(void)
 
   /* ===== 创建 FreeRTOS 任务 ===== */
 
-  xTaskCreate(plc_scan_task, "PLC_Scan", 256, &g_runtime,
+  /* 任务栈均 ≥1536 字(6KB): 完整版 newlib printf 单次需 ~4.5KB 栈,
+   * 栈过小会在任务内溢出, 破坏 heap 导致随机崩溃 */
+  g_tc_res[0] = xTaskCreate(plc_scan_task, "PLC_Scan", 1536, &g_runtime,
               configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(comm_task, "Comm", 256, &g_runtime,
+  g_tc_res[1] = xTaskCreate(comm_task, "Comm", 1536, &g_runtime,
               configMAX_PRIORITIES - 2, NULL);
-  xTaskCreate(debug_comm_task, "DbgComm", 512, &g_runtime,
+  g_tc_res[2] = xTaskCreate(debug_comm_task, "DbgComm", 2048, &g_runtime,
               configMAX_PRIORITIES - 2, NULL);
-  xTaskCreate(led_task, "LED", 128, NULL, 1, NULL);
+  g_tc_res[3] = xTaskCreate(led_task, "LED", 1536, NULL, 1, NULL);
 
   printf("[STM32] FreeRTOS 任务已创建 (4 tasks), 启动调度器...\n");
+
+  /* 再次关闭 SysTick 中断：SystemClock_Config() 内部的
+   * HAL_RCC_ClockConfig() 会调用 HAL_InitTick()（stm32f4xx_hal_rcc.c:722）
+   * 重新使能 SysTick，因此上面 HAL_Init() 后的那次关闭被覆盖。
+   * FreeRTOS 的 vPortSetupTimerInterrupt 启动调度器时才会重新使能。 */
+  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+
+  /* 修复 SysTick/PendSV 中断优先级:
+   * HAL_InitTick() 会把 SysTick 优先级设为 0xF0(最低),
+   * 而 FreeRTOS port.c 用 "|=" 写优先级, 0xF0|=0x70 仍是 0xF0,
+   * 导致 SysTick(0xF0) 与 PendSV(0x70) 优先级不一致,
+   * PendSV 可抢占 SysTick, 破坏 FreeRTOS 时序假设 → INVPC 崩溃。
+   * 必须在启动调度器前显式赋值为 configKERNEL_INTERRUPT_PRIORITY。 */
+  NVIC_SetPriority(SysTick_IRQn, configKERNEL_INTERRUPT_PRIORITY);
+  NVIC_SetPriority(PendSV_IRQn, configKERNEL_INTERRUPT_PRIORITY);
+  g_stage = 7;
+
+  g_heap_free = xPortGetFreeHeapSize();
 
   /* 启动 FreeRTOS 调度器（永不返回） */
   vTaskStartScheduler();
 
   /* 异常: 调度器不应返回 */
+  g_stage = 8;
   printf("[FATAL] 调度器异常返回!\n");
   for (;;);
 }
