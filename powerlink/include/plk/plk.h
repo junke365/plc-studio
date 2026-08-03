@@ -1,10 +1,10 @@
 /**
- * plk.h - 手写 openPOWERLINK 协议栈主头文件
+ * plk.h - 手写智能总线协议栈主头文件
  *
  * 基于 Ethernet POWERLINK 协议规范 (EPSG DS 301 V1.2.0 / V1.3.0)
  * 轻量级实现：MN（主站）+ CN（从站）共用同一协议核心
  *
- * 帧格式参考开源参考栈 openPOWERLINK_V2.7.2 (BSD 许可)
+ * 帧格式遵循 POWERLINK 协议规范
  * 本实现为全新手写代码，仅复用公开的帧格式定义
  */
 

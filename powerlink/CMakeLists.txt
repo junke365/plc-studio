@@ -30,7 +30,7 @@ set_target_properties(plk_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 # 注册表 plk_edrv.c 在所有平台均编译。
 
 set(WPDK_PACK_DIR
-  "G:/cnc/openPOWERLINK_V2.7.2/contrib/pcap/windows/WpdPack"
+  "G:/cnc/WpdPack"
   CACHE PATH "WinPcap/Npcap SDK 目录（含 Include/Lib）")
 
 set(PLK_EDRV_SOURCES src/edrv/plk_edrv.c)

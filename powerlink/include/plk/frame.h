@@ -6,7 +6,7 @@
  * 帧偏移：dst_mac(0) src_mac(6) eth_type(12) msg_type(14) dst_node(15) src_node(16)，
  * 协议数据从 offset 17 开始。
  *
- * 参考开源栈 openPOWERLINK_V2.7.2 的 frame.h 帧格式定义，本文件为全新手写实现。
+ * 帧格式遵循 POWERLINK 协议规范，本文件为全新手写实现。
  */
 
 #ifndef PLK_FRAME_H
