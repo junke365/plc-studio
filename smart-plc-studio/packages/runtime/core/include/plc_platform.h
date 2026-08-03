@@ -61,16 +61,43 @@ typedef struct {
 
 /* ========== 平台配置 ========== */
 
-#ifndef PLC_MAX_TASKS
-  #define PLC_MAX_TASKS           16
-#endif
+/* STM32 嵌入式平台内存有限（SRAM1=112KB），使用紧凑配置 */
+#ifdef PLATFORM_STM32
 
-#ifndef PLC_MAX_VARIABLES
-  #define PLC_MAX_VARIABLES       1024
-#endif
+  #ifndef PLC_MAX_TASKS
+    #define PLC_MAX_TASKS           8
+  #endif
 
-#ifndef PLC_MAX_IO_CHANNELS
-  #define PLC_MAX_IO_CHANNELS     256
+  #ifndef PLC_MAX_VARIABLES
+    #define PLC_MAX_VARIABLES       128
+  #endif
+
+  #ifndef PLC_MAX_IO_CHANNELS
+    #define PLC_MAX_IO_CHANNELS     64
+  #endif
+
+  #ifndef PLC_MAX_VAR_DATA_SIZE
+    #define PLC_MAX_VAR_DATA_SIZE   128   /* 每个变量数据区上限（字节） */
+  #endif
+
+#else
+
+  #ifndef PLC_MAX_TASKS
+    #define PLC_MAX_TASKS           16
+  #endif
+
+  #ifndef PLC_MAX_VARIABLES
+    #define PLC_MAX_VARIABLES       1024
+  #endif
+
+  #ifndef PLC_MAX_IO_CHANNELS
+    #define PLC_MAX_IO_CHANNELS     256
+  #endif
+
+  #ifndef PLC_MAX_VAR_DATA_SIZE
+    #define PLC_MAX_VAR_DATA_SIZE   256
+  #endif
+
 #endif
 
 #ifndef PLC_MAX_POUS

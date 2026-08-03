@@ -64,13 +64,22 @@ typedef struct {
   bool           writable;
 } ModbusMapping;
 
+/* Modbus 寄存器映射数量（STM32 嵌入式平台使用紧凑配置） */
+#ifndef PLC_MAX_MODBUS_MAPPINGS
+  #ifdef PLATFORM_STM32
+    #define PLC_MAX_MODBUS_MAPPINGS 16
+  #else
+    #define PLC_MAX_MODBUS_MAPPINGS 128
+  #endif
+#endif
+
 /* Modbus 配置 */
 typedef struct {
-  ModbusMapping  holdings[128];  /* 保持寄存器 */
+  ModbusMapping  holdings[PLC_MAX_MODBUS_MAPPINGS];  /* 保持寄存器 */
   uint16_t       holding_count;
-  ModbusMapping  inputs[128];    /* 输入寄存器 */
+  ModbusMapping  inputs[PLC_MAX_MODBUS_MAPPINGS];    /* 输入寄存器 */
   uint16_t       input_count;
-  uint16_t       coils[128];     /* 线圈 */
+  uint16_t       coils[PLC_MAX_MODBUS_MAPPINGS];     /* 线圈 */
   uint16_t       coil_count;
   uint8_t        device_id;      /* 从站地址 */
 } ModbusConfig;

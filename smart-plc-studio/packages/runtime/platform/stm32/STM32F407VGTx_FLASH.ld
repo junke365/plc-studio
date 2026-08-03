@@ -14,6 +14,9 @@
  *   CCM        → FreeRTOS 内核数据结构
  * ===========================================================================*/
 
+/* 入口: Reset_Handler (定义于 startup_stm32f407xx.s) */
+ENTRY(Reset_Handler)
+
 MEMORY
 {
   FLASH  (rx) : ORIGIN = 0x08000000, LENGTH = 1M

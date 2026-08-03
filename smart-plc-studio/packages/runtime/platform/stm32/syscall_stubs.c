@@ -41,7 +41,7 @@ int _read(int file, char* ptr, int len)
   return 0;
 }
 
-int _write(int file, char* ptr, int len)
+__attribute__((weak)) int _write(int file, char* ptr, int len)
 {
   (void)file; (void)ptr;
   return len;

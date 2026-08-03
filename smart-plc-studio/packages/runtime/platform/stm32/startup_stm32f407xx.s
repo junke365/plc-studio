@@ -129,6 +129,7 @@ g_pfnVectors:
 
 /* ========== 复位处理 ========== */
 .section .text.Reset_Handler, "ax", %progbits
+.globl Reset_Handler
 .type Reset_Handler, %function
 Reset_Handler:
   /* 设置栈指针 */

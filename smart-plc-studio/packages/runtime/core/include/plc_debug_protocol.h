@@ -7,9 +7,10 @@
 #define DBG_FRAME_HEADER0   0xDB
 #define DBG_FRAME_HEADER1   0xDC
 #define DBG_FRAME_HEADER_LEN 2
+#define DBG_FRAME_LEN_FIELD_LEN 1
 #define DBG_FRAME_CMD_LEN   1
 #define DBG_FRAME_MAX_PAYLOAD 128
-#define DBG_FRAME_MAX_LEN   (DBG_FRAME_HEADER_LEN + DBG_FRAME_CMD_LEN + DBG_FRAME_MAX_PAYLOAD)
+#define DBG_FRAME_MAX_LEN   (DBG_FRAME_HEADER_LEN + DBG_FRAME_LEN_FIELD_LEN + DBG_FRAME_CMD_LEN + DBG_FRAME_MAX_PAYLOAD)
 
 /* 命令码 PC → STM32 */
 #define DBG_CMD_PING        0x01
@@ -37,30 +38,32 @@
 static inline uint32_t dbg_build_frame(uint8_t* buf, uint32_t buf_size,
                                        uint8_t cmd, const uint8_t* payload, uint32_t payload_len)
 {
-  if (buf_size < DBG_FRAME_HEADER_LEN + DBG_FRAME_CMD_LEN + payload_len)
+  uint32_t frame_len = DBG_FRAME_HEADER_LEN + DBG_FRAME_LEN_FIELD_LEN +
+                       DBG_FRAME_CMD_LEN + payload_len;
+  if (buf_size < frame_len)
     return 0;
   buf[0] = DBG_FRAME_HEADER0;
   buf[1] = DBG_FRAME_HEADER1;
   buf[2] = (uint8_t)payload_len;
   buf[3] = cmd;
   for (uint32_t i = 0; i < payload_len; i++)
-    buf[DBG_FRAME_HEADER_LEN + DBG_FRAME_CMD_LEN + i] = payload[i];
-  return DBG_FRAME_HEADER_LEN + DBG_FRAME_CMD_LEN + payload_len;
+    buf[DBG_FRAME_HEADER_LEN + DBG_FRAME_LEN_FIELD_LEN + DBG_FRAME_CMD_LEN + i] = payload[i];
+  return frame_len;
 }
 
 /* 解析接收帧（返回负载长度，-1 表示无效帧）*/
 static inline int32_t dbg_parse_frame(const uint8_t* buf, uint32_t buf_len,
                                       uint8_t* out_cmd, const uint8_t** out_payload)
 {
-  if (buf_len < DBG_FRAME_HEADER_LEN + DBG_FRAME_CMD_LEN)
+  if (buf_len < DBG_FRAME_HEADER_LEN + DBG_FRAME_LEN_FIELD_LEN + DBG_FRAME_CMD_LEN)
     return -1;
   if (buf[0] != DBG_FRAME_HEADER0 || buf[1] != DBG_FRAME_HEADER1)
     return -1;
   uint32_t payload_len = buf[2];
-  if (buf_len < DBG_FRAME_HEADER_LEN + DBG_FRAME_CMD_LEN + payload_len)
+  if (buf_len < DBG_FRAME_HEADER_LEN + DBG_FRAME_LEN_FIELD_LEN + DBG_FRAME_CMD_LEN + payload_len)
     return -1;
   *out_cmd = buf[3];
-  *out_payload = &buf[DBG_FRAME_HEADER_LEN + DBG_FRAME_CMD_LEN];
+  *out_payload = &buf[DBG_FRAME_HEADER_LEN + DBG_FRAME_LEN_FIELD_LEN + DBG_FRAME_CMD_LEN];
   return (int32_t)payload_len;
 }
 

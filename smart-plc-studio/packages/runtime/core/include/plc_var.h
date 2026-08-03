@@ -61,7 +61,7 @@ typedef struct {
 typedef struct {
   PlcVariable    vars[PLC_MAX_VARIABLES];
   uint32_t       count;
-  uint8_t        var_data[PLC_MAX_VARIABLES * 256]; /* 变量数据区 */
+  uint8_t        var_data[PLC_MAX_VARIABLES * PLC_MAX_VAR_DATA_SIZE]; /* 变量数据区 */
   uint32_t       data_offset;                        /* 当前偏移 */
 } PlcVarTable;
 

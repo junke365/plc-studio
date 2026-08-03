@@ -9,19 +9,22 @@
 
 cmake_minimum_required(VERSION 3.12)
 
+# 顶层 project 仅启用 C 语言，此处补充汇编语言支持 (startup_stm32f407xx.s)
+enable_language(ASM)
+
 # =============================================================================
 # 外部依赖路径
 # =============================================================================
 
 # STM32F4xx HAL 驱动路径
 if(NOT DEFINED STM32_HAL_DIR)
-  set(STM32_HAL_DIR "C:/STM32Cube/Repository/STM32Cube_FW_F4_V1.28.0"
+  set(STM32_HAL_DIR "C:/Users/junjun/STM32Cube/Repository/STM32Cube_FW_F4_V1.28.3"
     CACHE PATH "STM32F4xx HAL 驱动根目录")
 endif()
 
 # FreeRTOS 源码路径
 if(NOT DEFINED FREERTOS_DIR)
-  set(FREERTOS_DIR "C:/STM32Cube/Repository/STM32Cube_FW_F4_V1.28.0/Middlewares/Third_Party/FreeRTOS"
+  set(FREERTOS_DIR "C:/Users/junjun/STM32Cube/Repository/STM32Cube_FW_F4_V1.28.3/Middlewares/Third_Party/FreeRTOS"
     CACHE PATH "FreeRTOS 源码根目录")
 endif()
 
@@ -43,15 +46,15 @@ file(GLOB HAL_SOURCES
   "${HAL_SRC_DIR}/stm32f4xx_hal_cortex.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_uart.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_adc.c"
+  "${HAL_SRC_DIR}/stm32f4xx_hal_adc_ex.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_dac.c"
+  "${HAL_SRC_DIR}/stm32f4xx_hal_dac_ex.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_spi.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_tim.c"
+  "${HAL_SRC_DIR}/stm32f4xx_hal_tim_ex.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_flash.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_pwr.c"
   "${HAL_SRC_DIR}/stm32f4xx_hal_dma.c"
-  "${HAL_SRC_DIR}/stm32f4xx_hal_eth.c"
-  "${HAL_SRC_DIR}/stm32f4xx_hal_rng.c"
-  "${HAL_SRC_DIR}/stm32f4xx_hal_can.c"
 )
 
 # =============================================================================
@@ -67,18 +70,28 @@ file(GLOB FREERTOS_SOURCES
   "${FREERTOS_PORT_DIR}/*.c"
 )
 
+# 无 FreeRTOS 源码时使用协作式调度器存根
+if(NOT FREERTOS_SOURCES)
+  file(GLOB FREERTOS_SOURCES "${FREERTOS_SRC_DIR}/tasks_stub.c")
+endif()
+
 # =============================================================================
 # PLC 平台库
 # =============================================================================
 
-add_library(plc-platform STATIC
-  # PLC 平台适配
-  platform.c
+# 启动必需文件 (startup/syscall/system/中断) 不能放在静态库中:
+# 静态库成员仅在被引用时提取, 而 Reset_Handler/中断向量表无外部引用,
+# 会导致固件缺失启动代码。这些文件直接编译进 plc-runtime 可执行目标。
+set(PLATFORM_STARTUP_SOURCES
   syscall_stubs.c
-  # STM32 系统/启动
   system_stm32f4xx.c
   stm32f4xx_it.c
   startup_stm32f407xx.s
+)
+
+add_library(plc-platform STATIC
+  # PLC 平台适配
+  platform.c
 )
 
 target_include_directories(plc-platform
@@ -140,6 +153,7 @@ target_include_directories(plc-runtime PRIVATE
 
 # 链接 HAL 和 FreeRTOS 源文件到 plc-runtime
 target_sources(plc-runtime PRIVATE
+  ${PLATFORM_STARTUP_SOURCES}
   ${HAL_SOURCES}
   ${FREERTOS_SOURCES}
 )

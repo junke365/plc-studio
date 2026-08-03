@@ -40,6 +40,14 @@ target_compile_options(plc-core PRIVATE
   -Wpedantic
 )
 
+# STM32 交叉编译：传递平台宏（紧凑内存配置等依赖 PLATFORM_STM32）
+if(PLATFORM STREQUAL "stm32")
+  target_compile_definitions(plc-core PUBLIC
+    PLATFORM_STM32
+    STM32F407xx
+  )
+endif()
+
 # 库信息
 message(STATUS "核心库: plc-core")
 message(STATUS "  源文件: ${PLC_CORE_SOURCES}")

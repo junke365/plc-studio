@@ -129,29 +129,28 @@ static void MX_TIM3_PWM_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_SPI1_Init(void);
 
-/* ========== 系统时钟配置 (168MHz) ========== */
+/* ========== 系统时钟配置 ========== */
 
 static void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /* HSE 8MHz → PLL → 168MHz */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  /* HSI(16MHz) → PLL: 16/8 × 168 / 2 = 168MHz
+   * 用 HSI 作为 PLL 源，不依赖外部晶振频率，任何板子都能稳定启动。 */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  /* AHB=168MHz, APB1=42MHz, APB2=84MHz */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK |
-                                RCC_CLOCKTYPE_SYSCLK |
-                                RCC_CLOCKTYPE_PCLK1 |
-                                RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+    | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -188,12 +187,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* PC0-PC1: 数字量输出（继电器） */
-  GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+  /* PC2-PC3: 数字量输出（继电器，高电平=开） */
+  GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_RESET);
 
   /* PA4: SPI1 CS 输出 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
@@ -463,11 +463,23 @@ static void plc_scan_task(void* pvParameters)
 {
   PlcRuntime* rt = (PlcRuntime*)pvParameters;
   TickType_t lastWake = xTaskGetTickCount();
+  uint32_t cycle = 0;
 
   printf("[PLC] 扫描任务已启动, 周期=1ms\n");
 
   for (;;) {
     plc_runtime_scan(rt);
+
+    /* GPIO 验证自测: 每 500ms 翻转 relay_0(PC2)/relay_1(PC3)，
+     * 经变量→IO 绑定→platform 写物理引脚，验证继电器链路 */
+    if ((++cycle % 500) == 0) {
+      plc_bool v = 0;
+      plc_var_read(&rt->var_table, "relay_0", &v, sizeof(v));
+      v = (plc_bool)(v ? 0 : 1);
+      plc_var_write(&rt->var_table, "relay_0", &v, sizeof(v));
+      plc_var_write(&rt->var_table, "relay_1", &v, sizeof(v));
+    }
+
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(1));
   }
 }
@@ -797,9 +809,9 @@ int main(void)
   plc_var_register(vt, "adc_ch_0", VAR_TYPE_UINT, VAR_ATTR_INPUT,
                    sizeof(plc_uint), "模拟量输入 0 (PA0, 12bit)");
   plc_var_register(vt, "relay_0", VAR_TYPE_BOOL, VAR_ATTR_OUTPUT,
-                   sizeof(plc_bool), "继电器 0 (PC0)");
+                   sizeof(plc_bool), "继电器 0 (PC2, 高电平开)");
   plc_var_register(vt, "relay_1", VAR_TYPE_BOOL, VAR_ATTR_OUTPUT,
-                   sizeof(plc_bool), "继电器 1 (PC1)");
+                   sizeof(plc_bool), "继电器 1 (PC3, 高电平开)");
   plc_var_register(vt, "pwm_0", VAR_TYPE_UINT, VAR_ATTR_OUTPUT,
                    sizeof(plc_uint), "PWM 输出 0 (PA6)");
 
@@ -810,8 +822,8 @@ int main(void)
   plc_io_register(io, IO_TYPE_DI,  "DI_0",   "sensor_di_0", 0x10);
   plc_io_register(io, IO_TYPE_DI,  "DI_1",   "sensor_di_1", 0x11);
   plc_io_register(io, IO_TYPE_AI,  "AI_0",   "adc_ch_0",    0x00);
-  plc_io_register(io, IO_TYPE_DO,  "DO_0",   "relay_0",     0x20);
-  plc_io_register(io, IO_TYPE_DO,  "DO_1",   "relay_1",     0x21);
+  plc_io_register(io, IO_TYPE_DO,  "DO_0",   "relay_0",     0x22); /* PC2 */
+  plc_io_register(io, IO_TYPE_DO,  "DO_1",   "relay_1",     0x23); /* PC3 */
   plc_io_register(io, IO_TYPE_PWM, "PWM_0",  "pwm_0",       0x30);
 
   /* 绑定 I/O ↔ 变量 */
