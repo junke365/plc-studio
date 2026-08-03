@@ -101,6 +101,18 @@ int plk_dll_get_node(uint8_t nodeId, PlkDllNodeInfo* info)
   return PLK_ERR_NODE_NOT_FOUND;
 }
 
+int plk_dll_get_node_at(uint32_t index, PlkDllNodeInfo* info)
+{
+  if (!s_ctx.initialized || info == NULL) {
+    return PLK_ERR_INVALID_PARAM;
+  }
+  if (index >= s_ctx.count) {
+    return PLK_ERR_NODE_NOT_FOUND;
+  }
+  *info = s_ctx.table[index];
+  return PLK_ERR_OK;
+}
+
 int plk_dll_set_cycle_param(const PlkCycleParam* param)
 {
   if (!s_ctx.initialized || param == NULL) {

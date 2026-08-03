@@ -109,6 +109,13 @@ int plk_dll_unregister_node(uint8_t nodeId);
 int plk_dll_get_node(uint8_t nodeId, PlkDllNodeInfo* info);
 
 /**
+ * 按索引遍历节点表（供周期调度轮询所有节点）。
+ * @param index 表内索引（0 起）
+ * @return PLK_ERR_OK 有节点；PLK_ERR_NODE_NOT_FOUND 超出末尾
+ */
+int plk_dll_get_node_at(uint32_t index, PlkDllNodeInfo* info);
+
+/**
  * 设置当前周期参数。
  */
 int plk_dll_set_cycle_param(const PlkCycleParam* param);

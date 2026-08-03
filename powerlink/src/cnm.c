@@ -187,6 +187,36 @@ int plk_cnm_app_ready(PlkCnm* cnm)
   return plk_cn_nmt_process(&cnm->sm, PLK_NMT_EVENT_ENTER_READY_TO_OPERATE);
 }
 
+/* 处理 IdentRequest：回发 IdentRes 宣告身份与 PDO 尺寸 */
+static void cnm_send_ident_response(PlkCnm* cnm, const PlkFrame* req)
+{
+  PlkFrame resp;
+  PlkIdentResponse ident;
+  uint8_t mcast[6];
+  uint16_t len;
+
+  memset(&ident, 0, sizeof(ident));
+  ident.flag2 = 0x18;                            /* PR | RS */
+  ident.nmtStatus = (uint8_t)(cnm->sm.state & 0xFF);
+  ident.powerlinkProfileVersion = PLK_PROFILE_VERSION;
+  ident.mtuLe = PLK_ASYNC_MTU;
+  ident.pollInSizeLe = cnm->pollInSize;
+  ident.pollOutSizeLe = cnm->pollOutSize;
+  ident.deviceTypeLe = 1;
+  ident.vendorIdLe = 0x00000001;
+  ident.productCodeLe = 0x00000001;
+  ident.revisionNumberLe = 0x00000100;
+  ident.serialNumberLe = 0x00000001;
+
+  plk_get_mcast_mac(PLK_MSG_ASND, mcast);
+  len = plk_build_asnd(&resp, cnm->mac, mcast, cnm->nodeId, req->srcNodeId,
+                       PLK_ASND_IDENT_RESPONSE, (const uint8_t*)&ident,
+                       sizeof(ident));
+  if (cnm->edrv != NULL && cnm->edrv->send != NULL) {
+    cnm->edrv->send(cnm->edrv, (const uint8_t*)&resp, len);
+  }
+}
+
 int plk_cnm_process_rx(PlkCnm* cnm, const uint8_t* raw, uint16_t len)
 {
   const PlkFrame* f;
@@ -209,6 +239,12 @@ int plk_cnm_process_rx(PlkCnm* cnm, const uint8_t* raw, uint16_t len)
       if (f->data.asnd.serviceId == PLK_ASND_NMT_COMMAND) {
         uint8_t cmd = f->data.asnd.payload.nmtCommandService.nmtCommandId;
         plk_cn_nmt_process(&cnm->sm, cnm_cmd_to_event(cmd));
+      } else if (f->data.asnd.serviceId == PLK_ASND_IDENT_RESPONSE) {
+        if (f->dstNodeId == cnm->nodeId ||
+            f->dstNodeId == PLK_ADR_BROADCAST ||
+            f->dstNodeId == 0) {
+          cnm_send_ident_response(cnm, f);
+        }
       } else if (f->data.asnd.serviceId == PLK_ASND_SDO) {
         if (f->dstNodeId == cnm->nodeId ||
             f->dstNodeId == PLK_ADR_BROADCAST ||

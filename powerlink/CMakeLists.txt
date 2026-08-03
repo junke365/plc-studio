@@ -19,6 +19,7 @@ add_library(plk_core STATIC
   src/sdo.c
   src/dll.c
   src/cnm.c
+  src/mn.c
 )
 target_include_directories(plk_core PUBLIC ${PLK_INCLUDE_DIR})
 set_target_properties(plk_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -67,3 +68,7 @@ add_test(NAME test_plk_core COMMAND test_plk_core)
 add_executable(test_plk_proto tests/test_plk_proto.c tests/edrv_loopback.c)
 target_link_libraries(test_plk_proto plk_core plk_edrv)
 add_test(NAME test_plk_proto COMMAND test_plk_proto)
+
+add_executable(test_mn tests/test_mn.c tests/edrv_loopback.c)
+target_link_libraries(test_mn plk_core plk_edrv)
+add_test(NAME test_mn COMMAND test_mn)

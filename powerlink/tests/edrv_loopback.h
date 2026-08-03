@@ -20,12 +20,17 @@ extern "C" {
 #endif
 
 #define PLK_LOOP_QUEUE_CAP 16   /* 每端口接收队列容量 */
+#define PLK_HUB_MAX_PORTS 8     /* hub 最大端口数 */
+
+typedef struct PlkEdrvHub PlkEdrvHub;
 
 typedef struct PlkEdrvLoopbackPort
 {
   PlkEdrv edrv;                  /* 公开的驱动接口 */
 
   struct PlkEdrvLoopbackPort* peer;  /* 对端端口（send 的目的） */
+  PlkEdrvHub* hub;               /* 非 NULL 表示 hub 模式（fanout） */
+  int hubIndex;                  /* 自身在 hub 中的索引 */
 
   uint8_t mac[6];                /* 本端口 MAC */
   uint16_t rxFilter;             /* 接收过滤器掩码 PLK_RX_FILTER_* */
@@ -62,6 +67,26 @@ int plk_edrv_loopback_inject(PlkEdrvLoopbackPort* p, const uint8_t* frame,
  */
 int plk_edrv_loopback_pop(PlkEdrvLoopbackPort* p, uint8_t* frame,
                           uint16_t cap, uint16_t* len);
+
+/**
+ * hub（fanout）模式：模拟共享以太网介质。
+ * 任一端口 send 会把帧广播到所有其他端口（按各端口接收过滤器过滤）。
+ * 用于 MN 多节点拓扑测试（1 台 MN 挂多台 CN）。
+ */
+struct PlkEdrvHub
+{
+  PlkEdrvLoopbackPort ports[PLK_HUB_MAX_PORTS];
+  int count;
+};
+
+/**
+ * 创建 hub：count 个端口共享介质。
+ * @param hub   hub 实例（内存由调用方提供）
+ * @param count 端口数 (1..PLK_HUB_MAX_PORTS)
+ * @param macs  各端口 MAC 数组（[count][6]）
+ */
+int plk_edrv_loopback_hub_create(PlkEdrvHub* hub, int count,
+                                 const uint8_t macs[][6]);
 
 #ifdef __cplusplus
 }

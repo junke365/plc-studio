@@ -84,10 +84,30 @@ static int loopbackSend(PlkEdrv* self, const uint8_t* frame, uint16_t len)
   PlkEdrvLoopbackPort* p = (PlkEdrvLoopbackPort*)self->priv;
   PlkEdrvLoopbackPort* peer;
   uint16_t category;
+  int i;
 
   if (p == NULL || frame == NULL) {
     return PLK_ERR_INVALID_PARAM;
   }
+
+  /* hub 模式：广播到除自己外的所有端口 */
+  if (p->hub != NULL) {
+    category = classify_frame(frame);
+    for (i = 0; i < p->hub->count; i++) {
+      PlkEdrvLoopbackPort* q = &p->hub->ports[i];
+
+      if (q == p) {
+        continue;
+      }
+      if ((q->rxFilter & category) != 0) {
+        if (loopback_enqueue(q, frame, len) != PLK_ERR_OK) {
+          return PLK_ERR_BUSY;
+        }
+      }
+    }
+    return PLK_ERR_OK;
+  }
+
   peer = p->peer;
   if (peer == NULL) {
     return PLK_ERR_LINK_DOWN;
@@ -227,5 +247,39 @@ int plk_edrv_loopback_pop(PlkEdrvLoopbackPort* p, uint8_t* frame,
   *len = p->queueLen[p->head];
   p->head = (p->head + 1) % PLK_LOOP_QUEUE_CAP;
   p->count--;
+  return PLK_ERR_OK;
+}
+
+int plk_edrv_loopback_hub_create(PlkEdrvHub* hub, int count,
+                                 const uint8_t macs[][6])
+{
+  int i;
+  PlkEdrvLoopbackPort* p;
+
+  if (hub == NULL || macs == NULL || count < 1 || count > PLK_HUB_MAX_PORTS) {
+    return PLK_ERR_INVALID_PARAM;
+  }
+
+  memset(hub, 0, sizeof(*hub));
+  hub->count = count;
+
+  for (i = 0; i < count; i++) {
+    p = &hub->ports[i];
+    p->peer = NULL;
+    p->hub = hub;
+    p->hubIndex = i;
+    memcpy(p->mac, macs[i], 6);
+    p->rxFilter = PLK_RX_FILTER_ALL;
+
+    p->edrv.priv = p;
+    p->edrv.init = loopbackInit;
+    p->edrv.exit = loopbackExit;
+    p->edrv.getMacAddr = loopbackGetMac;
+    p->edrv.send = loopbackSend;
+    p->edrv.setRxFilter = loopbackSetRxFilter;
+    p->edrv.setRxCallback = loopbackSetRxCallback;
+    p->edrv.linkState = loopbackLinkState;
+    p->edrv.poll = loopbackPoll;
+  }
   return PLK_ERR_OK;
 }
