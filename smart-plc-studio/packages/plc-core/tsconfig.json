@@ -17,11 +17,12 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@smart-plc/shared": ["../shared/src"],
-      "@smart-plc/shared/*": ["../shared/src/*"]
+      "@smart-plc/shared": ["../shared/dist"],
+      "@smart-plc/shared/*": ["../shared/dist/*"]
     }
   },
   "include": ["src/**/*.ts"],

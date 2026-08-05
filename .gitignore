@@ -16,3 +16,6 @@ CMakeFiles/
 *temp*.txt
 smart-plc-studio/packages/runtime/platform/SDL2-*-mingw.zip
 smart-plc-studio/third_party/
+# QEMU / ROS2 调试虚拟机镜像（不进 git，克隆后自行下载）
+noble-server-cloudimg-arm64.img
+*.qcow2

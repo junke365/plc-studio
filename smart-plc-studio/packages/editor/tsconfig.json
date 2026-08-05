@@ -21,10 +21,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@smart-plc/shared": ["../shared/src"],
-      "@smart-plc/shared/*": ["../shared/src/*"],
-      "@smart-plc/plc-core": ["../plc-core/src"],
-      "@smart-plc/plc-core/*": ["../plc-core/src/*"]
+      "@smart-plc/shared": ["../shared/dist"],
+      "@smart-plc/shared/*": ["../shared/dist/*"],
+      "@smart-plc/plc-core": ["../plc-core/dist"],
+      "@smart-plc/plc-core/*": ["../plc-core/dist/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "env.d.ts"],

@@ -1,5 +1,11 @@
-const API_BASE = '/api/tools'
-const WS_URL = `ws://${window.location.host}/ws/tools`
+// 开发模式由 Vite 代理转发到后端；Electron 打包后页面以 file:// 加载，
+// 此时直接连接本地 Fastify 后端 (127.0.0.1:3000)
+const isHttpPage =
+  window.location.protocol === "http:" || window.location.protocol === "https:";
+const API_ORIGIN = isHttpPage ? "" : "http://127.0.0.1:3000";
+const API_BASE = `${API_ORIGIN}/api/tools`;
+const WS_ORIGIN = isHttpPage ? `ws://${window.location.host}` : "ws://127.0.0.1:3000";
+const WS_URL = `${WS_ORIGIN}/ws/tools`;
 
 // ===== WebSocket 连接管理 =====
 let ws: WebSocket | null = null

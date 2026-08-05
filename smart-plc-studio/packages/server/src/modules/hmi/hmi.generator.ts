@@ -59,14 +59,6 @@ interface HmiProject {
 
 // ==================== 工具函数 ====================
 
-function hexColorToU32(hex?: string): string {
-  if (!hex) return '0xFFFFFFFF';
-  let c = hex.replace('#', '');
-  if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
-  if (c.length === 6) c = 'FF' + c;
-  return '0x' + c.toUpperCase();
-}
-
 function escapeCString(s: string): string {
   return s
     .replace(/\\/g, '\\\\')
@@ -147,7 +139,6 @@ export class HmiGenerator {
       for (let ei = 0; ei < form.elements.length; ei++) {
         const el = form.elements[ei];
         const cType = mapType(el.type);
-        const cName = toCName(el.label || el.text || el.type) + `_${ei}`;
 
         lines.push(`  /* ${el.label || el.text || el.type} */`);
         lines.push('  {');

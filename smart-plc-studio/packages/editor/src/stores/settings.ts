@@ -53,7 +53,7 @@ export const useSettingsStore = defineStore("settings", () => {
 
   const uart = reactive<UartSettings>(
     loadFromStorage<UartSettings>("uart", {
-      port: "COM1",
+      port: "",
       baudRate: 115200,
       dataBits: 8,
       stopBits: 1,
@@ -97,7 +97,7 @@ export const useSettingsStore = defineStore("settings", () => {
     debugMode.value = "uart"
     runtimeTarget.value = "stm32"
     Object.assign(uart, {
-      port: "COM1",
+      port: "",
       baudRate: 115200,
       dataBits: 8,
       stopBits: 1,

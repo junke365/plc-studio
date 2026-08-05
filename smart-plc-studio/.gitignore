@@ -1,0 +1,15 @@
+node_modules/
+packages/*/node_modules/
+packages/*/dist/
+packages/*/dist-server/
+packages/shared/src/**/*.js
+packages/shared/src/**/*.d.ts
+packages/shared/src/**/*.map
+packages/plc-core/src/**/*.js
+packages/plc-core/src/**/*.d.ts
+packages/plc-core/src/**/*.map
+*.tsbuildinfo
+release/
+electron/dist/
+.DS_Store
+*.log

@@ -4,6 +4,7 @@ import cesium from "vite-plugin-cesium";
 import { resolve } from "path";
 
 export default defineConfig({
+  base: "./",
   plugins: [
     vue(),
     cesium({

@@ -383,6 +383,83 @@
         </div>
       </div>
 
+      <!-- OpenCV5 视觉库 -->
+      <div class="lib-section" v-show="showSection('opencv5')">
+        <div class="section-title-bar" @click="toggleSection('opencv5')">
+          <span
+            class="material-symbols-outlined section-arrow"
+            :class="{ collapsed: !sectionExpanded.opencv5 }"
+            >expand_more</span
+          >
+          <span class="lib-section-title">OpenCV5 视觉</span>
+        </div>
+        <div v-show="sectionExpanded.opencv5">
+          <div
+            class="sub-section"
+            v-show="showSubSection('opencv5', 'camera')"
+          >
+            <div class="sub-title">相机</div>
+            <div class="lib-grid">
+              <div
+                v-for="item in filterItems(openCVCamera)"
+                :key="item.name"
+                class="lib-item"
+                draggable="true"
+                @dragstart="handleDragStart($event, item)"
+              >
+                <span class="material-symbols-outlined lib-icon">{{
+                  item.icon
+                }}</span>
+                <span class="lib-name">{{ item.name }}</span>
+                <span class="lib-desc">{{ item.desc }}</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="sub-section"
+            v-show="showSubSection('opencv5', 'filter')"
+          >
+            <div class="sub-title">图像处理</div>
+            <div class="lib-grid">
+              <div
+                v-for="item in filterItems(openCVFilter)"
+                :key="item.name"
+                class="lib-item"
+                draggable="true"
+                @dragstart="handleDragStart($event, item)"
+              >
+                <span class="material-symbols-outlined lib-icon">{{
+                  item.icon
+                }}</span>
+                <span class="lib-name">{{ item.name }}</span>
+                <span class="lib-desc">{{ item.desc }}</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="sub-section"
+            v-show="showSubSection('opencv5', 'analysis')"
+          >
+            <div class="sub-title">检测分析</div>
+            <div class="lib-grid">
+              <div
+                v-for="item in filterItems(openCVAnalysis)"
+                :key="item.name"
+                class="lib-item"
+                draggable="true"
+                @dragstart="handleDragStart($event, item)"
+              >
+                <span class="material-symbols-outlined lib-icon">{{
+                  item.icon
+                }}</span>
+                <span class="lib-name">{{ item.name }}</span>
+                <span class="lib-desc">{{ item.desc }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 第三方库 -->
       <div class="lib-section" v-show="showSection('thirdparty')">
         <div class="section-title-bar" @click="toggleSection('thirdparty')">
@@ -444,6 +521,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { VISION_LIB } from "./visionLib";
 
 const searchText = ref("");
 
@@ -1604,6 +1682,41 @@ const utilLibs: LibraryItem[] = [
   },
 ];
 
+// ========== OpenCV5 视觉库（与 FBD 内置库共享 visionLib.ts） ==========
+
+const openCVCamera: LibraryItem[] = VISION_LIB.filter((i) => i.category === "相机").map(
+  (i) => ({
+    name: i.name,
+    type: "functionBlock",
+    icon: i.icon,
+    category: i.category,
+    part: "opencv5",
+    desc: i.desc,
+  }),
+);
+
+const openCVFilter: LibraryItem[] = VISION_LIB.filter((i) => i.category === "图像处理").map(
+  (i) => ({
+    name: i.name,
+    type: "functionBlock",
+    icon: i.icon,
+    category: i.category,
+    part: "opencv5",
+    desc: i.desc,
+  }),
+);
+
+const openCVAnalysis: LibraryItem[] = VISION_LIB.filter((i) => i.category === "检测分析").map(
+  (i) => ({
+    name: i.name,
+    type: "functionBlock",
+    icon: i.icon,
+    category: i.category,
+    part: "opencv5",
+    desc: i.desc,
+  }),
+);
+
 // ========== 合并和搜索 ==========
 
 const allItems = computed(() => [
@@ -1625,6 +1738,9 @@ const allItems = computed(() => [
   ...dataTransferFBs,
   ...commLibs,
   ...utilLibs,
+  ...openCVCamera,
+  ...openCVFilter,
+  ...openCVAnalysis,
 ]);
 
 const totalCount = computed(() => allItems.value.length);
@@ -1636,6 +1752,7 @@ const sectionExpanded = ref({
   part4: false,
   part5: false,
   thirdparty: false,
+  opencv5: true,
 });
 
 function toggleSection(key: keyof typeof sectionExpanded.value) {

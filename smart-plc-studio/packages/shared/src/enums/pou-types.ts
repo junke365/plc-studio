@@ -52,7 +52,7 @@ export const VarClassInfos: Record<string, { varTable: string; item: number }> =
 
 // POU 类型映射
 export const PouTypeMap: Record<string, number> = {
-  program: ItemEditable.Program,
+  program: ItemUneditable.Program,
   functionBlock: ItemEditable.POU,
   function: ItemEditable.POU
 }
@@ -63,7 +63,7 @@ export const ClassTypeMap: Record<string, number> = {
   resource: ItemEditable.Resource,
   action: ItemEditable.Action,
   transition: ItemEditable.Transition,
-  program: ItemEditable.Program
+  program: ItemUneditable.Program
 }
 
 // 位置项

@@ -9,14 +9,39 @@
 
 import type { FastifyInstance } from 'fastify'
 import * as fs from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
 import { HmiGenerator } from './hmi.generator.js'
 
 const generator = new HmiGenerator()
 
-const PROJECT_ROOT = path.resolve(process.cwd(), '../..')
+// 兼容 CJS bundle(__dirname) 与 ESM(src/dist 的 import.meta.url) 两种运行形态
+function moduleDir(): string {
+  if (typeof __dirname !== 'undefined') return __dirname
+  return path.dirname(fileURLToPath(import.meta.url))
+}
+
+// 向上查找 workspace 根（含 workspaces 字段的 package.json），避免依赖启动 cwd
+function findProjectRoot(start: string): string {
+  let dir = start
+  for (let i = 0; i < 6; i++) {
+    try {
+      const pkgFile = path.join(dir, 'package.json')
+      if (existsSync(pkgFile)) {
+        const pkg = JSON.parse(readFileSync(pkgFile, 'utf8'))
+        if (pkg.workspaces) return dir
+      }
+    } catch {
+      /* 继续向上 */
+    }
+    dir = path.dirname(dir)
+  }
+  return path.resolve(process.cwd(), '../..')
+}
+
+const PROJECT_ROOT = findProjectRoot(moduleDir())
 const HMI_OUTPUT_DIR = path.resolve(PROJECT_ROOT, 'hmi-output')
 const RUNTIME_DIR = path.resolve(PROJECT_ROOT, 'packages/runtime')
 
@@ -737,14 +762,6 @@ function findLocalSDL2(projectRoot: string): string | null {
   return null
 }
 
-function findLocalLVGL(projectRoot: string): string | null {
-  const candidate = path.join(projectRoot, 'third_party', 'lvgl')
-  if (existsSync(path.join(candidate, 'CMakeLists.txt'))) {
-    return candidate
-  }
-  return null
-}
-
 function findLocalSDL2Dll(projectRoot: string): string | null {
   const sdls = findLocalSDL2(projectRoot)
   if (!sdls) return null
@@ -762,7 +779,7 @@ function findLocalSDL2Dll(projectRoot: string): string | null {
 /**
  * 生成 LVGL v9 PC 仿真 CMakeLists.txt
  */
-function generateLvglSimCMake(project: HmiProject, thirdPartyDir: string): string {
+function generateLvglSimCMake(project: HmiProject, _thirdPartyDir: string): string {
   const firstForm = project.forms[0] || { width: 800, height: 480 }
   const sw = firstForm.width
   const sh = firstForm.height
@@ -1234,7 +1251,7 @@ void app_main(void)
 `
 }
 
-function generateEsp32MainCMake(project: HmiProject): string {
+function generateEsp32MainCMake(_project: HmiProject): string {
   return `idf_component_register(
   SRCS
     "app_main.c"

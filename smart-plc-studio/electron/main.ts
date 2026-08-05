@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, session } from 'electron';
 import * as path from 'path';
 import { registerSerialHandlers, closeAllSerialPorts } from './serial/SerialManager';
 import { registerTcpHandlers, closeAllTcp } from './network/TcpManager';
@@ -7,7 +7,24 @@ import { registerWebSocketHandlers, closeAllWebSocket } from './network/WebSocke
 
 let mainWindow: BrowserWindow | null = null;
 
-function createWindow() {
+const isDev = process.env.ELECTRON_DEV === 'true';
+
+async function startBackendServer() {
+  try {
+    const serverMain = path.join(__dirname, '../../packages/server/dist-server/main.cjs');
+    console.log('[Electron] 启动后端服务器:', serverMain);
+    // 使用 require 加载（asar-aware），bundle 为 CJS 自包含产物
+    const mod = require(serverMain);
+    if (typeof mod.startServer === 'function') {
+      await mod.startServer();
+      console.log('[Electron] 后端服务器已就绪');
+    }
+  } catch (err) {
+    console.error('[Electron] 后端服务器启动失败:', (err as Error)?.message, err);
+  }
+}
+
+async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -21,7 +38,6 @@ function createWindow() {
     },
   });
 
-  const isDev = process.env.ELECTRON_DEV === 'true';
   console.log('[Electron] isDev:', isDev, '__dirname:', __dirname);
 
   if (isDev) {
@@ -57,8 +73,19 @@ registerTcpHandlers();
 registerUdpHandlers();
 registerWebSocketHandlers();
 
-app.whenReady().then(() => {
-  createWindow();
+app.whenReady().then(async () => {
+  // 允许渲染进程访问摄像头/麦克风（FBD 相机节点使用 getUserMedia）
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    if (permission === 'media' || permission.startsWith('media')) {
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
+  if (!isDev) {
+    await startBackendServer();
+  }
+  await createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();

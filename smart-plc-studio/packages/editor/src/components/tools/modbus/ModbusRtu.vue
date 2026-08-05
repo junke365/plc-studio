@@ -26,7 +26,7 @@ const running = ref(false)
 const frameIndex = ref(0)
 
 const connConfig = reactive({
-  port: 'COM1',
+  port: '',
   baudRate: 115200,
   station: 1,
 })
@@ -307,9 +307,12 @@ onUnmounted(() => {
     <div class="toolbar">
       <label class="toolbar-label">串口:</label>
       <select v-model="connConfig.port" class="select-sm">
-        <option v-if="serialPorts.length === 0" v-for="i in 8" :key="i" :value="'COM' + i">COM{{ i }}</option>
+        <option v-if="serialPorts.length === 0" value="" disabled>未检测到串口</option>
         <option v-for="p in serialPorts" :key="p.path" :value="p.path">{{ p.path }}</option>
       </select>
+      <button class="btn" title="刷新串口列表" @click="loadPorts">
+        <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+      </button>
       <label class="toolbar-label">波特率:</label>
       <select v-model.number="connConfig.baudRate" class="select-sm">
         <option v-for="br in baudRates" :key="br" :value="br">{{ br }}</option>

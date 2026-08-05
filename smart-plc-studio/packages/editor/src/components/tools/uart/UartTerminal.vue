@@ -3,7 +3,12 @@
     <div class="toolbar">
       <div class="toolbar-group">
         <label class="toolbar-label">串口:</label>
-        <input v-model="portPath" class="select-sm" style="width:80px" />
+        <select v-model="portPath" class="select-sm" style="width:120px">
+          <option v-if="portList.length === 0" value="" disabled>未检测到串口</option>
+          <option v-for="p in portList" :key="p.path" :value="p.path">
+            {{ p.path }}{{ p.manufacturer ? ' — ' + p.manufacturer : '' }}
+          </option>
+        </select>
       </div>
       <div class="toolbar-group">
         <select v-model="portConfig.baudRate" class="select-sm">
@@ -74,8 +79,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onUnmounted } from 'vue'
-import { serialOpen, serialClose, serialWrite, onSerialData, onSerialStatus, onSerialError, ensureWsConnected } from '@/serial/serialClient'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { serialOpen, serialClose, serialWrite, serialListPorts, onSerialData, onSerialStatus, onSerialError, ensureWsConnected, type PortInfo } from '@/serial/serialClient'
 
 interface TerminalLine { timestamp: string; type: 'rx' | 'tx'; data: string }
 
@@ -89,7 +94,8 @@ const inputFormat = ref<'ascii' | 'hex'>('ascii')
 const txCount = ref(0)
 const rxCount = ref(0)
 const terminalRef = ref<HTMLElement | null>(null)
-const portPath = ref('COM1')
+const portPath = ref('')
+const portList = ref<PortInfo[]>([])
 let cleanupData: (() => void) | null = null
 let cleanupStatus: (() => void) | null = null
 let cleanupError: (() => void) | null = null
@@ -181,6 +187,19 @@ function scrollToBottom() {
     nextTick(() => { if (terminalRef.value) terminalRef.value.scrollTop = terminalRef.value.scrollHeight })
   }
 }
+
+async function loadPorts() {
+  try {
+    portList.value = await serialListPorts()
+    if (portList.value.length > 0 && !portList.value.some((p) => p.path === portPath.value)) {
+      portPath.value = portList.value[0].path
+    }
+  } catch {
+    portList.value = []
+  }
+}
+
+onMounted(loadPorts)
 
 onUnmounted(() => {
   serialClose(portPath.value)

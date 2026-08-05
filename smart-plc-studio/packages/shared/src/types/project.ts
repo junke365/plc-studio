@@ -1,6 +1,6 @@
 // 项目结构类型定义
 
-import type { IecType } from './plc'
+import { VarClass } from '../enums/var-classes'
 
 // 项目分类
 export enum ProjectCategory {
@@ -17,16 +17,7 @@ export enum PouType {
 }
 
 // 变量类别
-export enum VarClass {
-  Local = 'Local',
-  Temp = 'Temp',
-  Input = 'Input',
-  Output = 'Output',
-  InOut = 'InOut',
-  External = 'External',
-  Global = 'Global',
-  Access = 'Access'
-}
+export { VarClass }
 
 // 变量定义
 export interface Variable {

@@ -6,14 +6,20 @@ directories:
 files:
   - electron/dist/**/*
   - packages/editor/dist/**/*
+  - packages/server/dist-server/**/*
+  - "!node_modules/@xpack-dev-tools/**"
   - "!node_modules/**/{test,__tests__,tests,powered-test,example,examples}"
 asar: true
+asarUnpack:
+  - "**/*.node"
+  - "node_modules/@serialport/**/*"
+  - "node_modules/better-sqlite3/**/*"
+npmRebuild: false
 win:
   target:
     - target: nsis
       arch:
         - x64
-  icon: electron/build/icon.ico
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
@@ -23,13 +29,18 @@ mac:
       arch:
         - x64
         - arm64
-  icon: electron/build/icon.icns
+  category: public.app-category.developer-tools
 linux:
   target:
     - target: AppImage
       arch:
         - x64
-  icon: electron/build
+        - arm64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+  category: Development
 extraResources:
   - from: packages/runtime
     to: runtime

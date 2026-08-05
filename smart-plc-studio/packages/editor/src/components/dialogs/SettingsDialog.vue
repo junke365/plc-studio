@@ -194,6 +194,11 @@ async function refreshPorts() {
   loadingPorts.value = true
   try {
     portList.value = await serialListPorts()
+    if (portList.value.length > 0 && !portList.value.some((p) => p.path === localUart.port)) {
+      localUart.port = portList.value[0].path
+    } else if (portList.value.length === 0) {
+      localUart.port = ""
+    }
   } catch {
     portList.value = []
   } finally {

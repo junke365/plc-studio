@@ -5,10 +5,10 @@ import { serialListPorts, serialOpen, serialClose, onSerialStatus, onSerialError
 interface SerialPortInfo { path: string; manufacturer?: string; serialNumber?: string }
 
 const portList = ref<SerialPortInfo[]>([])
-const config = reactive({ port: 'COM1', baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none', flowControl: 'none' })
+const config = reactive({ port: '', baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none', flowControl: 'none' })
 const advanced = reactive({ bufferSize: 4096, timeout: 1000, rts: false, dtr: false })
 const isOpen = ref(false)
-const selectedPort = ref('COM1')
+const selectedPort = ref('')
 const logMessages = ref<string[]>([])
 
 const baudRates = [1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 230400, 460800, 921600]
@@ -50,6 +50,10 @@ async function refreshPorts() {
   addLog('刷新串口列表...')
   const ports = await serialListPorts()
   portList.value = ports.map(p => ({ path: p.path, manufacturer: p.manufacturer, serialNumber: p.serialNumber }))
+  if (portList.value.length > 0 && !portList.value.some(p => p.path === config.port)) {
+    config.port = portList.value[0].path
+    selectedPort.value = config.port
+  }
   addLog(`发现 ${ports.length} 个串口`)
 }
 
@@ -109,6 +113,7 @@ onUnmounted(() => { if (cleanupStatus) cleanupStatus(); if (cleanupError) cleanu
             <div class="form-row">
               <label>串口:</label>
               <select v-model="config.port" class="select-sm">
+                <option v-if="portList.length === 0" value="" disabled>未检测到串口</option>
                 <option v-for="p in portList" :key="p.path" :value="p.path">
                   {{ p.path }}
                 </option>
