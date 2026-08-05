@@ -460,6 +460,35 @@
         </div>
       </div>
 
+      <!-- ROS 2 功能块 -->
+      <div class="lib-section" v-show="showSection('ros2')">
+        <div class="section-title-bar" @click="toggleSection('ros2')">
+          <span
+            class="material-symbols-outlined section-arrow"
+            :class="{ collapsed: !sectionExpanded.ros2 }"
+            >expand_more</span
+          >
+          <span class="lib-section-title">ROS 2 调试</span>
+        </div>
+        <div v-show="sectionExpanded.ros2">
+          <div class="lib-grid">
+            <div
+              v-for="item in filterItems(ros2Items)"
+              :key="item.name"
+              class="lib-item"
+              draggable="true"
+              @dragstart="handleDragStart($event, item)"
+            >
+              <span class="material-symbols-outlined lib-icon">{{
+                item.icon
+              }}</span>
+              <span class="lib-name">{{ item.name }}</span>
+              <span class="lib-desc">{{ item.desc }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 第三方库 -->
       <div class="lib-section" v-show="showSection('thirdparty')">
         <div class="section-title-bar" @click="toggleSection('thirdparty')">
@@ -522,6 +551,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { VISION_LIB } from "./visionLib";
+import { ROS2_LIB } from "./ros2Lib";
 
 const searchText = ref("");
 
@@ -1717,6 +1747,17 @@ const openCVAnalysis: LibraryItem[] = VISION_LIB.filter((i) => i.category === "�
   }),
 );
 
+// ========== ROS 2 功能块（与 FBD 内置库共享 ros2Lib.ts） ==========
+
+const ros2Items: LibraryItem[] = ROS2_LIB.map((i) => ({
+  name: i.name,
+  type: "functionBlock",
+  icon: i.icon,
+  category: i.category,
+  part: "ros2",
+  desc: i.desc,
+}));
+
 // ========== 合并和搜索 ==========
 
 const allItems = computed(() => [
@@ -1741,6 +1782,7 @@ const allItems = computed(() => [
   ...openCVCamera,
   ...openCVFilter,
   ...openCVAnalysis,
+  ...ros2Items,
 ]);
 
 const totalCount = computed(() => allItems.value.length);
@@ -1753,6 +1795,7 @@ const sectionExpanded = ref({
   part5: false,
   thirdparty: false,
   opencv5: true,
+  ros2: true,
 });
 
 function toggleSection(key: keyof typeof sectionExpanded.value) {

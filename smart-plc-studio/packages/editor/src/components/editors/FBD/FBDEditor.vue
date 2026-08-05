@@ -298,6 +298,20 @@
             </div>
           </div>
         </div>
+        <div class="lib-section">
+          <div class="section-label">ROS 2</div>
+          <div class="lib-items">
+            <div
+              class="lib-item"
+              draggable="true"
+              v-for="it in fbdRos2LibItems"
+              :key="it.name"
+              @dragstart="onLibDrag($event, it.name)"
+            >
+              <span class="lib-icon">{{ it.emoji }}</span><span>{{ it.label }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -372,7 +386,7 @@
             class="prop-row"
             v-if="
               selectedNode.data?.label !== undefined &&
-              !['fbdVision', 'fbdCamera', 'fbdImageView'].includes(
+              !['fbdVision', 'fbdCamera', 'fbdImageView', 'fbdRos2'].includes(
                 selectedNode.type,
               )
             "
@@ -421,8 +435,8 @@
               placeholder="值"
             />
           </div>
-          <template v-if="selectedNode && visionParamList.length">
-            <div class="prop-row" v-for="p in visionParamList" :key="p.key">
+          <template v-if="selectedNode && nodeParamList.length">
+            <div class="prop-row" v-for="p in nodeParamList" :key="p.key">
               <span class="prop-label">{{ p.label }}</span>
               <template v-if="p.type === 'select'">
                 <select
@@ -480,6 +494,32 @@
                   "
                 />
               </template>
+              <template v-else-if="p.type === 'text' || p.type === 'textarea'">
+                <textarea
+                  v-if="p.type === 'textarea'"
+                  rows="3"
+                  class="prop-input prop-textarea"
+                  :value="(selectedNode.data?.params || {})[p.key] ?? p.default"
+                  @input="
+                    updateNodeParam(
+                      p.key,
+                      ($event.target as HTMLTextAreaElement).value,
+                    )
+                  "
+                ></textarea>
+                <input
+                  v-else
+                  class="prop-input"
+                  :value="(selectedNode.data?.params || {})[p.key] ?? p.default"
+                  @input="
+                    updateNodeParam(
+                      p.key,
+                      ($event.target as HTMLInputElement).value,
+                    )
+                  "
+                  placeholder="值"
+                />
+              </template>
               <template v-else>
                 <input
                   type="number"
@@ -499,6 +539,10 @@
             <div class="prop-hint" v-if="selectedNode.type === 'fbdVision'">
               输入引脚连上信号源（相机/常量）后自动处理；IMAGE 引脚接收图像。
             </div>
+            <div class="prop-hint" v-if="selectedNode.type === 'fbdRos2'">
+              ROS2 块走后端执行：发布/调服务用 /api/ros2，订阅用 /ws/ros2 实时转发；
+              需要 ROS 2 环境已连接（可先到 工具 → ROS 2 调试 查看状态）。
+            </div>
           </template>
           <button class="delete-btn" @click="deleteSelected">
             <span class="material-symbols-outlined">delete</span>删除节点
@@ -517,6 +561,7 @@ import {
   reactive,
   onMounted,
   onBeforeUnmount,
+  onUnmounted,
   nextTick,
   markRaw,
   h,
@@ -540,6 +585,12 @@ import {
   type VisionOp,
 } from "../../../api/vision";
 import { VISION_LIB } from "../../library/visionLib";
+import { ROS2_LIB } from "../../library/ros2Lib";
+import {
+  ros2Publish,
+  ros2Call,
+  ROS2_WS_URL,
+} from "../../../api/ros2";
 
 // ========== 功能块引脚定义 ==========
 
@@ -602,6 +653,10 @@ const FB_PINS: Record<string, { inputs: string[]; outputs: string[] }> = {
   VISION_HOUGH_LINES: { inputs: ["EN", "IMAGE"], outputs: ["ENO", "OUT", "COUNT"] },
   VISION_HOUGH_CIRCLES: { inputs: ["EN", "IMAGE"], outputs: ["ENO", "OUT", "COUNT"] },
   VISION_YOLO26: { inputs: ["EN", "IMAGE"], outputs: ["ENO", "OUT", "COUNT", "BOXES"] },
+  // ROS 2 功能块
+  ROS2_PUBLISH: { inputs: ["EN", "TOPIC"], outputs: ["ENO", "DONE", "COUNT"] },
+  ROS2_SUBSCRIBE: { inputs: ["EN"], outputs: ["ENO", "DATA", "AVAIL", "COUNT"] },
+  ROS2_SERVICE: { inputs: ["EN"], outputs: ["ENO", "DONE", "RESP", "CODE"] },
 };
 
 // ========== OpenCV5 视觉信号流 ==========
@@ -611,6 +666,8 @@ const FB_PINS: Record<string, { inputs: string[]; outputs: string[] }> = {
 const visionSignals = reactive<Record<string, any>>({});
 // 参数修改后触发对应节点重新处理
 const visionBump = reactive<Record<string, number>>({});
+// ROS2 参数修改后触发对应节点重新执行/重新订阅
+const ros2Bump = reactive<Record<string, number>>({});
 
 function looksLikeImage(v: any): boolean {
   return (
@@ -650,7 +707,7 @@ function emitVisionSignal(nodeId: string, pinName: string, value: any) {
 interface VisionParamDef {
   key: string;
   label: string;
-  type: "number" | "select" | "image" | "bool";
+  type: "number" | "select" | "image" | "bool" | "text" | "textarea";
   default?: any;
   options?:
     | Array<{ value: string; label: string }>
@@ -1088,6 +1145,46 @@ const VISION_CFG: Record<string, VisionNodeCfg> = {
   },
 };
 
+// ========== ROS 2 功能块 ==========
+
+function isRos2Type(t: string): boolean {
+  return typeof t === "string" && t.startsWith("ROS2_");
+}
+
+const ROS2_FRIENDLY: Record<string, string> = {
+  ROS2_PUBLISH: "ROS2 发布",
+  ROS2_SUBSCRIBE: "ROS2 订阅",
+  ROS2_SERVICE: "ROS2 调服务",
+};
+
+const ROS2_PARAMS: Record<string, VisionParamDef[]> = {
+  ROS2_PUBLISH: [
+    { key: "topic", label: "话题", type: "text", default: "/chatter" },
+    { key: "type", label: "类型", type: "text", default: "std_msgs/msg/String" },
+    { key: "message", label: "消息(JSON)", type: "textarea", default: '{"data": "hello"}' },
+  ],
+  ROS2_SUBSCRIBE: [
+    { key: "topic", label: "话题", type: "text", default: "/chatter" },
+  ],
+  ROS2_SERVICE: [
+    { key: "service", label: "服务", type: "text", default: "/set_bool" },
+    { key: "type", label: "类型", type: "text", default: "std_srvs/srv/SetBool" },
+    { key: "request", label: "请求(JSON)", type: "textarea", default: '{"data": true}' },
+  ],
+};
+
+function defaultRos2Params(fbdType: string): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const def of ROS2_PARAMS[fbdType] || []) out[def.key] = def.default;
+  return out;
+}
+
+function emitRos2Outputs(nodeId: string, data: any, out: Record<string, any>) {
+  for (const name of data?.outputs || []) {
+    if (name in out) emitVisionSignal(nodeId, name, out[name]);
+  }
+}
+
 function emitVisionNumericOutputs(nodeId: string, data: any, results: any) {
   const outputs = (data?.outputs || []) as string[];
   const m = results?.templateMatches?.[0];
@@ -1484,6 +1581,226 @@ const VisionProcessNode = defineComponent({
   },
 });
 
+// ROS 2 功能块节点：发布 / 订阅 / 调服务
+const Ros2ProcessNode = defineComponent({
+  props: ["id", "data", "selected"],
+  setup(props) {
+    const status = ref("");
+    const busy = ref(false);
+    let ws: WebSocket | null = null;
+    let alive = false;
+    let count = 0;
+
+    const typeKey = computed(() => visionTypeKey(props.data) || "ROS2_PUBLISH");
+
+    function params() {
+      return props.data?.params || {};
+    }
+
+    function setOut(name: string, value: any) {
+      const out = (props.data?.outputs || []) as string[];
+      if (out.includes(name)) emitVisionSignal(props.id, name, value);
+    }
+
+    function setDone(ok: boolean, extra?: Record<string, any>) {
+      setOut("ENO", ok ? 1 : 0);
+      setOut("DONE", ok ? 1 : 0);
+      if (extra) {
+        for (const k of Object.keys(extra)) setOut(k, extra[k]);
+      }
+    }
+
+    async function run() {
+      if (busy.value) return;
+      const p = params();
+      const topic = visionSignals[`${props.id}:TOPIC`] || p.topic;
+      if (typeKey.value === "ROS2_PUBLISH") {
+        if (!topic) { status.value = "请配置话题"; return; }
+        if (!p.type) { status.value = "请配置类型"; return; }
+        let msg: Record<string, unknown>;
+        try {
+          msg = JSON.parse(p.message || "{}");
+        } catch {
+          status.value = "消息 JSON 解析失败";
+          return;
+        }
+        busy.value = true;
+        try {
+          const r = await ros2Publish(topic, p.type, msg);
+          if (r.success) {
+            count++;
+            setDone(true, { COUNT: count });
+            status.value = `已发布 ${topic} (${count}次)`;
+          } else {
+            setDone(false);
+            status.value = `发布失败: ${r.error}`;
+          }
+        } catch (e: any) {
+          setDone(false);
+          status.value = "发布异常: " + (e?.message || String(e));
+        } finally {
+          busy.value = false;
+        }
+      } else if (typeKey.value === "ROS2_SERVICE") {
+        const svc = p.service;
+        if (!svc) { status.value = "请配置服务"; return; }
+        if (!p.type) { status.value = "请配置类型"; return; }
+        let req: Record<string, unknown>;
+        try {
+          req = JSON.parse(p.request || "{}");
+        } catch {
+          status.value = "请求 JSON 解析失败";
+          return;
+        }
+        busy.value = true;
+        try {
+          const r = await ros2Call(svc, p.type, req);
+          if (r.success) {
+            setDone(true, { RESP: String(r.data ?? ""), CODE: 0 });
+            status.value = "服务调用成功";
+          } else {
+            setDone(false, { CODE: 1 });
+            status.value = `调用失败: ${r.error}`;
+          }
+        } catch (e: any) {
+          setDone(false, { CODE: 1 });
+          status.value = "调用异常: " + (e?.message || String(e));
+        } finally {
+          busy.value = false;
+        }
+      }
+    }
+
+    // 订阅：WS 实时转发
+    function startSubscribe() {
+      stopSubscribe();
+      const topic = params().topic;
+      if (!topic) { status.value = "请配置话题"; return; }
+      alive = true;
+      status.value = `订阅 ${topic} ...`;
+      try {
+        ws = new WebSocket(ROS2_WS_URL);
+      } catch (e: any) {
+        status.value = "WS 连接失败: " + (e?.message || String(e));
+        return;
+      }
+      ws.onopen = () => {
+        try { ws!.send(JSON.stringify({ type: "subscribe", topic })) } catch {}
+      };
+      ws.onmessage = (e) => {
+        try {
+          const { event, data } = JSON.parse(e.data);
+          if (event === "message" && data?.topic === topic) {
+            count++;
+            setOut("DATA", data.payload);
+            setOut("AVAIL", 1);
+            setOut("COUNT", count);
+            setOut("ENO", 1);
+            status.value = `已收 ${count} 条`;
+          } else if (event === "error") {
+            status.value = `WS: ${data}`;
+          } else if (event === "subscribed") {
+            status.value = `订阅中 ${data}`;
+          }
+        } catch {}
+      };
+      ws.onclose = () => {
+        if (alive) setTimeout(() => { if (alive) startSubscribe() }, 2000);
+      };
+    }
+
+    function stopSubscribe() {
+      alive = false;
+      try {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "unsubscribe", topic: params().topic }));
+        }
+      } catch {}
+      try { ws?.close() } catch {}
+      ws = null;
+    }
+
+    // 发布/服务：EN 输入变化时执行
+    watch(
+      () => {
+        const inputs = (props.data?.inputs || []) as string[];
+        return inputs.map((p: string) => visionSignals[`${props.id}:${p}`]);
+      },
+      () => {
+        if (typeKey.value === "ROS2_SUBSCRIBE") return;
+        if (visionSignals[`${props.id}:EN`]) run();
+      },
+      { immediate: true },
+    );
+
+    // 参数被属性面板修改后重新执行/重新订阅
+    watch(
+      () => ros2Bump[props.id as string] || 0,
+      () => {
+        if (typeKey.value === "ROS2_SUBSCRIBE") startSubscribe();
+        else run();
+      },
+    );
+
+    onMounted(() => {
+      if (typeKey.value === "ROS2_SUBSCRIBE") startSubscribe();
+    });
+
+    onUnmounted(() => {
+      stopSubscribe();
+    });
+
+    return () => {
+      const label = props.data?.label || ROS2_FRIENDLY[typeKey.value] || "ROS2";
+      const inputs = (props.data?.inputs || []) as string[];
+      const outputs = (props.data?.outputs || []) as string[];
+      const maxPins = Math.max(inputs.length, outputs.length);
+      const bodyH = Math.max(52, maxPins * 22 + 20);
+      return h("div", { class: "fbd-node fbd-ros2", style: { width: "210px" } }, [
+        h("div", { class: "fbd-block-header" }, [
+          label,
+          busy.value ? " (执行中...)" : "",
+        ]),
+        h("div", { class: "fbd-block-body", style: { minHeight: bodyH + "px" } }, [
+          h(
+            "div",
+            { class: "fbd-block-pins-left" },
+            inputs.map((name: string, i: number) =>
+              h("div", { class: "fbd-pin-row", key: "i" + i }, [
+                h(Handle, {
+                  type: "target",
+                  position: Position.Left,
+                  id: "in-" + i,
+                  style: { top: (i + 1) * 22 + 8 + "px" },
+                }),
+                h("span", { class: "fbd-pin-label" }, name),
+              ]),
+            ),
+          ),
+          h(
+            "div",
+            { class: "fbd-block-pins-right" },
+            outputs.map((name: string, i: number) =>
+              h("div", { class: "fbd-pin-row", key: "o" + i }, [
+                h("span", { class: "fbd-pin-label" }, name),
+                h(Handle, {
+                  type: "source",
+                  position: Position.Right,
+                  id: "out-" + i,
+                  style: { top: (i + 1) * 22 + 8 + "px" },
+                }),
+              ]),
+            ),
+          ),
+        ]),
+        status.value
+          ? h("div", { class: "fbd-ros2-status" }, status.value)
+          : null,
+      ]);
+    };
+  },
+});
+
 const nodeTypes = {
   fbdBlock: markRaw(FunctionBlockNode),
   fbdVarIn: markRaw(VariableInNode),
@@ -1492,6 +1809,7 @@ const nodeTypes = {
   fbdCamera: markRaw(CameraNode),
   fbdImageView: markRaw(ImageViewNode),
   fbdVision: markRaw(VisionProcessNode),
+  fbdRos2: markRaw(Ros2ProcessNode),
 };
 
 const defaultEdgeOptions = {
@@ -1570,6 +1888,16 @@ function normalizeVisionNode(n: any): any {
       ...(merged.data.params || {}),
     };
   }
+  if (isRos2Type(typeKey)) {
+    merged.data.fbdType = merged.data.fbdType || typeKey;
+    const pins = FB_PINS[typeKey] || { inputs: [], outputs: [] };
+    merged.data.inputs = merged.data.inputs?.length ? merged.data.inputs : [...pins.inputs];
+    merged.data.outputs = merged.data.outputs?.length ? merged.data.outputs : [...pins.outputs];
+    merged.data.params = {
+      ...defaultRos2Params(typeKey),
+      ...(merged.data.params || {}),
+    };
+  }
   return merged;
 }
 
@@ -1616,8 +1944,11 @@ function onDrop(event: DragEvent) {
       createNode(item.fbdType, position.x, position.y);
       return;
     }
-    // 全局库管理器：OpenCV5 视觉项以 VISION_ 开头
-    if (typeof item.name === "string" && item.name.startsWith("VISION_")) {
+    // 全局库管理器：OpenCV5 视觉项以 VISION_ 开头，ROS 2 项以 ROS2_ 开头
+    if (
+      typeof item.name === "string" &&
+      (item.name.startsWith("VISION_") || item.name.startsWith("ROS2_"))
+    ) {
       createNode(item.name, position.x, position.y);
     }
   } catch {
@@ -1668,6 +1999,17 @@ function createNode(fbdType: string, x: number, y: number) {
       inputs: [...pins.inputs],
       outputs: [...pins.outputs],
       params: defaultVisionParams(fbdType),
+    };
+  } else if (isRos2Type(fbdType)) {
+    // ROS 2 功能块：发布 / 订阅 / 调服务
+    nodeType = "fbdRos2";
+    const pins = FB_PINS[fbdType] || { inputs: ["EN"], outputs: ["ENO"] };
+    data = {
+      label: fbdType,
+      fbdType,
+      inputs: [...pins.inputs],
+      outputs: [...pins.outputs],
+      params: defaultRos2Params(fbdType),
     };
   } else {
     // 功能块（含 OpenCV5 视觉功能块）
@@ -1799,9 +2141,11 @@ function updateNodeProp(key: string, value: string) {
 // ========== OpenCV5 视觉节点属性 ==========
 
 const fbdVisionLibItems = VISION_LIB;
+const fbdRos2LibItems = ROS2_LIB;
 
-const visionParamList = computed(() => {
-  return VISION_PARAMS[visionTypeKey(selectedNode.value?.data)] || [];
+const nodeParamList = computed(() => {
+  const typeKey = visionTypeKey(selectedNode.value?.data);
+  return VISION_PARAMS[typeKey] || ROS2_PARAMS[typeKey] || [];
 });
 
 function updateNodeParam(key: string, value: any) {
@@ -1817,6 +2161,9 @@ function updateNodeParam(key: string, value: any) {
   saveData();
   if (VISION_CFG[visionTypeKey(selectedNode.value.data)]) {
     visionBump[id] = (visionBump[id] || 0) + 1;
+  }
+  if (isRos2Type(visionTypeKey(selectedNode.value.data))) {
+    ros2Bump[id] = (ros2Bump[id] || 0) + 1;
   }
 }
 
@@ -2116,6 +2463,30 @@ watch(
   background: var(--surface-container-high);
   border-top: 1px solid var(--outline-variant);
   word-break: break-all;
+}
+
+/* ROS 2 功能块节点 */
+.fbd-ros2 {
+  display: flex;
+  flex-direction: column;
+  background: #0f1b2e;
+  border-color: var(--tertiary-container);
+  overflow: hidden;
+}
+
+.fbd-ros2-status {
+  padding: 3px 6px;
+  font-size: 10px;
+  color: var(--on-surface-variant);
+  background: var(--surface-container-high);
+  border-top: 1px solid var(--outline-variant);
+  word-break: break-all;
+}
+
+/* 属性面板多行文本 */
+.prop-textarea {
+  resize: vertical;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* 属性面板提示 */
