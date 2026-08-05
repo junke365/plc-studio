@@ -309,6 +309,11 @@ const submenuItems = computed<Record<string, MenuItem[]>>(() => ({
     { label: "运动轨迹图表", action: () => openToolPanel("motion-chart") },
     { label: "扭矩/速度监控", action: () => openToolPanel("torque-monitor") },
   ],
+
+  // ROS 2 调试子菜单
+  ros2Debug: [
+    { label: "ROS 2 调试面板", action: () => openToolPanel("ros2-debug") },
+  ],
 }));
 
 // ==================== 编辑菜单 ====================
@@ -494,6 +499,11 @@ const toolsMenuEntries: MenuItem[] = [
     label: "电机调试",
     arrow: true,
     submenu: "motorDebug",
+  },
+  {
+    label: "ROS 2 调试",
+    arrow: true,
+    submenu: "ros2Debug",
   },
   { divider: true, label: "" },
   {
@@ -965,6 +975,7 @@ function openToolPanel(toolId: string) {
     "vfd-debug": "变频器调试",
     "motion-chart": "运动轨迹图表",
     "torque-monitor": "扭矩/速度监控",
+    "ros2-debug": "ROS 2 调试面板",
   };
   const toolName = toolNames[toolId] || toolId;
   debugStore.addLog("info", `打开工具: ${toolName}`);

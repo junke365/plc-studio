@@ -49,6 +49,8 @@ const toolMap: Record<string, ReturnType<typeof defineAsyncComponent>> = {
   'vfd-debug': defineAsyncComponent(() => import('../components/tools/motor/VfdDebug.vue')),
   'motion-chart': defineAsyncComponent(() => import('../components/tools/motor/MotionChart.vue')),
   'torque-monitor': defineAsyncComponent(() => import('../components/tools/motor/TorqueMonitor.vue')),
+  // ROS 2 调试工具
+  'ros2-debug': defineAsyncComponent(() => import('../components/tools/ros2/Ros2Debug.vue')),
 };
 
 const toolComponent = computed(() => toolMap[props.toolId] || null);
