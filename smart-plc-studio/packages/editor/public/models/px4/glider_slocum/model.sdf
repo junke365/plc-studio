@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!-- Without plugins -->
+<sdf version="1.6">
+  <model name="glider_slocum">
+    <static>false</static>
+    <link name="base_link">
+      <visual name="base_link_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1.0 1.0 1.0</scale>
+            <uri>model://glider_slocum/mesh/Slocum-Glider.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="base_link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1.0 1.0 1.0</scale>
+            <uri>model://glider_slocum/mesh/COLLISION-Slocum-Glider.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>69.25</mass>
+          <inertia>
+              <ixx>10</ixx>
+              <ixy>0</ixy>
+              <ixz>0</ixz>
+              <iyy>10</iyy>
+              <iyz>0</iyz>
+              <izz>10</izz>
+          </inertia>
+      </inertial>
+    </link>
+    <link name='battery_link'>
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-05</iyy>
+          <iyz>0</iyz>
+          <izz>1e-05</izz>
+        </inertia>
+      </inertial>
+      <battery name='battery'>
+        <voltage>4.2</voltage>
+      </battery>
+    </link>
+    <joint name='battery_joint' type='fixed'>
+      <pose>0 0 0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>battery_link</child>
+    </joint>
+    <link name="propeller_link">
+      <visual name="propeller_link_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1.0 1.0 1.0</scale>
+            <uri>model://glider_slocum/mesh/Slocum-Glider-Propeller.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <inertia>
+              <ixx>0.1</ixx>
+              <ixy>0</ixy>
+              <ixz>0</ixz>
+              <iyy>0.1</iyy>
+              <iyz>0</iyz>
+              <izz>0.1</izz>
+          </inertia>
+          <mass>0.5</mass>
+      </inertial>
+    </link>
+    <joint name="propeller_joint" type="revolute">
+        <pose>0 0 0 0 0 0</pose>
+        <parent>base_link</parent>
+        <child>propeller_link</child>
+        <axis>
+            <xyz>0 1 0</xyz>
+        </axis>
+    </joint>
+
+  </model>
+</sdf>

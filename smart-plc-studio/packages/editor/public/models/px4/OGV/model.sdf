@@ -1,0 +1,260 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="NUS_SEDS_OMNIDIRECTIONAL_GROUND_VEHICLE">
+    <static>true</static>
+    <link name="base_link">
+      <visual name= "Body_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>Body</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "AxelFR_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelFR</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "WheelFR_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>WheelFR</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "AxelBR_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelBR</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "WheelBR_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>WheelBR</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "AxelFL_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelFL</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "WheelFL_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>WheelFL</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "AxelBL_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelBL</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+      <visual name= "WheelBL_visual">
+        <geometry>
+          <mesh>
+            <uri>model://OGV/meshes/ogv.dae</uri>
+            <submesh>
+              <name>WheelBL</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0</diffuse>
+          <specular>1.0 1.0 1.0</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://OGV/materials/textures/OGV_Albedo.jpg</albedo_map>
+              <metal_map>model://OGV/materials/textures/OGV_Metalness.jpg</metal_map>
+              <roughness_map>model://OGV/materials/textures/OGV_Roughness.jpg</roughness_map>
+            </metal>
+          </pbr>
+          <!-- fallback to script if no PBR support-->
+          <script>
+            <uri>model://OGV/materials/scripts/</uri>
+            <uri>model://OGV/materials/textures/</uri>
+            <name>UrbanTile/OGV_Diffuse</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

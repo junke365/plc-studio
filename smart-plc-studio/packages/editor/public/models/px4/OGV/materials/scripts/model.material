@@ -1,0 +1,118 @@
+
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }
+material UrbanTile/OGV_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture OGV_Albedo.jpg
+        }
+      }
+    }
+  }

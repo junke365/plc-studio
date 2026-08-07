@@ -1,0 +1,24 @@
+{
+  "models": [
+    { "id": "x500", "name": "x500 四旋翼", "cat": "multirotor", "desc": "NXP HoverGames 无人机开发套件 (PX4)" },
+    { "id": "parrot_bebop_2", "name": "Parrot Bebop 2", "cat": "multirotor", "desc": "消费级四旋翼" },
+    { "id": "M100", "name": "Cerberus M100 侦察无人机", "cat": "multirotor", "desc": "多旋翼侦察平台" },
+    { "id": "kolibri", "name": "Cerberus Kolibri", "cat": "multirotor", "desc": "小型多旋翼" },
+    { "id": "csiro_data61_dtr", "name": "CSIRO DTR 侦察无人机", "cat": "multirotor", "desc": "CSIRO 尾座式侦察无人机" },
+    { "id": "advanced_plane", "name": "Advanced Plane 固定翼", "cat": "fixedwing", "desc": "固定翼无人机" },
+    { "id": "standard_vtol", "name": "Standard VTOL", "cat": "fixedwing", "desc": "垂直起降固定翼" },
+    { "id": "hatchback", "name": "Hatchback 无人车", "cat": "ground", "desc": "轿车外形无人地面车" },
+    { "id": "OGV", "name": "NUS 全向地面车", "cat": "ground", "desc": "新加坡国立大学全向轮无人车" },
+    { "id": "explorer_r2", "name": "Explorer R2 轮式无人车", "cat": "ground", "desc": "R2 轮式 UGV (Team Explorer)" },
+    { "id": "vessel_a", "name": "Vessel E 无人船", "cat": "water", "desc": "水面无人艇" },
+    { "id": "vessel_f", "name": "Vessel F 无人船", "cat": "water", "desc": "水面无人艇" },
+    { "id": "glider_slocum", "name": "Slocum 水下滑翔机", "cat": "water", "desc": "Teledyne Slocum 水下滑翔机" },
+    { "id": "glider_hybrid_whoi", "name": "WHOI 混合滑翔机", "cat": "water", "desc": "Woods Hole 混合动力水下滑翔机" }
+  ],
+  "worlds": [
+    { "id": "forest", "dir": "worlds/Forest_with_X4_hexarotor", "name": "森林场景 (X4 六旋翼)", "sky": "#9fc5b0", "ground": "#4a6b4a", "desc": "室外森林环境" },
+    { "id": "living_room", "dir": "worlds/living_room", "name": "客厅", "sky": "#2e2a26", "ground": "#8a6f52", "desc": "室内客厅环境" },
+    { "id": "rubicon", "dir": "worlds/Rubicon_World", "name": "Rubicon 挑战场", "sky": "#a8b8c8", "ground": "#9c8a6b", "desc": "室外军事竞赛场地" },
+    { "id": "tugbot_depot", "dir": "worlds/tugbot_depot", "name": "仓库 (tugbot)", "sky": "#25282d", "ground": "#5a5f66", "desc": "室内仓库环境" }
+  ]
+}

@@ -47,7 +47,11 @@ if [ ! -f "$IMG" ]; then
 fi
 
 # ---------- 3. 数据盘 ----------
-[ -f "$DISK" ] || qemu-img create -f qcow2 "$DISK" "$DISK_SIZE"
+if [ ! -f "$DISK" ]; then
+  echo "==> 从镜像初始化磁盘 (首次约1-2分钟)..."
+  qemu-img convert -O qcow2 "$IMG" "$DISK"
+  qemu-img resize "$DISK" "$DISK_SIZE"
+fi
 
 # ---------- 4. cloud-init 种子盘(初始化用户 + 自动装 ROS2) ----------
 if [ ! -f "$SEED_ISO" ]; then
@@ -76,7 +80,7 @@ runcmd:
   - echo "source /opt/ros/jazzy/setup.bash" >> /home/ros/.bashrc
 EOF
   printf 'instance-id: plc-ros2\nlocal-hostname: plc-ros2\n' > "$SEED_DIR/meta-data"
-  if hdiutil makehybrid -iso -joliet -o "$SEED_ISO" -volname cidata "$SEED_DIR" 2>/dev/null; then
+  if hdiutil makehybrid -iso -joliet -iso-volume-name cidata -joliet-volume-name cidata -o "$SEED_ISO" "$SEED_DIR" 2>/dev/null; then
     :
   elif genisoimage -o "$SEED_ISO" -volid cidata -joliet -rock "$SEED_DIR" 2>/dev/null; then
     :
@@ -87,17 +91,32 @@ EOF
 fi
 
 # ---------- 5. 启动 ----------
-BOOT_OPTS=()
+BIOS="${BIOS:-/opt/homebrew/share/qemu/edk2-aarch64-code.fd}"
+BOOT_OPTS=(-cdrom "$SEED_ISO")
 if [ "${1:-}" = "first-boot" ]; then
-  BOOT_OPTS=(-cdrom "$SEED_ISO" -boot d)
+  BOOT_OPTS=(-cdrom "$SEED_ISO")
 fi
+
+# 宿主端口空闲才转发(避免与本地已启动的 Vite/后端冲突)
+hostfwd_args="tcp::2222-:22"
+port_in_use() { nc -z localhost "$1" >/dev/null 2>&1; }
+for hp in 9090:9090 3000:3000 5173:5173; do
+  host_port="${hp%%:*}"
+  vm_port="${hp##*:}"
+  if port_in_use "$host_port"; then
+    echo "!! 宿主端口 $host_port 已被占用, 跳过转发 VM:$vm_port (可关闭占用进程后重启 VM 生效)"
+  else
+    hostfwd_args="$hostfwd_args,hostfwd=tcp::$host_port-:$vm_port"
+  fi
+done
 
 echo "==> 启动 ROS2 调试虚拟机 (首次请加 first-boot 参数)"
 echo "==> ssh:  ssh ros@localhost -p 2222  (密码 ros123, 或公钥免密)"
 exec qemu-system-aarch64 \
   -machine virt -cpu max -m "$MEM" -smp "$SMP" -accel hvf \
+  -bios "$BIOS" \
   -drive file="$DISK",if=virtio \
   "${BOOT_OPTS[@]}" \
-  -netdev user,id=n0,hostfwd=tcp::2222-:22,hostfwd=tcp::3000-:3000,hostfwd=tcp::5173-:5173 \
+  -netdev user,id=n0,hostfwd=$hostfwd_args \
   -device virtio-net-pci,netdev=n0 \
   -serial mon:stdio -nographic

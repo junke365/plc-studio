@@ -26,6 +26,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../views/SurgicalSim.vue"),
   },
   {
+    path: "/ros2-sim",
+    name: "Ros2Sim",
+    component: () => import("../views/Ros2Sim.vue"),
+  },
+  {
+    path: "/winder-sim",
+    name: "WinderSim",
+    component: () => import("../views/WinderSim.vue"),
+  },
+  {
+    path: "/injector-sim",
+    name: "InjectorSim",
+    component: () => import("../views/InjectorSim.vue"),
+  },
+  {
     path: "/topology",
     name: "Topology",
     component: () => import("../views/TopologyEditor.vue"),

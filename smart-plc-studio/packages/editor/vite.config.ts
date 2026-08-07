@@ -2,11 +2,13 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import cesium from "vite-plugin-cesium";
 import { resolve } from "path";
+import { rosStatic } from "./viteRosPlugin";
 
 export default defineConfig({
   base: "./",
   plugins: [
     vue(),
+    rosStatic(),
     cesium({
       cesiumBuildRootPath: "../../node_modules/cesium/Build",
       cesiumBuildPath: "../../node_modules/cesium/Build/Cesium/",

@@ -42,6 +42,9 @@ const activityItems = [
   { id: "library", icon: "menu_book", label: "库" },
   { id: "simulation", icon: "play_circle", label: "设备/场景仿真" },
   { id: "surgical", icon: "biotech", label: "手术机器人仿真" },
+  { id: "ros2", icon: "smart_toy", label: "ROS2 仿真" },
+  { id: "winder", icon: "autorenew", label: "绕线机仿真" },
+  { id: "injector", icon: "engineering", label: "注塑机仿真" },
   { id: "hmi", icon: "dashboard", label: "HMI 设计器" },
   { id: "kinematics", icon: "precision_manufacturing", label: "运动学配置" },
   { id: "topology", icon: "account_tree", label: "设备拓扑" },
@@ -54,6 +57,18 @@ function handleActivityClick(id: string) {
   }
   if (id === "surgical") {
     router.push("/surgical-sim");
+    return;
+  }
+  if (id === "ros2") {
+    router.push("/ros2-sim");
+    return;
+  }
+  if (id === "winder") {
+    router.push("/winder-sim");
+    return;
+  }
+  if (id === "injector") {
+    router.push("/injector-sim");
     return;
   }
   if (id === "hmi") {

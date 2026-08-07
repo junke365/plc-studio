@@ -1,0 +1,21 @@
+#cloud-config
+users:
+  - name: ros
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFlaSg1+XpwPusLXn924GlpkEwoFA+SpPCVLhpOxV4b plc-studio-ros2-vm
+ssh_pwauth: true
+chpasswd:
+  expire: false
+  users:
+    - name: ros
+      password: ros123
+      type: text
+runcmd:
+  - apt-get update
+  - curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+  - echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu noble main" > /etc/apt/sources.list.d/ros2.list
+  - apt-get update
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y ros-jazzy-ros-base python3-colcon-common-extensions git curl
+  - echo "source /opt/ros/jazzy/setup.bash" >> /home/ros/.bashrc

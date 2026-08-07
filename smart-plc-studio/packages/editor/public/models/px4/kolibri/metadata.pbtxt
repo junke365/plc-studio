@@ -1,0 +1,21 @@
+model {
+  file: "model.sdf"
+  file_format {
+    version {
+      major: 1
+      minor: 6
+    }
+    name: "sdf"
+  }
+}
+name: "cerberus_kolibri_sensor_config_1"
+description: "Multi-directional tri-copter with sensor configuration: OS0, 6 cameras, CO2 sensor and IMU."
+authors {
+  name: "Olov Andersson"
+  email: "olov.andersson@gmail.com"
+}
+authors {
+  name: "Emanuele Pallaoro"
+  email: "ema.pallaoro@gmail.com"
+}
+

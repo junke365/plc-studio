@@ -1,0 +1,13 @@
+model {
+  file: "model.sdf"
+  file_format {
+    version {
+      major: 1
+      minor: 6
+    }
+    name: "sdf"
+  }
+}
+name: "csiro_data61_dtr_sensor_config_1"
+description: "CSIRO-Data61\'s Dynamic Tracked Robot (DTR), with a rotating lidar, imu, cameras and lights."
+
